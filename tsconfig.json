@@ -1,0 +1,7 @@
+{
+  "include": ["lib/**/*", "test/**/*", "examples/**/*"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "esModuleInterop": true
+  }
+}
