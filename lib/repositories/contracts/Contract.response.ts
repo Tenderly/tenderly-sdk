@@ -85,6 +85,10 @@ export type ContractResponse = {
     account_type: string;
     verification_type: string;
     added_at: string;
-  }
+  },
+  display_name: string;
+  tags?: {
+    tag: string;
+  }[]
 
 }

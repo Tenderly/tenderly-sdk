@@ -82,7 +82,7 @@ export class WalletRepository implements Repository<Wallet> {
       console.error('Error: ', error);
     }
   };
-  update = (address: string, data: Wallet) =>
+  update = (address: string, data: Partial<Wallet>) =>
     new Promise((resolve: (x: Wallet) => void) => { resolve(({ address: address, ...data } as Wallet)); });
   getBy = (queryObject: Partial<Wallet>) =>
     new Promise((resolve: (x: Wallet) => void) => { resolve((queryObject as Wallet)); });
