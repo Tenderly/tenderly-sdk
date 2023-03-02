@@ -9,5 +9,5 @@ export type WalletResponse = {
     address: string;
     // ...
   };
-
-}
+  tags?: { tag: string }[];
+};

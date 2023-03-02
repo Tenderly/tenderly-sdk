@@ -16,7 +16,7 @@ beforeAll(() => {
     network: Network.MAINNET,
   });
 
-  return Promise.all([
+  return Promise.allSettled([
     tenderly.contracts.remove(canonicalTransactionChainContractAddress),
     tenderly.contracts.remove(kittyCoreContract),
   ]);
@@ -34,6 +34,10 @@ test('contract.get works', async () => {
 });
 
 describe('contract.add', () => {
+  beforeAll(async () => {
+    await tenderly.contracts.remove(canonicalTransactionChainContractAddress);
+  });
+
   afterAll(async () => {
     await tenderly.contracts.remove(canonicalTransactionChainContractAddress);
   });
@@ -85,6 +89,7 @@ describe('contract.update', () => {
       displayName: 'NewDisplayName',
     });
     expect(contractResponse.displayName).toEqual('NewDisplayName');
+    expect(contractResponse.tags).toBeUndefined();
   });
 
   test('updates only tags', async () => {
@@ -93,6 +98,7 @@ describe('contract.update', () => {
     });
     expect(contractResponse.tags).toContain('NewTag');
     expect(contractResponse.tags).toContain('NewTag2');
+    expect(contractResponse.displayName).toBeUndefined();
   });
 });
 
