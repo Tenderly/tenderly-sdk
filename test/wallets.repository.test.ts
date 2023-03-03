@@ -27,12 +27,12 @@ test('Tenderly has wallets namespace', () => {
   expect(tenderly.wallets).toBeDefined();
 });
 
-test('wallet.get works', async () => {
+test('wallets.get works', async () => {
   const wallet = await tenderly.wallets.get(WALLET_ADDRESS);
   expect(wallet.address).toEqual(WALLET_ADDRESS);
 });
 
-describe('wallet.add', () => {
+describe('wallets.add', () => {
   beforeAll(async () => {
     await tenderly.wallets.remove(WALLET_ADDRESS);
   });
@@ -41,24 +41,24 @@ describe('wallet.add', () => {
     await tenderly.wallets.remove(WALLET_ADDRESS);
   });
 
-  test('wallet.add works', async () => {
+  test('wallets.add works', async () => {
     const wallet = await tenderly.wallets.add(WALLET_ADDRESS);
     expect(wallet.address).toEqual(WALLET_ADDRESS);
   });
 });
 
-describe('wallet.remove', () => {
+describe('wallets.remove', () => {
   beforeAll(async () => {
     await tenderly.wallets.add(WALLET_ADDRESS);
   });
 
-  test('wallet.remove works', async () => {
+  test('wallets.remove works', async () => {
     const removeWalletResponse = tenderly.wallets.remove(WALLET_ADDRESS);
     await expect(removeWalletResponse).resolves.toBeFalsy();
   });
 });
 
-describe('wallet.update', () => {
+describe('wallets.update', () => {
   beforeEach(async () => {
     await tenderly.wallets.add(WALLET_ADDRESS);
   });
