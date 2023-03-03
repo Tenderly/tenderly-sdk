@@ -19,9 +19,9 @@ const tenderly = new Tenderly(
 
   const tetherAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
 
-  console.log('Addid Tether: ', await tenderly.contracts.add(tetherAddress));
+  console.log('Adding TetherToken: ', await tenderly.contracts.add(tetherAddress));
   const contract2 = await tenderly.contracts.get(tetherAddress);
-  console.log('Tether added successfuly: ', (contract2));
+  console.log('TetherToken added successfully: ', (contract2));
 
 })();
 
