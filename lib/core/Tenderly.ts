@@ -18,42 +18,9 @@ export class Tenderly {
 
     this.simulator = new Simulator({ api: this.api, configuration });
 
-    this.contracts = {
-      ...{
-        verify: async (address: string, verificationRequest: VerificationRequest) => {
-          try {
-            const result = await this.api.post(
-              `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`, {
-              config: {
-                optimization_count:
-                  verificationRequest.solc.compiler.settings.optimizer.enabled
-                    ? verificationRequest.solc.compiler.settings.optimizer.runs
-                    : null,
-
-              }, contracts: Object.keys(verificationRequest.solc.sources).map((path: string) => ({
-                contractName: verificationRequest.solc.sources[path].name,
-                source: verificationRequest.solc.sources[path].source,
-                sourcePath: path,
-                networks: {
-                  [this.configuration.network]: { address: address, links: {} }
-                },
-                compiler: {
-                  name: 'solc',
-                  version: verificationRequest.solc.compiler.version,
-                }
-              }))
-            });
-
-            return result;
-          } catch (error) {
-            console.error('Error: ', error);
-            throw error;
-          }
-        }
-      }, ...new ContractRepository({
-        api: this.api, configuration
-      })
-    };
+    this.contracts = new ContractRepository({
+      api: this.api, configuration
+    });
 
     this.wallets = new WalletRepository({
       api: this.api, configuration
