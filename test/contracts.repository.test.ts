@@ -1,11 +1,14 @@
+import { AxiosError } from 'axios';
 import * as dotenv from 'dotenv';
-import { Tenderly, Network } from '../lib';
+import { Tenderly, Network, SolidityCompilerVersions } from '../lib';
 
 dotenv.config();
 
 let tenderly: Tenderly = null;
+let rinkebyTenderly: Tenderly = null;
 
 const canonicalTransactionChainContractAddress = '0x5e4e65926ba27467555eb562121fac00d24e9dd2';
+const counterContract = '0x2e4534ad99d5e7fffc9bbe52df69ba8febeb0057';
 const kittyCoreContract = '0x06012c8cf97bead5deae237070f9587f8e7a266d';
 
 beforeAll(() => {
@@ -15,6 +18,8 @@ beforeAll(() => {
     projectName: process.env.TENDERLY_PROJECT_NAME,
     network: Network.MAINNET,
   });
+
+  rinkebyTenderly = tenderly.with({ network: Network.RINKEBY });
 
   return Promise.allSettled([
     tenderly.contracts.remove(canonicalTransactionChainContractAddress),
@@ -99,6 +104,106 @@ describe('contracts.update', () => {
     expect(contractResponse.tags).toContain('NewTag');
     expect(contractResponse.tags).toContain('NewTag2');
     expect(contractResponse.displayName).toBeUndefined();
+  });
+});
+
+describe('contracts.verify', () => {
+  test('contracts.verify works for correct config', async () => {
+    const result = await rinkebyTenderly.contracts.verify(counterContract, {
+      config: {
+        mode: 'public',
+      },
+      solc: {
+        compiler: {
+          version: SolidityCompilerVersions.v0_8_13,
+          settings: {
+            libraries: {},
+            optimizer: {
+              enabled: true,
+              runs: 200,
+            }
+          }
+        },
+        sources: {
+          'Counter.sol': {
+            name: 'Counter',
+            source: `
+              // SPDX-License-Identifier: MIT
+              pragma solidity ^0.8.13;
+              
+              contract Counter {
+                uint public count;
+              
+                // Function to get the current count
+                function get() public view returns (uint) {
+                  return count;
+                }
+              
+                // Function to increment count by 1
+                function inc() public {
+                  count += 1;
+                }
+              
+                // Function to decrement count by 1
+                function dec() public {
+                  count -= 1;
+                }
+              }
+            `
+          }
+        }
+      }
+    });
+
+    expect(result).toBeDefined();
+  });
+
+  test('contracts.verify fails for wrong compiler version', async () => {
+    expect(async () => await rinkebyTenderly.contracts.verify(counterContract, {
+      config: {
+        mode: 'public',
+      },
+      solc: {
+        compiler: {
+          version: SolidityCompilerVersions.v0_8_4,
+          settings: {
+            libraries: {},
+            optimizer: {
+              enabled: true,
+              runs: 200,
+            }
+          }
+        },
+        sources: {
+          'Counter.sol': {
+            name: 'Counter',
+            source: `
+              // SPDX-License-Identifier: MIT
+              pragma solidity ^0.8.17;
+              
+              contract Counter {
+                uint public count;
+              
+                // Function to get the current count
+                function get() public view returns (uint) {
+                  return count;
+                }
+              
+                // Function to increment count by 1
+                function inc() public {
+                  count += 1;
+                }
+              
+                // Function to decrement count by 1
+                function dec() public {
+                  count -= 1;
+                }
+              }
+            `
+          }
+        }
+      }
+    })).rejects.toThrow(AxiosError);
   });
 });
 
