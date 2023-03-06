@@ -26,14 +26,14 @@ test('Tenderly has contracts namespace', () => {
   expect(tenderly.contracts).toBeDefined();
 });
 
-test('contract.get works', async () => {
+test('contracts.get works', async () => {
   const contractResponse = tenderly.contracts.get(kittyCoreContract);
   await expect(contractResponse).resolves.toBeDefined();
   const contract = await contractResponse;
   expect(contract.address).toEqual(kittyCoreContract);
 });
 
-describe('contract.add', () => {
+describe('contracts.add', () => {
   beforeAll(async () => {
     await tenderly.contracts.remove(canonicalTransactionChainContractAddress);
   });
@@ -42,18 +42,18 @@ describe('contract.add', () => {
     await tenderly.contracts.remove(canonicalTransactionChainContractAddress);
   });
 
-  test('contract.add works', async () => {
+  test('contracts.add works', async () => {
     const contract = await tenderly.contracts.add(canonicalTransactionChainContractAddress);
     expect(contract.address).toEqual(canonicalTransactionChainContractAddress);
   });
 });
 
-describe('contract.remove', () => {
+describe('contracts.remove', () => {
   beforeAll(async () => {
     await tenderly.contracts.add(canonicalTransactionChainContractAddress);
   });
 
-  test('contract.remove works', async () => {
+  test('contracts.remove works', async () => {
     const removeContractResponse = tenderly.contracts.remove(
       canonicalTransactionChainContractAddress,
     );
@@ -66,7 +66,7 @@ describe('contract.remove', () => {
   });
 });
 
-describe('contract.update', () => {
+describe('contracts.update', () => {
   beforeEach(async () => {
     await tenderly.contracts.add(kittyCoreContract);
   });
