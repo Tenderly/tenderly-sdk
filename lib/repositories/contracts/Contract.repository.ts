@@ -5,6 +5,7 @@ import { ApiClient } from '../../core/ApiClient';
 import { ContractRequest } from './Contract.request';
 import { Contract } from './Contract.model';
 import { UpdateContractRequest } from './UpdateContract.request';
+import { GetByParams } from './Contract.request';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): Contract {
   const retVal: Contract = {
@@ -30,6 +31,32 @@ function mapContractModelToContractRequest(contract: Contract): ContractRequest 
   };
 }
 
+function filterByDisplayName(contract: ContractResponse, displayNames: string | string[]) {
+  if (!contract.display_name) {
+    return false;
+  }
+
+  return Array.isArray(displayNames)
+    ? displayNames.some(name => contract.display_name?.includes(name))
+    : contract.display_name.includes(displayNames);
+}
+
+function filterByTags(contract: ContractResponse, tags: string | string[]) {
+  if (!contract.tags) {
+    return false;
+  }
+
+  return Array.isArray(tags)
+    ? tags.some(tagFromFilter => contract.tags.some(({ tag }) => tag === tagFromFilter))
+    : contract.tags.some(({ tag }) => tag === tags);
+}
+
+function filterByNetwork(contract: ContractResponse, networks: Network | Network[]) {
+  return Array.isArray(networks)
+    ? networks.some(net => +contract.contract.network_id === net)
+    : +contract.contract.network_id === networks;
+}
+
 export class ContractRepository implements Repository<Contract> {
   api: ApiClient;
   configuration: TenderlyConfiguration;
@@ -53,7 +80,7 @@ export class ContractRepository implements Repository<Contract> {
     }
   };
 
-  add = async (address: string, contractData?: Contract) => {
+  add = async (address: string, contractData?: Omit<Contract, 'address'>) => {
     try {
       const { data } = await this.api.post<ContractRequest, ContractResponse>(
         `
@@ -127,10 +154,31 @@ export class ContractRepository implements Repository<Contract> {
       console.error('Error: ', error);
     }
   };
-  getBy = (queryObject: Partial<Contract>) =>
-    new Promise((resolve: (x: Contract) => void) => {
-      resolve(queryObject as Contract);
-    });
+  getBy = async (queryObject: GetByParams = {}) => {
+    const contracts = await this.api.get<ContractResponse[]>(`
+      /account/${this.configuration.accountName}
+      /project/${this.configuration.projectName}
+      /contracts
+    `);
+
+    const pipeline = [];
+
+    if (queryObject.tags) {
+      pipeline.push(contract => filterByTags(contract, queryObject.tags));
+    }
+
+    if (queryObject.displayName) {
+      pipeline.push(contract => filterByDisplayName(contract, queryObject.displayName));
+    }
+
+    if (queryObject.network) {
+      pipeline.push(contract => filterByNetwork(contract, queryObject.network));
+    }
+
+    return contracts.data
+      .filter(contract => pipeline.every(fn => fn(contract)))
+      .map(mapContractResponseToContractModel);
+  };
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     const result = await this.api.post(
@@ -156,5 +204,5 @@ export class ContractRepository implements Repository<Contract> {
     });
 
     return result;
-  };
+  }
 }

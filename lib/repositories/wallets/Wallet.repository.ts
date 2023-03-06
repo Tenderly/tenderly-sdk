@@ -3,8 +3,9 @@ import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
 import { Wallet } from './Wallet.model';
 import { WalletResponse } from './Wallet.response';
-import { WalletRequest } from './Wallet.request';
+import { GetByParams } from '../contracts/Contract.request';
 import { UpdateWalletRequest } from './UpdateWallet.request';
+import { WalletRequest } from './Wallet.request';
 
 function mapWalletResponseToWalletModel(walletResponse: WalletResponse) {
   const retVal: Wallet = {
@@ -29,6 +30,32 @@ function mapWalletModelToWalletRequest(wallet: Partial<Wallet>): WalletRequest {
     display_name: wallet?.displayName,
     network_ids: [`${wallet.network}`],
   };
+}
+
+function filterByDisplayName(wallet: WalletResponse, displayNames: string | string[]) {
+  if (!wallet.display_name) {
+    return false;
+  }
+
+  return Array.isArray(displayNames)
+    ? displayNames.some(name => wallet.display_name?.includes(name))
+    : wallet.display_name.includes(displayNames);
+}
+
+function filterByTags(wallet: WalletResponse, tags: string | string[]) {
+  if (!wallet.tags) {
+    return false;
+  }
+
+  return Array.isArray(tags)
+    ? tags.some(tagFromFilter => wallet.tags.some(({ tag }) => tag === tagFromFilter))
+    : wallet.tags.some(({ tag }) => tag === tags);
+}
+
+function filterByNetwork(wallet: WalletResponse, networks: Network | Network[]) {
+  return Array.isArray(networks)
+    ? networks.some(net => +wallet.account.network_id === net)
+    : +wallet.account.network_id === networks;
 }
 
 export class WalletRepository implements Repository<Wallet> {
@@ -131,8 +158,29 @@ export class WalletRepository implements Repository<Wallet> {
     }
   };
 
-  getBy = (queryObject: Partial<Wallet>) =>
-    new Promise((resolve: (x: Wallet) => void) => {
-      resolve(queryObject as Wallet);
-    });
+  getBy = async (queryObject: GetByParams) => {
+    const wallets = await this.api.get<WalletResponse[]>(`
+      /account/${this.configuration.accountName}
+      /project/${this.configuration.projectName}
+      /contracts?accountType=wallet
+    `);
+
+    const pipeline = [];
+
+    if (queryObject.displayName) {
+      pipeline.push(wallet => filterByDisplayName(wallet, queryObject.displayName));
+    }
+
+    if (queryObject.tags) {
+      pipeline.push(wallet => filterByTags(wallet, queryObject.tags));
+    }
+
+    if (queryObject.network) {
+      pipeline.push(wallet => filterByNetwork(wallet, queryObject.network));
+    }
+
+    return wallets.data
+      .filter(wallet => pipeline.every(fn => fn(wallet)))
+      .map(wallet => mapWalletResponseToWalletModel(wallet));
+  };
 }
