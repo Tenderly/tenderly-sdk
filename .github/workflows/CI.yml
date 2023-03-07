@@ -23,6 +23,9 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
+    - name: 'Create env file'
+      run: |
+        echo "${{ secrets.ENV_FILE }}" > .env
     - run: npm install -g yarn
     - run: yarn
     - run: yarn build
