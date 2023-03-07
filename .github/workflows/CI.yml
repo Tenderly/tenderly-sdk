@@ -10,7 +10,7 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    environment: ci
+    environment: CI
 
     strategy:
       matrix:
