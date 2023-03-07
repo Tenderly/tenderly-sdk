@@ -6,6 +6,8 @@ import { ContractRequest } from './Contract.request';
 import { Contract } from './Contract.model';
 import { UpdateContractRequest } from './UpdateContract.request';
 import { GetByParams } from './Contract.request';
+import { filterEntities } from '../../filters';
+import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): Contract {
   const retVal: Contract = {
@@ -29,32 +31,6 @@ function mapContractModelToContractRequest(contract: Contract): ContractRequest 
     address: contract.address,
     network_id: `${contract.network}`,
   };
-}
-
-function filterByDisplayName(contract: ContractResponse, displayNames: string | string[]) {
-  if (!contract.display_name) {
-    return false;
-  }
-
-  return Array.isArray(displayNames)
-    ? displayNames.some(name => contract.display_name?.includes(name))
-    : contract.display_name.includes(displayNames);
-}
-
-function filterByTags(contract: ContractResponse, tags: string | string[]) {
-  if (!contract.tags) {
-    return false;
-  }
-
-  return Array.isArray(tags)
-    ? tags.some(tagFromFilter => contract.tags.some(({ tag }) => tag === tagFromFilter))
-    : contract.tags.some(({ tag }) => tag === tags);
-}
-
-function filterByNetwork(contract: ContractResponse, networks: Network | Network[]) {
-  return Array.isArray(networks)
-    ? networks.some(net => +contract.contract.network_id === net)
-    : +contract.contract.network_id === networks;
 }
 
 export class ContractRepository implements Repository<Contract> {
@@ -161,23 +137,11 @@ export class ContractRepository implements Repository<Contract> {
       /contracts
     `);
 
-    const pipeline = [];
-
-    if (queryObject.tags) {
-      pipeline.push(contract => filterByTags(contract, queryObject.tags));
-    }
-
-    if (queryObject.displayName) {
-      pipeline.push(contract => filterByDisplayName(contract, queryObject.displayName));
-    }
-
-    if (queryObject.network) {
-      pipeline.push(contract => filterByNetwork(contract, queryObject.network));
-    }
-
-    return contracts.data
-      .filter(contract => pipeline.every(fn => fn(contract)))
-      .map(mapContractResponseToContractModel);
+    return filterEntities<ContractResponse>(
+      contracts.data,
+      queryObject,
+      contractsOrWalletsFilterMap,
+    ).map(mapContractResponseToContractModel);
   };
 
   async verify(address: string, verificationRequest: VerificationRequest) {
