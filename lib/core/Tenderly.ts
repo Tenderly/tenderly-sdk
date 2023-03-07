@@ -1,4 +1,4 @@
-import { TenderlyConfiguration } from "../models";
+import { TenderlyConfiguration, VerificationRequest } from "../models";
 import { ApiClient } from "./ApiClient";
 import { WalletRepository, ContractRepository } from "../repositories";
 import { Simulator } from "../executors";
@@ -7,7 +7,8 @@ export class Tenderly {
   public readonly configuration: TenderlyConfiguration;
   public readonly api: ApiClient;
 
-  public readonly contracts: ContractRepository;
+  public readonly contracts: ContractRepository &
+  { verify: (address: string, verificationRequest: VerificationRequest) => Promise<any> };
   public readonly wallets: WalletRepository;
   public readonly simulator: Simulator;
 
