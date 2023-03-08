@@ -29,7 +29,7 @@ function mapWalletResponseToWalletModel(walletResponse: WalletResponse) {
 function mapWalletModelToWalletRequest(wallet: Partial<Wallet>): WalletRequest {
   return {
     address: wallet.address,
-    display_name: wallet?.displayName,
+    display_name: wallet.displayName,
     network_ids: [`${wallet.network}`],
   };
 }

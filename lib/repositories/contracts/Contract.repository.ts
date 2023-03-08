@@ -30,6 +30,7 @@ function mapContractModelToContractRequest(contract: Contract): ContractRequest 
   return {
     address: contract.address,
     network_id: `${contract.network}`,
+    display_name: contract.displayName,
   };
 }
 
@@ -56,7 +57,7 @@ export class ContractRepository implements Repository<Contract> {
     }
   };
 
-  add = async (address: string, contractData?: Omit<Contract, 'address'>) => {
+  add = async (address: string, contractData: Partial<Omit<Contract, 'address'>> = {}) => {
     try {
       const { data } = await this.api.post<ContractRequest, ContractResponse>(
         `
