@@ -52,7 +52,7 @@ export class ContractRepository implements Repository<Contract> {
 
       return mapContractResponseToContractModel(data);
     } catch (error) {
-      console.error('Error: ', error);
+      console.error(`Error (${address}): `, error?.response?.data);
     }
   };
 
@@ -73,7 +73,7 @@ export class ContractRepository implements Repository<Contract> {
 
       return mapContractResponseToContractModel(data);
     } catch (error) {
-      console.error('Error: ', error);
+      console.error('Error: ', error?.response?.data);
     }
   };
 
@@ -88,7 +88,7 @@ export class ContractRepository implements Repository<Contract> {
       `,
       );
     } catch (error) {
-      console.error('Error: ', error);
+      console.error('Error: ', error?.response?.data);
     }
   };
   update = async (address: string, payload: UpdateContractRequest) => {
@@ -127,7 +127,8 @@ export class ContractRepository implements Repository<Contract> {
 
       return this.get(address);
     } catch (error) {
-      console.error('Error: ', error);
+      // console.error('Error: ', error);
+      console.error('Error: ', error?.response?.data);
     }
   };
   getBy = async (queryObject: GetByParams = {}) => {
@@ -137,35 +138,39 @@ export class ContractRepository implements Repository<Contract> {
       /contracts
     `);
 
-    return filterEntities<ContractResponse>(
+    const retVal = filterEntities<ContractResponse>(
       contracts.data,
       queryObject,
       contractsOrWalletsFilterMap,
     ).map(mapContractResponseToContractModel);
+
+    // console.log('retVal', JSON.stringify(retVal, null, 2));
+    return retVal;
   };
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     const result = await this.api.post(
-      `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`, {
-      config: {
-        optimization_count:
-          verificationRequest.solc.compiler.settings.optimizer.enabled
+      `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,
+      {
+        config: {
+          optimization_count: verificationRequest.solc.compiler.settings.optimizer.enabled
             ? verificationRequest.solc.compiler.settings.optimizer.runs
             : null,
-
-      }, contracts: Object.keys(verificationRequest.solc.sources).map((path: string) => ({
-        contractName: verificationRequest.solc.sources[path].name,
-        source: verificationRequest.solc.sources[path].source,
-        sourcePath: path,
-        networks: {
-          [this.configuration.network]: { address: address, links: {} }
         },
-        compiler: {
-          name: 'solc',
-          version: verificationRequest.solc.compiler.version,
-        }
-      }))
-    });
+        contracts: Object.keys(verificationRequest.solc.sources).map((path: string) => ({
+          contractName: verificationRequest.solc.sources[path].name,
+          source: verificationRequest.solc.sources[path].source,
+          sourcePath: path,
+          networks: {
+            [this.configuration.network]: { address: address, links: {} },
+          },
+          compiler: {
+            name: 'solc',
+            version: verificationRequest.solc.compiler.version,
+          },
+        })),
+      },
+    );
 
     return result;
   }

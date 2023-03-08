@@ -3,15 +3,14 @@ import { Tenderly, Network } from '../lib';
 
 dotenv.config();
 
-const lidoWallet = '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022'.toLowerCase();
-const kittyCoreWallet = '0x06012c8cf97BEaD5deAe237070F9587f8E7A266d'.toLowerCase();
-const wrappedEtherWallet = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'.toLowerCase();
-const beaconDepositWallet = '0x00000000219ab540356cBB839Cbe05303d7705Fa'.toLowerCase();
-const arbitrumBridgeWallet = '0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a'.toLowerCase();
-const bitDAOTreasuryWallet = '0x78605Df79524164911C144801f41e9811B7DB73D'.toLowerCase();
 const liquityActivePoolWallet = '0xDf9Eb223bAFBE5c5271415C75aeCD68C21fE3D7F'.toLowerCase();
 const canonicalTransactionChainWalletAddress =
   '0x5E4e65926BA27467555EB562121fac00D24E9dD2'.toLowerCase();
+const polygonEtherBridgeWalletAddress = '0x8484Ef722627bf18ca5Ae6BcF031c23E6e922B30'.toLowerCase();
+const vb3WalletAddress = '0x220866B1A2219f40e72f5c628B65D54268cA3A9D'.toLowerCase();
+const geminiContract1WalletAddress = '0x07Ee55aA48Bb72DcC6E9D78256648910De513eca'.toLowerCase();
+const golemMultiSigWalletAddress = '0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9'.toLowerCase();
+const kraken13WalletAddress = '0xDA9dfA130Df4dE4673b89022EE50ff26f6EA73Cf'.toLowerCase();
 
 let tenderly: Tenderly = null;
 
@@ -24,26 +23,20 @@ beforeAll(async () => {
   });
 
   await Promise.all([
-    tenderly.wallets.add(kittyCoreWallet),
-    tenderly.wallets.add(wrappedEtherWallet),
-    tenderly.wallets.add(beaconDepositWallet),
-    tenderly.wallets.add(bitDAOTreasuryWallet),
-    tenderly.wallets.add(arbitrumBridgeWallet),
     tenderly.wallets.add(liquityActivePoolWallet),
     tenderly.wallets.add(canonicalTransactionChainWalletAddress),
+    tenderly.wallets.add(vb3WalletAddress),
+    tenderly.wallets.add(golemMultiSigWalletAddress),
   ]);
 });
 
 afterAll(async () => {
   await Promise.all([
-    tenderly.wallets.remove(lidoWallet),
-    tenderly.wallets.remove(kittyCoreWallet),
-    tenderly.wallets.remove(wrappedEtherWallet),
-    tenderly.wallets.remove(beaconDepositWallet),
-    tenderly.wallets.remove(bitDAOTreasuryWallet),
-    tenderly.wallets.remove(arbitrumBridgeWallet),
     tenderly.wallets.remove(liquityActivePoolWallet),
     tenderly.wallets.remove(canonicalTransactionChainWalletAddress),
+    tenderly.wallets.remove(polygonEtherBridgeWalletAddress),
+    tenderly.wallets.remove(vb3WalletAddress),
+    tenderly.wallets.remove(golemMultiSigWalletAddress),
   ]);
 });
 
@@ -52,19 +45,38 @@ test('Tenderly has wallets namespace', () => {
 });
 
 describe('wallets.add', () => {
-  test('succesfuly adds contract', async () => {
-    const walletResponse = tenderly.wallets.add(lidoWallet);
+  beforeEach(async () => {
+    await tenderly.wallets.remove(polygonEtherBridgeWalletAddress);
+  });
+
+  test('succesfuly adds wallet', async () => {
+    const walletResponse = tenderly.wallets.add(polygonEtherBridgeWalletAddress);
 
     await expect(walletResponse).resolves.toEqual(
       expect.objectContaining({
-        address: lidoWallet,
+        address: polygonEtherBridgeWalletAddress,
+      }),
+    );
+  });
+
+  test('adding wallet data will successfuly update wallet', async () => {
+    const walletResponse = tenderly.wallets.add(vb3WalletAddress, {
+      displayName: 'VB3',
+      tags: ['tag1', 'tag2'],
+    });
+
+    await expect(walletResponse).resolves.toEqual(
+      expect.objectContaining({
+        address: vb3WalletAddress,
+        displayName: 'VB3',
+        tags: ['tag1', 'tag2'],
       }),
     );
   });
 
   test('returns undefined if wallet exists', async () => {
-    await tenderly.wallets.add(lidoWallet);
-    const walletResponse = tenderly.wallets.add(lidoWallet);
+    await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
+    const walletResponse = tenderly.wallets.add(polygonEtherBridgeWalletAddress);
 
     await expect(walletResponse).resolves.toBeUndefined();
   });
@@ -72,7 +84,7 @@ describe('wallets.add', () => {
 
 describe('wallets.remove', () => {
   test('returns falsy value if wallet does exist', async () => {
-    const removeWalletResponse = tenderly.wallets.remove(arbitrumBridgeWallet);
+    const removeWalletResponse = tenderly.wallets.remove(geminiContract1WalletAddress);
 
     await expect(removeWalletResponse).resolves.toBeFalsy();
   });
@@ -86,11 +98,11 @@ describe('wallets.remove', () => {
 
 describe('wallets.get', () => {
   test('returns wallet if it exists', async () => {
-    const walletResponse = tenderly.wallets.get(wrappedEtherWallet);
+    const walletResponse = tenderly.wallets.get(golemMultiSigWalletAddress);
 
     await expect(walletResponse).resolves.toEqual(
       expect.objectContaining({
-        address: wrappedEtherWallet,
+        address: golemMultiSigWalletAddress,
       }),
     );
   });
@@ -103,55 +115,58 @@ describe('wallets.get', () => {
 });
 
 describe('wallets.update', () => {
+  const tag1 = 'Tag1';
+  const tag2 = 'Tag2';
+  const displayName = 'DisplayName';
+
   beforeEach(async () => {
-    await tenderly.wallets.add(wrappedEtherWallet);
+    await tenderly.wallets.add(kraken13WalletAddress);
   });
 
   afterEach(async () => {
-    await tenderly.wallets.remove(wrappedEtherWallet);
+    await tenderly.wallets.remove(kraken13WalletAddress);
   });
 
   test("doesn't throw an error when called correctly", async () => {
-    const updateWalletResponse = tenderly.wallets.update(wrappedEtherWallet, {
-      displayName: 'NewDisplayName',
-      appendTags: ['NewTag', 'NewTag2'],
+    const updateWalletResponse = tenderly.wallets.update(kraken13WalletAddress, {
+      displayName,
+      appendTags: [tag1, tag2],
     });
 
     await expect(updateWalletResponse).resolves.toEqual(
       expect.objectContaining({
-        address: wrappedEtherWallet,
-        displayName: 'NewDisplayName',
-        tags: expect.arrayContaining(['NewTag', 'NewTag2']),
+        address: kraken13WalletAddress,
+        displayName,
+        tags: expect.arrayContaining([tag1]),
       }),
     );
   });
 
   test('updates only displayName', async () => {
-    const walletResponse = tenderly.wallets.update(wrappedEtherWallet, {
-      displayName: 'NewDisplayName',
+    const walletResponse = tenderly.wallets.update(kraken13WalletAddress, {
+      displayName,
     });
 
     await expect(walletResponse).resolves.toBeDefined();
     await expect(walletResponse).resolves.toEqual(
       expect.objectContaining({
-        address: wrappedEtherWallet,
-        displayName: 'NewDisplayName',
+        address: kraken13WalletAddress,
+        displayName,
       }),
     );
   });
 
   test('updates only tags', async () => {
-    const walletResponse = tenderly.wallets.update(wrappedEtherWallet, {
-      appendTags: ['NewTag', 'NewTag2'],
+    const walletResponse = tenderly.wallets.update(kraken13WalletAddress, {
+      appendTags: [tag1, tag2],
     });
 
     await expect(walletResponse).resolves.toEqual(
       expect.objectContaining({
-        address: wrappedEtherWallet,
-        tags: expect.arrayContaining(['NewTag', 'NewTag2']),
+        address: kraken13WalletAddress,
+        tags: expect.arrayContaining([tag1, tag2]),
       }),
     );
-    // expect display name to be 'NewDisplayName' or not defined
     await expect(walletResponse).resolves.not.toBe(
       expect.objectContaining({
         displayName: expect.anything(),

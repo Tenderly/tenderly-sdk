@@ -6,17 +6,17 @@ dotenv.config();
 
 let tenderly: Tenderly = null;
 let rinkebyTenderly: Tenderly = null;
+let getByTenderly: Tenderly = null;
+
+jest.setTimeout(30000);
 
 const lidoContract = '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022'.toLowerCase();
-const counterContract = '0x2e4534ad99d5e7fffc9bbe52df69ba8febeb0057';
+const counterContract = '0x2e4534ad99d5e7fffc9bbe52df69ba8febeb0057'.toLowerCase();
 const kittyCoreContract = '0x06012c8cf97BEaD5deAe237070F9587f8E7A266d'.toLowerCase();
 const wrappedEtherContract = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'.toLowerCase();
 const beaconDepositContract = '0x00000000219ab540356cBB839Cbe05303d7705Fa'.toLowerCase();
 const bitDAOTreasuryContract = '0x78605Df79524164911C144801f41e9811B7DB73D'.toLowerCase();
 const arbitrumBridgeContract = '0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a'.toLowerCase();
-const liquityActivePoolContract = '0xDf9Eb223bAFBE5c5271415C75aeCD68C21fE3D7F'.toLowerCase();
-const canonicalTransactionChainContractAddress =
-  '0x5E4e65926BA27467555EB562121fac00D24E9dD2'.toLowerCase();
 
 beforeAll(async () => {
   tenderly = new Tenderly({
@@ -28,14 +28,14 @@ beforeAll(async () => {
 
   rinkebyTenderly = tenderly.with({ network: Network.RINKEBY });
 
+  getByTenderly = tenderly.with({ projectName: process.env.TENDERLY_GET_BY_PROJECT_NAME });
+
   await Promise.all([
     tenderly.contracts.add(kittyCoreContract),
     tenderly.contracts.add(wrappedEtherContract),
-    tenderly.contracts.add(beaconDepositContract),
-    tenderly.contracts.add(bitDAOTreasuryContract),
     tenderly.contracts.add(arbitrumBridgeContract),
-    tenderly.contracts.add(liquityActivePoolContract),
-    tenderly.contracts.add(canonicalTransactionChainContractAddress),
+    getByTenderly.contracts.add(beaconDepositContract),
+    getByTenderly.contracts.add(bitDAOTreasuryContract),
   ]);
 });
 
@@ -44,11 +44,9 @@ afterAll(async () => {
     tenderly.contracts.remove(lidoContract),
     tenderly.contracts.remove(kittyCoreContract),
     tenderly.contracts.remove(wrappedEtherContract),
-    tenderly.contracts.remove(beaconDepositContract),
-    tenderly.contracts.remove(bitDAOTreasuryContract),
     tenderly.contracts.remove(arbitrumBridgeContract),
-    tenderly.contracts.remove(liquityActivePoolContract),
-    tenderly.contracts.remove(canonicalTransactionChainContractAddress),
+    getByTenderly.contracts.remove(beaconDepositContract),
+    getByTenderly.contracts.remove(bitDAOTreasuryContract),
   ]);
 });
 
@@ -57,12 +55,32 @@ test('Tenderly has contracts namespace', () => {
 });
 
 describe('contracts.add', () => {
+  beforeEach(async () => {
+    await tenderly.contracts.remove(lidoContract);
+  });
+
   test('successfully adds contract', async () => {
     const lidoContractResponse = tenderly.contracts.add(lidoContract);
 
     await expect(lidoContractResponse).resolves.toEqual(
       expect.objectContaining({
         address: lidoContract,
+      }),
+    );
+  });
+
+  test('adding contract data will successfuly update contract', async () => {
+    const lidoContractResponse = tenderly.contracts.add(lidoContract, {
+      displayName: 'Lido',
+      tags: ['staking', 'eth2'],
+      network: Network.MAINNET,
+    });
+
+    await expect(lidoContractResponse).resolves.toEqual(
+      expect.objectContaining({
+        address: lidoContract,
+        displayName: 'Lido',
+        tags: expect.arrayContaining(['staking', 'eth2']),
       }),
     );
   });
@@ -281,283 +299,210 @@ describe('contract.getBy', () => {
   const beaconDepositContractTags = [tag1, tag2];
   const bitDAOTreasuryContractTags = [tag2, tag3];
 
-  beforeAll(() =>
-    Promise.all([
-      tenderly.contracts.add(beaconDepositContract, {
-        network: Network.MAINNET,
-        displayName: beaconDepositContractDisplayName,
-        tags: beaconDepositContractTags,
-      }),
-      tenderly.contracts.add(bitDAOTreasuryContract, {
-        network: Network.MAINNET,
-        displayName: bitDAOTreasuryContractDisplayName,
-        tags: bitDAOTreasuryContractTags,
-      }),
-    ]),
-  );
+  beforeAll(async () => {
+    await getByTenderly.contracts.update(beaconDepositContract, {
+      displayName: beaconDepositContractDisplayName,
+      appendTags: beaconDepositContractTags,
+    });
+    await getByTenderly.contracts.update(bitDAOTreasuryContract, {
+      displayName: bitDAOTreasuryContractDisplayName,
+      appendTags: bitDAOTreasuryContractTags,
+    });
+  });
 
   describe('tags', () => {
-    test('returns 1 contract, when 1 tag matches (passed as 1 string, not an array)', () => {
-      const contractsResponse = tenderly.contracts.getBy({ tags: tag1 });
+    test('returns 1 contract, when 1 tag matches (passed as 1 string, not an array)', async () => {
+      const contracts = await getByTenderly.contracts.getBy({ tags: tag1 });
 
-      expect(contractsResponse).resolves.toHaveLength(1);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-        ]),
-      );
+      expect(contracts).toHaveLength(1);
+      expect(contracts[0].address).toEqual(beaconDepositContract);
+      expect(contracts[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contracts[0].tags.sort()).toEqual(beaconDepositContractTags.sort());
     });
 
-    test('returns 0 contracts, when no tags match', () => {
-      const contractsResponse = tenderly.contracts.getBy({ tags: ['non existing tag'] });
+    test('returns 0 contracts, when no tags match', async () => {
+      const contractsResponse = getByTenderly.contracts.getBy({ tags: ['non existing tag'] });
 
-      expect(contractsResponse).resolves.toHaveLength(0);
+      await expect(contractsResponse).resolves.toHaveLength(0);
     });
 
-    test('returns 1 contract, when 1 tag matches', () => {
-      const beaconDepositContractsResponse = tenderly.contracts.getBy({
+    test('returns 1 contract, when `tag1` matches', async () => {
+      const contracts = await getByTenderly.contracts.getBy({
         tags: [tag1],
       });
-      const bitDAOTreasuryContractResponse = tenderly.contracts.getBy({ tags: [tag3] });
 
-      expect(beaconDepositContractsResponse).resolves.toHaveLength(1);
-      expect(bitDAOTreasuryContractResponse).resolves.toHaveLength(1);
-      expect(beaconDepositContractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-        ]),
-      );
-      expect(bitDAOTreasuryContractResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: bitDAOTreasuryContract,
-            displayName: bitDAOTreasuryContractDisplayName,
-            tags: bitDAOTreasuryContractTags,
-          }),
-        ]),
-      );
+      expect(contracts).toHaveLength(1);
+      expect(contracts[0].address).toEqual(beaconDepositContract);
+      expect(contracts[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contracts[0].tags.sort()).toEqual(expect.arrayContaining(beaconDepositContractTags));
     });
 
-    test('returns 2 contracts, when any of 3 tags match', () => {
-      const contractsResponse = tenderly.contracts.getBy({ tags: [tag1, tag2, tag3] });
+    test('returns 1 contract, when `tag3` matches', async () => {
+      const contracts = await getByTenderly.contracts.getBy({ tags: [tag3] });
 
-      expect(contractsResponse).resolves.toHaveLength(2);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-          expect.objectContaining({
-            address: bitDAOTreasuryContract,
-            displayName: bitDAOTreasuryContractDisplayName,
-            tags: bitDAOTreasuryContractTags,
-          }),
-        ]),
-      );
+      expect(contracts).toHaveLength(1);
+      expect(contracts[0].address).toEqual(bitDAOTreasuryContract);
+      expect(contracts[0].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contracts[0].tags.sort()).toEqual(expect.arrayContaining(bitDAOTreasuryContractTags));
     });
 
-    test("returns 2 contracts, when both tags that don't overlap are passed", () => {
-      const contractsResponse = tenderly.contracts.getBy({ tags: [tag1, tag3] });
-
-      expect(contractsResponse).resolves.toHaveLength(2);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-          expect.objectContaining({
-            address: bitDAOTreasuryContract,
-            displayName: bitDAOTreasuryContractDisplayName,
-            tags: bitDAOTreasuryContractTags,
-          }),
-        ]),
+    test('returns 2 contracts, when any of 3 tags match', async () => {
+      const contracts = (await getByTenderly.contracts.getBy({ tags: [tag1, tag2, tag3] })).sort(
+        (a, b) => (a.address > b.address ? 1 : -1),
       );
+
+      expect(contracts).toHaveLength(2);
+      expect(contracts[0].address).toEqual(beaconDepositContract);
+      expect(contracts[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contracts[0].tags.sort()).toEqual(expect.arrayContaining(beaconDepositContractTags));
+      expect(contracts[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contracts[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contracts[1].tags.sort()).toEqual(expect.arrayContaining(bitDAOTreasuryContractTags));
     });
 
-    test('returns 2 contracts, when no tags are passed', () => {
-      const contractsResponse = tenderly.contracts.getBy();
-
-      expect(contractsResponse).resolves.toHaveLength(2);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-          expect.objectContaining({
-            address: bitDAOTreasuryContract,
-            displayName: bitDAOTreasuryContractDisplayName,
-            tags: bitDAOTreasuryContractTags,
-          }),
-        ]),
+    test("returns 2 contracts, when both tags that don't overlap are passed", async () => {
+      const contracts = (await getByTenderly.contracts.getBy({ tags: [tag1, tag3] })).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
       );
+
+      expect(contracts).toHaveLength(2);
+      expect(contracts[0].address).toEqual(beaconDepositContract);
+      expect(contracts[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contracts[0].tags.sort()).toEqual(expect.arrayContaining(beaconDepositContractTags));
+      expect(contracts[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contracts[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contracts[1].tags.sort()).toEqual(expect.arrayContaining(bitDAOTreasuryContractTags));
     });
 
-    test('returns 2 contracts, when empty tags array is passed', () => {
-      const contractsResponse = tenderly.contracts.getBy({ tags: [] });
-
-      expect(contractsResponse).resolves.toHaveLength(2);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-          expect.objectContaining({
-            address: bitDAOTreasuryContract,
-            displayName: bitDAOTreasuryContractDisplayName,
-            tags: bitDAOTreasuryContractTags,
-          }),
-        ]),
+    test('returns 4 contracts, when no tags are passed', async () => {
+      const contracts = (await getByTenderly.contracts.getBy()).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
       );
+
+      expect(contracts).toHaveLength(2);
+      expect(contracts[0].address).toEqual(beaconDepositContract);
+      expect(contracts[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contracts[0].tags.sort()).toEqual(expect.arrayContaining(beaconDepositContractTags));
+      expect(contracts[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contracts[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contracts[1].tags.sort()).toEqual(expect.arrayContaining(bitDAOTreasuryContractTags));
+    });
+
+    test('returns 2 contracts, when empty tags array is passed', async () => {
+      const contracts = (await getByTenderly.contracts.getBy({ tags: [] })).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
+      );
+
+      expect(contracts).toHaveLength(2);
+      expect(contracts[0].address).toEqual(beaconDepositContract);
+      expect(contracts[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contracts[0].tags.sort()).toEqual(expect.arrayContaining(beaconDepositContractTags));
+      expect(contracts[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contracts[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contracts[1].tags.sort()).toEqual(expect.arrayContaining(bitDAOTreasuryContractTags));
     });
   });
 
   describe('displayName', () => {
-    test('returns 1 contract, when displayName matches', () => {
-      const contractsResponse = tenderly.contracts.getBy({
+    test('returns 1 contract, when displayName matches', async () => {
+      const contractsResponse = await getByTenderly.contracts.getBy({
         displayName: beaconDepositContractDisplayName,
       });
 
-      expect(contractsResponse).resolves.toHaveLength(1);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-        ]),
-      );
+      expect(contractsResponse).toHaveLength(1);
+      expect(contractsResponse[0].address).toEqual(beaconDepositContract);
+      expect(contractsResponse[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contractsResponse[0].tags.sort()).toEqual(beaconDepositContractTags.sort());
     });
 
-    test('returns 0 contracts, when displayName does not match', () => {
-      const contractsResponse = tenderly.contracts.getBy({
+    test('returns 0 contracts, when displayName does not match', async () => {
+      const contracts = await getByTenderly.contracts.getBy({
         displayName: 'non existing display name',
       });
 
-      expect(contractsResponse).resolves.toHaveLength(0);
+      expect(contracts).toHaveLength(0);
     });
 
-    test('returns 2 contracts, when displayName is not passed', () => {
-      const contractsResponse = tenderly.contracts.getBy();
-
-      expect(contractsResponse).resolves.toHaveLength(2);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-          expect.objectContaining({
-            address: bitDAOTreasuryContract,
-            displayName: bitDAOTreasuryContractDisplayName,
-            tags: bitDAOTreasuryContractTags,
-          }),
-        ]),
+    test('returns 2 contracts, when displayName is not passed', async () => {
+      const contractsResponse = (await getByTenderly.contracts.getBy()).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
       );
+
+      expect(contractsResponse).toHaveLength(2);
+      expect(contractsResponse[0].address).toEqual(beaconDepositContract);
+      expect(contractsResponse[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contractsResponse[0].tags.sort()).toEqual(beaconDepositContractTags.sort());
+      expect(contractsResponse[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contractsResponse[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contractsResponse[1].tags.sort()).toEqual(bitDAOTreasuryContractTags.sort());
     });
 
-    test('returns 2 contracts, when both displayNames match', () => {
-      const contractsResponse = tenderly.contracts.getBy({
-        displayName: [beaconDepositContractDisplayName, bitDAOTreasuryContractDisplayName],
-      });
+    test('returns 2 contracts, when both displayNames match', async () => {
+      const contractsResponse = (
+        await getByTenderly.contracts.getBy({
+          displayName: [beaconDepositContractDisplayName, bitDAOTreasuryContractDisplayName],
+        })
+      ).sort((a, b) => (a.address > b.address ? 1 : -1));
 
-      expect(contractsResponse).resolves.toHaveLength(2);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-          expect.objectContaining({
-            address: bitDAOTreasuryContract,
-            displayName: bitDAOTreasuryContractDisplayName,
-            tags: bitDAOTreasuryContractTags,
-          }),
-        ]),
-      );
+      expect(contractsResponse).toHaveLength(2);
+      expect(contractsResponse[0].address).toEqual(beaconDepositContract);
+      expect(contractsResponse[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contractsResponse[0].tags.sort()).toEqual(beaconDepositContractTags.sort());
+      expect(contractsResponse[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contractsResponse[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contractsResponse[1].tags.sort()).toEqual(bitDAOTreasuryContractTags.sort());
     });
   });
 
   describe('network', () => {
-    test('returns 2 contracts, when network matches', () => {
-      const contractsResponse = tenderly.contracts.getBy({ network: Network.MAINNET });
+    test('returns 2 contracts, when network matches', async () => {
+      const contractsResponse = (
+        await getByTenderly.contracts.getBy({ network: Network.MAINNET })
+      ).sort((a, b) => (a.address > b.address ? 1 : -1));
 
-      expect(contractsResponse).resolves.toHaveLength(1);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-        ]),
-      );
+      expect(contractsResponse).toHaveLength(2);
+      expect(contractsResponse[0].address).toEqual(beaconDepositContract);
+      expect(contractsResponse[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contractsResponse[0].tags.sort()).toEqual(beaconDepositContractTags.sort());
+      expect(contractsResponse[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contractsResponse[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contractsResponse[1].tags.sort()).toEqual(bitDAOTreasuryContractTags.sort());
     });
 
-    test('returns 0 contracts, when network does not match', () => {
-      const contractsResponse = tenderly.contracts.getBy({ network: Network.ROPSTEN });
+    test('returns 0 contracts, when network does not match', async () => {
+      const contractsResponse = getByTenderly.contracts.getBy({ network: Network.ROPSTEN });
 
-      expect(contractsResponse).resolves.toHaveLength(0);
+      await expect(contractsResponse).resolves.toHaveLength(0);
     });
 
-    test('returns 2 contracts, when network is not passed', () => {
-      const contractsResponse = tenderly.contracts.getBy();
-
-      expect(contractsResponse).resolves.toHaveLength(2);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-          expect.objectContaining({
-            address: bitDAOTreasuryContract,
-            displayName: bitDAOTreasuryContractDisplayName,
-            tags: bitDAOTreasuryContractTags,
-          }),
-        ]),
+    test('returns 2 contracts, when network is not passed', async () => {
+      const contractsResponse = (await getByTenderly.contracts.getBy()).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
       );
+
+      expect(contractsResponse).toHaveLength(2);
+      expect(contractsResponse[0].address).toEqual(beaconDepositContract);
+      expect(contractsResponse[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contractsResponse[0].tags.sort()).toEqual(beaconDepositContractTags.sort());
+      expect(contractsResponse[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contractsResponse[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contractsResponse[1].tags.sort()).toEqual(bitDAOTreasuryContractTags.sort());
     });
 
-    test('returns 2 contracts, empty array is passed', () => {
-      const contractsResponse = tenderly.contracts.getBy({
-        network: [],
-      });
+    test('returns 2 contracts, empty array is passed', async () => {
+      const contractsResponse = (
+        await getByTenderly.contracts.getBy({
+          network: [],
+        })
+      ).sort((a, b) => (a.address > b.address ? 1 : -1));
 
-      expect(contractsResponse).resolves.toHaveLength(2);
-      expect(contractsResponse).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            address: beaconDepositContract,
-            displayName: beaconDepositContractDisplayName,
-            tags: beaconDepositContractTags,
-          }),
-          expect.objectContaining({
-            address: bitDAOTreasuryContract,
-            displayName: bitDAOTreasuryContractDisplayName,
-            tags: bitDAOTreasuryContractTags,
-          }),
-        ]),
-      );
+      expect(contractsResponse).toHaveLength(2);
+      expect(contractsResponse[0].address).toEqual(beaconDepositContract);
+      expect(contractsResponse[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contractsResponse[0].tags.sort()).toEqual(beaconDepositContractTags.sort());
+      expect(contractsResponse[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contractsResponse[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contractsResponse[1].tags.sort()).toEqual(bitDAOTreasuryContractTags.sort());
     });
   });
 });

@@ -4,7 +4,7 @@ import { WalletResponse } from '../repositories/wallets/Wallet.response';
 
 type FilterMapKeys = 'displayName' | 'tags' | 'network';
 
-function filterByDisplayName(
+export function filterByDisplayName(
   contractOrWallet: ContractResponse | WalletResponse,
   displayNames?: string | string[],
 ) {
@@ -12,16 +12,22 @@ function filterByDisplayName(
     return true;
   }
 
+  if (displayNames.length === 0) {
+    return true;
+  }
+
   if (typeof contractOrWallet.display_name !== 'string') {
     return false;
   }
 
-  return Array.isArray(displayNames)
-    ? displayNames.some(name => (contractOrWallet.display_name as string).includes(name))
-    : contractOrWallet.display_name.includes(displayNames);
+  if (Array.isArray(displayNames)) {
+    return displayNames.some(name => (contractOrWallet.display_name as string).includes(name));
+  }
+
+  return contractOrWallet.display_name.includes(displayNames);
 }
 
-function filterByTags(
+export function filterByTags(
   contractOrWallet: ContractResponse | WalletResponse,
   tags?: string | string[],
 ) {
@@ -29,12 +35,24 @@ function filterByTags(
     return true;
   }
 
-  return Array.isArray(tags)
-    ? tags.some(tagFromFilter => contractOrWallet.tags.some(({ tag }) => tag === tagFromFilter))
-    : contractOrWallet.tags.some(({ tag }) => tag === tags);
+  if (tags.length === 0) {
+    return true;
+  }
+
+  if (!contractOrWallet.tags) {
+    return false;
+  }
+
+  if (Array.isArray(tags)) {
+    return tags.some(tagFromFilter =>
+      contractOrWallet.tags.some(({ tag }) => tag === tagFromFilter),
+    );
+  }
+
+  return contractOrWallet.tags.some(({ tag }) => tag === tags);
 }
 
-function filterByNetwork(
+export function filterByNetwork(
   contractOrWallet: ContractResponse | WalletResponse,
   networks?: Network | Network[],
 ) {
@@ -42,15 +60,26 @@ function filterByNetwork(
     return true;
   }
 
-  if ('contract' in contractOrWallet) {
-    return Array.isArray(networks)
-      ? networks.some(net => +contractOrWallet.contract.network_id === net)
-      : +contractOrWallet.contract.network_id === networks;
+  if (Array.isArray(networks) && networks.length === 0) {
+    return true;
   }
 
-  return Array.isArray(networks)
-    ? networks.some(network => +contractOrWallet.account.network_id === network)
-    : +contractOrWallet.account.network_id === networks;
+  if (contractOrWallet.account_type === 'contract') {
+    if (Array.isArray(networks)) {
+      return networks.some(net => +contractOrWallet.contract.network_id === net);
+    }
+    return +contractOrWallet.contract.network_id === networks;
+  }
+
+  if (contractOrWallet.account_type === 'wallet') {
+    if (Array.isArray(networks)) {
+      return networks.some(net => +contractOrWallet.account.network_id === net);
+    }
+
+    return +contractOrWallet.account.network_id === networks;
+  }
+
+  return false;
 }
 
 export const contractsOrWalletsFilterMap = new Map<

@@ -1,5 +1,6 @@
 export type ContractResponse = {
   id: string;
+  account_type: 'contract';
   contract: {
     id: string;
     contract_id: string;
