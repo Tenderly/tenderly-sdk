@@ -134,7 +134,7 @@ export class WalletRepository implements Repository<Wallet> {
     }
   };
 
-  getBy = async (queryObject: GetByParams) => {
+  getBy = async (queryObject: GetByParams = {}) => {
     const wallets = await this.api.get<WalletResponse[]>(`
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}

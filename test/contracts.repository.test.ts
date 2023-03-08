@@ -8,7 +8,7 @@ let tenderly: Tenderly = null;
 let rinkebyTenderly: Tenderly = null;
 let getByTenderly: Tenderly = null;
 
-jest.setTimeout(30000);
+jest.setTimeout(20000);
 
 const lidoContract = '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022'.toLowerCase();
 const counterContract = '0x2e4534ad99d5e7fffc9bbe52df69ba8febeb0057'.toLowerCase();
@@ -337,6 +337,20 @@ describe('contract.getBy', () => {
       expect(contracts[0].tags.sort()).toEqual(expect.arrayContaining(beaconDepositContractTags));
     });
 
+    test('returns 2 contracts, when `tag2` matches', async () => {
+      const contracts = (await getByTenderly.contracts.getBy({ tags: [tag2] })).sort(
+        (a, b) => (a.address > b.address ? 1 : -1),
+      );
+
+      expect(contracts).toHaveLength(2);
+      expect(contracts[0].address).toEqual(beaconDepositContract);
+      expect(contracts[0].displayName).toEqual(beaconDepositContractDisplayName);
+      expect(contracts[0].tags.sort()).toEqual(expect.arrayContaining(beaconDepositContractTags));
+      expect(contracts[1].address).toEqual(bitDAOTreasuryContract);
+      expect(contracts[1].displayName).toEqual(bitDAOTreasuryContractDisplayName);
+      expect(contracts[1].tags.sort()).toEqual(expect.arrayContaining(bitDAOTreasuryContractTags));
+    });
+
     test('returns 1 contract, when `tag3` matches', async () => {
       const contracts = await getByTenderly.contracts.getBy({ tags: [tag3] });
 
@@ -374,7 +388,7 @@ describe('contract.getBy', () => {
       expect(contracts[1].tags.sort()).toEqual(expect.arrayContaining(bitDAOTreasuryContractTags));
     });
 
-    test('returns 4 contracts, when no tags are passed', async () => {
+    test('returns 2 contracts, when no tags are passed', async () => {
       const contracts = (await getByTenderly.contracts.getBy()).sort((a, b) =>
         a.address > b.address ? 1 : -1,
       );

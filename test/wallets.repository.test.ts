@@ -11,8 +11,11 @@ const vb3WalletAddress = '0x220866B1A2219f40e72f5c628B65D54268cA3A9D'.toLowerCas
 const geminiContract1WalletAddress = '0x07Ee55aA48Bb72DcC6E9D78256648910De513eca'.toLowerCase();
 const golemMultiSigWalletAddress = '0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9'.toLowerCase();
 const kraken13WalletAddress = '0xDA9dfA130Df4dE4673b89022EE50ff26f6EA73Cf'.toLowerCase();
+const binance7WalletAddress = '0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8'.toLowerCase();
+const binance8WalletAddress = '0xF977814e90dA44bFA03b6295A0616a897441aceC'.toLowerCase();
 
 let tenderly: Tenderly = null;
+let getByTenderly: Tenderly = null;
 
 beforeAll(async () => {
   tenderly = new Tenderly({
@@ -22,11 +25,17 @@ beforeAll(async () => {
     network: Network.MAINNET,
   });
 
+  getByTenderly = tenderly.with({
+    projectName: process.env.TENDERLY_GET_BY_PROJECT_NAME,
+  });
+
   await Promise.all([
     tenderly.wallets.add(liquityActivePoolWallet),
     tenderly.wallets.add(canonicalTransactionChainWalletAddress),
     tenderly.wallets.add(vb3WalletAddress),
     tenderly.wallets.add(golemMultiSigWalletAddress),
+    getByTenderly.wallets.add(binance7WalletAddress),
+    getByTenderly.wallets.add(binance8WalletAddress),
   ]);
 });
 
@@ -37,6 +46,8 @@ afterAll(async () => {
     tenderly.wallets.remove(polygonEtherBridgeWalletAddress),
     tenderly.wallets.remove(vb3WalletAddress),
     tenderly.wallets.remove(golemMultiSigWalletAddress),
+    getByTenderly.wallets.remove(binance7WalletAddress),
+    getByTenderly.wallets.remove(binance8WalletAddress),
   ]);
 });
 
@@ -172,5 +183,238 @@ describe('wallets.update', () => {
         displayName: expect.anything(),
       }),
     );
+  });
+});
+
+describe('wallets.getBy', () => {
+  const binance7WalletDisplayName = 'Binance7';
+  const binance8WalletDisplayName = 'Binance8';
+  const tag1 = 'Tag1';
+  const tag2 = 'Tag2';
+  const tag3 = 'Tag3';
+  const binance7WalletTags = [tag1, tag2];
+  const binance8WalletTags = [tag2, tag3];
+
+  beforeAll(async () => {
+    await Promise.all([
+      getByTenderly.wallets.update(binance7WalletAddress, {
+        displayName: binance7WalletDisplayName,
+        appendTags: binance7WalletTags,
+      }),
+      getByTenderly.wallets.update(binance8WalletAddress, {
+        displayName: binance8WalletDisplayName,
+        appendTags: binance8WalletTags,
+      }),
+    ]);
+  });
+
+  describe('tags', () => {
+    test('returns 1 wallet, when 1 tag matches (passed as 1 string, not an array)', async () => {
+      const wallets = await getByTenderly.wallets.getBy({ tags: tag1 });
+
+      expect(wallets).toHaveLength(1);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+    });
+
+    test('returns 0 wallets, when no tags match', async () => {
+      const wallets = await getByTenderly.wallets.getBy({ tags: 'Tag4' });
+
+      expect(wallets).toHaveLength(0);
+    });
+
+    test('returns 1 wallet, when `tag1` matches', async () => {
+      const wallets = await getByTenderly.wallets.getBy({ tags: [tag1] });
+
+      expect(wallets).toHaveLength(1);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+    });
+
+    test('returns 2 wallets, when `tag2` matches', async () => {
+      const wallets = (await getByTenderly.wallets.getBy({ tags: [tag2] })).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
+      );
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+
+    test('returns 1 wallet, when `tag3` matches', async () => {
+      const wallets = await getByTenderly.wallets.getBy({ tags: [tag3] });
+
+      expect(wallets).toHaveLength(1);
+      expect(wallets[0].address).toEqual(binance8WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+
+    test('returns 2 wallets, when any of 3 tags match', async () => {
+      const wallets = (await getByTenderly.wallets.getBy({ tags: [tag1, tag2, tag3] })).sort(
+        (a, b) => (a.address > b.address ? 1 : -1),
+      );
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+
+    test("returns 2 wallets, when both tags that don't overlap are passed", async () => {
+      const wallets = (await getByTenderly.wallets.getBy({ tags: [tag1, tag3] })).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
+      );
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+
+    test('returns 2 wallets, when no tags are passed', async () => {
+      const wallets = (await getByTenderly.wallets.getBy()).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
+      );
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+
+    test('returns 2 wallets, when empty array is passed', async () => {
+      const wallets = (await getByTenderly.wallets.getBy({ tags: [] })).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
+      );
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+  });
+
+  describe('displayName', () => {
+    test('returns 1 wallet, when displayName matches', async () => {
+      const wallets = await getByTenderly.wallets.getBy({
+        displayName: binance7WalletDisplayName,
+      });
+
+      expect(wallets).toHaveLength(1);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+    });
+
+    test('returns 0 wallets, when displayName does not match', async () => {
+      const wallets = await getByTenderly.wallets.getBy({
+        displayName: 'non existing display name',
+      });
+
+      expect(wallets).toHaveLength(0);
+    });
+
+    test('returns 2 contracts, when displayName is not passed', async () => {
+      const wallets = (await getByTenderly.wallets.getBy()).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
+      );
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+
+    test('returns 2 contracts, when both displayNames match', async () => {
+      const wallets = (
+        await getByTenderly.wallets.getBy({
+          displayName: [binance7WalletDisplayName, binance8WalletDisplayName],
+        })
+      ).sort((a, b) => (a.address > b.address ? 1 : -1));
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+  });
+
+  describe('network', () => {
+    test('returns 2 wallets, when network matches', async () => {
+      const wallets = (await getByTenderly.wallets.getBy({
+        network: Network.MAINNET,
+      })).sort((a, b) => (a.address > b.address ? 1 : -1));
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+
+    test('returns 0 wallets, when network does not match', async () => {
+      const wallets = await getByTenderly.wallets.getBy({
+        network: Network.ROPSTEN,
+      });
+
+      expect(wallets).toHaveLength(0);
+    });
+
+    test('returns 2 wallets, when network is not passed', async () => {
+      const wallets = (await getByTenderly.wallets.getBy()).sort((a, b) =>
+        a.address > b.address ? 1 : -1,
+      );
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
+
+    test('returns 2 contracts, when empty array is passed', async () => {
+      const wallets = (
+        await getByTenderly.wallets.getBy({
+          network: [],
+        })
+      ).sort((a, b) => (a.address > b.address ? 1 : -1));
+
+      expect(wallets).toHaveLength(2);
+      expect(wallets[0].address).toEqual(binance7WalletAddress);
+      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1].address).toEqual(binance8WalletAddress);
+      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+    });
   });
 });
