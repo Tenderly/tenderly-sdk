@@ -24,10 +24,14 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
-    - name: 'Create env file'
-      run: |
-        echo "${{ secrets.ENV_FILE }}" > .env
     - run: npm install -g yarn
     - run: yarn
     - run: yarn build
-    - run: yarn test
+    - name: Run tests
+      run: yarn test
+      env:
+        TENDERLY_ACCESS_KEY: ${{secrets.TENDERLY_ACCESS_KEY}}
+        TENDERLY_ACCOUNT_NAME: ${{secrets.TENDERLY_ACCOUNT_NAME}}
+        TENDERLY_PROJECT_NAME: ${{secrets.TENDERLY_PROJECT_NAME}}
+        TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
+        
