@@ -44,94 +44,78 @@ export class ContractRepository implements Repository<Contract> {
   }
 
   get = async (address: string) => {
-    try {
-      const { data } = await this.api.get<ContractResponse>(`
+    const { data } = await this.api.get<ContractResponse>(`
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /contract/${this.configuration.network}/${address}
     `);
 
-      return mapContractResponseToContractModel(data);
-    } catch (error) {
-      console.error(`Error (${address}): `, error?.response?.data);
-    }
+    return mapContractResponseToContractModel(data);
   };
 
   add = async (address: string, contractData: Partial<Omit<Contract, 'address'>> = {}) => {
-    try {
-      const { data } = await this.api.post<ContractRequest, ContractResponse>(
-        `
+    const { data } = await this.api.post<ContractRequest, ContractResponse>(
+      `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /address
       `,
-        mapContractModelToContractRequest({
-          address,
-          network: this.configuration.network,
-          ...contractData,
-        }),
-      );
+      mapContractModelToContractRequest({
+        address,
+        network: this.configuration.network,
+        ...contractData,
+      }),
+    );
 
-      return mapContractResponseToContractModel(data);
-    } catch (error) {
-      console.error('Error: ', error?.response?.data);
-    }
+    return mapContractResponseToContractModel(data);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   remove = async (address: string) => {
-    try {
-      await this.api.delete(
-        `
+    await this.api.delete(
+      `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /contract/${this.configuration.network}/${address}
       `,
-      );
-    } catch (error) {
-      console.error('Error: ', error?.response?.data);
-    }
+    );
   };
+
   update = async (address: string, payload: UpdateContractRequest) => {
-    try {
-      let promiseArray = payload.appendTags?.map(tag =>
-        this.api.post(
-          `
+    let promiseArray = payload.appendTags?.map(tag =>
+      this.api.post(
+        `
           /account/${this.configuration.accountName}
           /project/${this.configuration.projectName}
           /tag
         `,
-          {
-            contract_ids: [`eth:${this.configuration.network}:${address}`],
-            tag,
-          },
-        ),
-      );
+        {
+          contract_ids: [`eth:${this.configuration.network}:${address}`],
+          tag,
+        },
+      ),
+    );
 
-      promiseArray ||= [];
+    promiseArray ||= [];
 
-      if (payload.displayName) {
-        promiseArray.push(
-          this.api.post(
-            `
+    if (payload.displayName) {
+      promiseArray.push(
+        this.api.post(
+          `
             /account/${this.configuration.accountName}
             /project/${this.configuration.projectName}
             /contract/${this.configuration.network}/${address}
             /rename
           `,
-            { display_name: payload.displayName },
-          ),
-        );
-      }
-
-      await Promise.all(promiseArray);
-
-      return this.get(address);
-    } catch (error) {
-      // console.error('Error: ', error);
-      console.error('Error: ', error?.response?.data);
+          { display_name: payload.displayName },
+        ),
+      );
     }
+
+    await Promise.all(promiseArray);
+
+    return this.get(address);
   };
+
   getBy = async (queryObject: GetByParams = {}) => {
     const contracts = await this.api.get<ContractResponse[]>(`
       /account/${this.configuration.accountName}
@@ -145,7 +129,6 @@ export class ContractRepository implements Repository<Contract> {
       contractsOrWalletsFilterMap,
     ).map(mapContractResponseToContractModel);
 
-    // console.log('retVal', JSON.stringify(retVal, null, 2));
     return retVal;
   };
 

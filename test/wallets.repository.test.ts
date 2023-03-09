@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import * as dotenv from 'dotenv';
 import { Tenderly, Network } from '../lib';
 
@@ -7,7 +8,6 @@ const liquityActivePoolWallet = '0xDf9Eb223bAFBE5c5271415C75aeCD68C21fE3D7F'.toL
 const canonicalTransactionChainWalletAddress =
   '0x5E4e65926BA27467555EB562121fac00D24E9dD2'.toLowerCase();
 const polygonEtherBridgeWalletAddress = '0x8484Ef722627bf18ca5Ae6BcF031c23E6e922B30'.toLowerCase();
-// const vb3WalletAddress = '0x220866B1A2219f40e72f5c628B65D54268cA3A9D'.toLowerCase();
 const geminiContract1WalletAddress = '0x07Ee55aA48Bb72DcC6E9D78256648910De513eca'.toLowerCase();
 const golemMultiSigWalletAddress = '0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9'.toLowerCase();
 const kraken13WalletAddress = '0xDA9dfA130Df4dE4673b89022EE50ff26f6EA73Cf'.toLowerCase();
@@ -32,7 +32,6 @@ beforeAll(async () => {
   await Promise.all([
     tenderly.wallets.add(liquityActivePoolWallet),
     tenderly.wallets.add(canonicalTransactionChainWalletAddress),
-    // tenderly.wallets.add(vb3WalletAddress),
     tenderly.wallets.add(golemMultiSigWalletAddress),
     getByTenderly.wallets.add(binance7WalletAddress),
     getByTenderly.wallets.add(binance8WalletAddress),
@@ -44,7 +43,6 @@ afterAll(async () => {
     tenderly.wallets.remove(liquityActivePoolWallet),
     tenderly.wallets.remove(canonicalTransactionChainWalletAddress),
     tenderly.wallets.remove(polygonEtherBridgeWalletAddress),
-    // tenderly.wallets.remove(vb3WalletAddress),
     tenderly.wallets.remove(golemMultiSigWalletAddress),
     getByTenderly.wallets.remove(binance7WalletAddress),
     getByTenderly.wallets.remove(binance8WalletAddress),
@@ -61,28 +59,32 @@ describe('wallets.add', () => {
   });
 
   test('succesfuly adds wallet', async () => {
-    const walletResponse = await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
+    const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
 
-    expect(walletResponse.address).toEqual(polygonEtherBridgeWalletAddress);
+    expect(wallet.address).toEqual(polygonEtherBridgeWalletAddress);
   });
 
   test('adding wallet data will successfuly update wallet', async () => {
-    const walletResponse = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
+    const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
       displayName: 'VB3',
       tags: ['tag1', 'tag2'],
     });
 
-    expect(walletResponse.address).toEqual(polygonEtherBridgeWalletAddress);
-    expect(walletResponse.displayName).toEqual('VB3');
+    expect(wallet.address).toEqual(polygonEtherBridgeWalletAddress);
+    expect(wallet.displayName).toEqual('VB3');
     // tags don't work yet
     // expect(walletResponse.tags.sort()).toEqual(['tag1', 'tag2']);
   });
 
   test('returns undefined if wallet exists', async () => {
     await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
-    const walletResponse = tenderly.wallets.add(polygonEtherBridgeWalletAddress);
+    const wallet = tenderly.wallets.add(polygonEtherBridgeWalletAddress);
 
-    await expect(walletResponse).resolves.toBeUndefined();
+    await expect(wallet).rejects.toThrowError(AxiosError);
+    await wallet.catch(error => {
+      expect(error.response.status).toEqual(400);
+      expect(error.response.data.error.slug).toEqual('already_added');
+    });
   });
 });
 
@@ -114,7 +116,11 @@ describe('wallets.get', () => {
   test("returns undefined value if wallet doesn't exist", async () => {
     const walletResponse = tenderly.wallets.get('0xfake_wallet_address');
 
-    await expect(walletResponse).resolves.toBeFalsy();
+    await expect(walletResponse).rejects.toThrowError(AxiosError);
+    await walletResponse.catch(error => {
+      expect(error.response.status).toEqual(400);
+      expect(error.response.data.error.slug).toEqual('non_existing_account');
+    });
   });
 });
 
@@ -132,50 +138,34 @@ describe('wallets.update', () => {
   });
 
   test("doesn't throw an error when called correctly", async () => {
-    const updateWalletResponse = tenderly.wallets.update(kraken13WalletAddress, {
+    const wallet = await tenderly.wallets.update(kraken13WalletAddress, {
       displayName,
       appendTags: [tag1, tag2],
     });
 
-    await expect(updateWalletResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: kraken13WalletAddress,
-        displayName,
-        tags: expect.arrayContaining([tag1]),
-      }),
-    );
+    expect(wallet.address).toEqual(kraken13WalletAddress);
+    expect(wallet.displayName).toEqual(displayName);
+    expect(wallet.tags.sort()).toEqual(expect.arrayContaining([tag1, tag2]));
   });
 
   test('updates only displayName', async () => {
-    const walletResponse = tenderly.wallets.update(kraken13WalletAddress, {
+    const wallet = await tenderly.wallets.update(kraken13WalletAddress, {
       displayName,
     });
 
-    await expect(walletResponse).resolves.toBeDefined();
-    await expect(walletResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: kraken13WalletAddress,
-        displayName,
-      }),
-    );
+    expect(wallet.address).toEqual(kraken13WalletAddress);
+    expect(wallet.displayName).toEqual(displayName);
+    expect(wallet.tags).toBeUndefined();
   });
 
   test('updates only tags', async () => {
-    const walletResponse = tenderly.wallets.update(kraken13WalletAddress, {
+    const wallet = await tenderly.wallets.update(kraken13WalletAddress, {
       appendTags: [tag1, tag2],
     });
 
-    await expect(walletResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: kraken13WalletAddress,
-        tags: expect.arrayContaining([tag1, tag2]),
-      }),
-    );
-    await expect(walletResponse).resolves.not.toBe(
-      expect.objectContaining({
-        displayName: expect.anything(),
-      }),
-    );
+    expect(wallet.address).toEqual(kraken13WalletAddress);
+    expect(wallet.displayName).toBeUndefined();
+    expect(wallet.tags.sort()).toEqual(expect.arrayContaining([tag1, tag2]));
   });
 });
 

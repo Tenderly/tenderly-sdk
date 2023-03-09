@@ -60,13 +60,9 @@ describe('contracts.add', () => {
   });
 
   test('successfully adds contract', async () => {
-    const lidoContractResponse = tenderly.contracts.add(lidoContract);
+    const contract = await tenderly.contracts.add(lidoContract);
 
-    await expect(lidoContractResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: lidoContract,
-      }),
-    );
+    expect(contract.address).toEqual(lidoContract);
   });
 
   test('adding contract data will successfuly update contract', async () => {
@@ -84,45 +80,41 @@ describe('contracts.add', () => {
 
   test('returns contract, if it already exists', async () => {
     await tenderly.contracts.add(lidoContract);
-    const lidoContractResponse = tenderly.contracts.add(lidoContract);
+    const contract = await tenderly.contracts.add(lidoContract);
 
-    await expect(lidoContractResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: lidoContract,
-      }),
-    );
+    expect(contract.address).toEqual(lidoContract);
   });
 });
 
 describe('contracts.remove', () => {
   test('returns falsy value if contract exists', async () => {
-    const removeContractResponse = tenderly.contracts.remove(arbitrumBridgeContract);
+    const removeContractResponse = await tenderly.contracts.remove(arbitrumBridgeContract);
 
-    await expect(removeContractResponse).resolves.toBeFalsy();
+    expect(removeContractResponse).toBeFalsy();
   });
 
   test("returns false value if contract doesn't exist", async () => {
-    const removeContractResponse = tenderly.contracts.remove('0xfake_contract_address');
+    const removeContractResponse = await tenderly.contracts.remove('0xfake_contract_address');
 
-    await expect(removeContractResponse).resolves.toBeFalsy();
+    expect(removeContractResponse).toBeFalsy();
   });
 });
 
 describe('contracts.get', () => {
   test('returns contract if it exists', async () => {
-    const contractResponse = tenderly.contracts.get(kittyCoreContract);
+    const contract = await tenderly.contracts.get(kittyCoreContract);
 
-    await expect(contractResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: kittyCoreContract,
-      }),
-    );
+    expect(contract.address).toEqual(kittyCoreContract);
   });
 
   test('returns undefined if contract does not exist', async () => {
-    const contractResponse = tenderly.contracts.get('0xfake_contract_address');
+    const contract = tenderly.contracts.get('0xfake_contract_address');
 
-    await expect(contractResponse).resolves.toBeUndefined();
+    await expect(contract).rejects.toThrowError(AxiosError);
+    await contract.catch(error => {
+      expect(error.response.status).toEqual(400);
+      expect(error.response.data.error.slug).toEqual('non_existing_contract');
+    });
   });
 });
 
@@ -136,51 +128,33 @@ describe('contracts.update', () => {
   });
 
   test("doesn't throw an error when called correctly", async () => {
-    const updateContractResponse = tenderly.contracts.update(wrappedEtherContract, {
+    const contract = await tenderly.contracts.update(wrappedEtherContract, {
       displayName: 'NewDisplayName',
       appendTags: ['NewTag', 'NewTag2'],
     });
 
-    await expect(updateContractResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: wrappedEtherContract,
-        displayName: 'NewDisplayName',
-        tags: expect.arrayContaining(['NewTag', 'NewTag2']),
-      }),
-    );
+    expect(contract.address).toEqual(wrappedEtherContract);
+    expect(contract.displayName).toEqual('NewDisplayName');
+    expect(contract.tags.sort()).toEqual(['NewTag', 'NewTag2']);
   });
 
   test('updates only displayName', async () => {
-    const contractResponse = tenderly.contracts.update(wrappedEtherContract, {
+    const contractResponse = await tenderly.contracts.update(wrappedEtherContract, {
       displayName: 'NewDisplayName',
     });
 
-    await expect(contractResponse).resolves.toBeDefined();
-    await expect(contractResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: wrappedEtherContract,
-        displayName: 'NewDisplayName',
-      }),
-    );
+    expect(contractResponse.address).toEqual(wrappedEtherContract);
+    expect(contractResponse.displayName).toEqual('NewDisplayName');
   });
 
   test('updates only tags', async () => {
-    const contractResponse = tenderly.contracts.update(wrappedEtherContract, {
+    const contract = await tenderly.contracts.update(wrappedEtherContract, {
       appendTags: ['NewTag', 'NewTag2'],
     });
 
-    await expect(contractResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: wrappedEtherContract,
-        tags: expect.arrayContaining(['NewTag', 'NewTag2']),
-      }),
-    );
-    // expect display name to be 'NewDisplayName' or not defined
-    await expect(contractResponse).resolves.not.toBe(
-      expect.objectContaining({
-        displayName: expect.anything(),
-      }),
-    );
+    expect(contract.address).toEqual(wrappedEtherContract);
+    expect(contract.tags.sort()).toEqual(['NewTag', 'NewTag2']);
+    expect(contract.displayName).toBeUndefined();
   });
 });
 
@@ -318,9 +292,9 @@ describe('contract.getBy', () => {
     });
 
     test('returns 0 contracts, when no tags match', async () => {
-      const contractsResponse = getByTenderly.contracts.getBy({ tags: ['non existing tag'] });
+      const contracts = await getByTenderly.contracts.getBy({ tags: ['non existing tag'] });
 
-      await expect(contractsResponse).resolves.toHaveLength(0);
+      expect(contracts).toHaveLength(0);
     });
 
     test('returns 1 contract, when `tag1` matches', async () => {
