@@ -3,8 +3,11 @@ import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
 import { Wallet } from './Wallet.model';
 import { WalletResponse } from './Wallet.response';
-import { WalletRequest } from './Wallet.request';
+import { GetByParams } from '../contracts/Contract.request';
 import { UpdateWalletRequest } from './UpdateWallet.request';
+import { WalletRequest } from './Wallet.request';
+import { filterEntities } from '../../filters';
+import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 
 function mapWalletResponseToWalletModel(walletResponse: WalletResponse) {
   const retVal: Wallet = {
@@ -26,7 +29,7 @@ function mapWalletResponseToWalletModel(walletResponse: WalletResponse) {
 function mapWalletModelToWalletRequest(wallet: Partial<Wallet>): WalletRequest {
   return {
     address: wallet.address,
-    display_name: wallet?.displayName,
+    display_name: wallet.displayName,
     network_ids: [`${wallet.network}`],
   };
 }
@@ -41,98 +44,89 @@ export class WalletRepository implements Repository<Wallet> {
   }
 
   get = async (address: string) => {
-    try {
-      const { data } = await this.api.get<WalletResponse>(`
+    const { data } = await this.api.get<WalletResponse>(`
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /wallet/${address}
       /network/${this.configuration.network}
     `);
 
-      return mapWalletResponseToWalletModel(data);
-    } catch (error) {
-      console.error('Error: ', error);
-    }
+    return mapWalletResponseToWalletModel(data);
   };
 
   add = async (address: string, walletData?: Partial<Wallet>) => {
-    try {
-      const { data } = await this.api.post<WalletRequest, WalletResponse>(
-        `
+    const { data } = await this.api.post<WalletRequest, WalletResponse>(
+      `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /wallet
       `,
-        mapWalletModelToWalletRequest({
-          address,
-          network: this.configuration.network,
-          ...walletData,
-        }),
-      );
+      mapWalletModelToWalletRequest({
+        address,
+        network: this.configuration.network,
+        ...walletData,
+      }),
+    );
 
-      return mapWalletResponseToWalletModel(data[0]);
-    } catch (error) {
-      console.error('Error: ', error);
-    }
+    return mapWalletResponseToWalletModel(data[0]);
   };
 
   remove = async (address: string) => {
-    try {
-      await this.api.delete(
-        `
+    await this.api.delete(
+      `
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /contracts
       `,
-        { account_ids: [`eth:${this.configuration.network}:${address}`] },
-      );
-    } catch (error) {
-      console.error('Error: ', error);
-    }
+      { account_ids: [`eth:${this.configuration.network}:${address}`] },
+    );
   };
 
   update = async (address: string, payload: UpdateWalletRequest) => {
-    try {
-      let promiseArray = payload.appendTags?.map(tag =>
-        this.api.post(
-          `
+    let promiseArray = payload.appendTags?.map(tag =>
+      this.api.post(
+        `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /tag
       `,
-          {
-            contract_ids: [`eth:${this.configuration.network}:${address}`],
-            tag,
-          },
-        ),
-      );
+        {
+          contract_ids: [`eth:${this.configuration.network}:${address}`],
+          tag,
+        },
+      ),
+    );
 
-      promiseArray ||= [];
+    promiseArray ||= [];
 
-      if (payload.displayName) {
-        promiseArray.push(
-          this.api.post(
-            `
+    if (payload.displayName) {
+      promiseArray.push(
+        this.api.post(
+          `
             /account/${this.configuration.accountName}
             /project/${this.configuration.projectName}
             /contract/${this.configuration.network}/${address}
             /rename
           `,
-            { display_name: payload.displayName },
-          ),
-        );
-      }
-
-      await Promise.all(promiseArray);
-
-      return this.get(address);
-    } catch (error) {
-      console.error('Error: ', error);
+          { display_name: payload.displayName },
+        ),
+      );
     }
+
+    await Promise.all(promiseArray);
+
+    return this.get(address);
   };
 
-  getBy = (queryObject: Partial<Wallet>) =>
-    new Promise((resolve: (x: Wallet) => void) => {
-      resolve(queryObject as Wallet);
-    });
+  getBy = async (queryObject: GetByParams = {}) => {
+    const wallets = await this.api.get<WalletResponse[]>(`
+      /account/${this.configuration.accountName}
+      /project/${this.configuration.projectName}
+      /contracts?accountType=wallet
+    `);
+
+    return filterEntities(wallets.data, queryObject, contractsOrWalletsFilterMap).map(
+      mapWalletResponseToWalletModel,
+    );
+  };
 }

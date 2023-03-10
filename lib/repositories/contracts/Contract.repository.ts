@@ -5,6 +5,9 @@ import { ApiClient } from '../../core/ApiClient';
 import { ContractRequest } from './Contract.request';
 import { Contract } from './Contract.model';
 import { UpdateContractRequest } from './UpdateContract.request';
+import { GetByParams } from './Contract.request';
+import { filterEntities } from '../../filters';
+import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): Contract {
   const retVal: Contract = {
@@ -27,6 +30,7 @@ function mapContractModelToContractRequest(contract: Contract): ContractRequest 
   return {
     address: contract.address,
     network_id: `${contract.network}`,
+    display_name: contract.displayName,
   };
 }
 
@@ -40,121 +44,118 @@ export class ContractRepository implements Repository<Contract> {
   }
 
   get = async (address: string) => {
-    try {
-      const { data } = await this.api.get<ContractResponse>(`
+    const { data } = await this.api.get<ContractResponse>(`
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /contract/${this.configuration.network}/${address}
     `);
 
-      return mapContractResponseToContractModel(data);
-    } catch (error) {
-      console.error('Error: ', error);
-    }
+    return mapContractResponseToContractModel(data);
   };
 
-  add = async (address: string, contractData?: Contract) => {
-    try {
-      const { data } = await this.api.post<ContractRequest, ContractResponse>(
-        `
+  add = async (address: string, contractData: Partial<Omit<Contract, 'address'>> = {}) => {
+    const { data } = await this.api.post<ContractRequest, ContractResponse>(
+      `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /address
       `,
-        mapContractModelToContractRequest({
-          address,
-          network: this.configuration.network,
-          ...contractData,
-        }),
-      );
+      mapContractModelToContractRequest({
+        address,
+        network: this.configuration.network,
+        ...contractData,
+      }),
+    );
 
-      return mapContractResponseToContractModel(data);
-    } catch (error) {
-      console.error('Error: ', error);
-    }
+    return mapContractResponseToContractModel(data);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   remove = async (address: string) => {
-    try {
-      await this.api.delete(
-        `
+    await this.api.delete(
+      `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /contract/${this.configuration.network}/${address}
       `,
-      );
-    } catch (error) {
-      console.error('Error: ', error);
-    }
+    );
   };
+
   update = async (address: string, payload: UpdateContractRequest) => {
-    try {
-      let promiseArray = payload.appendTags?.map(tag =>
-        this.api.post(
-          `
+    let promiseArray = payload.appendTags?.map(tag =>
+      this.api.post(
+        `
           /account/${this.configuration.accountName}
           /project/${this.configuration.projectName}
           /tag
         `,
-          {
-            contract_ids: [`eth:${this.configuration.network}:${address}`],
-            tag,
-          },
-        ),
-      );
+        {
+          contract_ids: [`eth:${this.configuration.network}:${address}`],
+          tag,
+        },
+      ),
+    );
 
-      promiseArray ||= [];
+    promiseArray ||= [];
 
-      if (payload.displayName) {
-        promiseArray.push(
-          this.api.post(
-            `
+    if (payload.displayName) {
+      promiseArray.push(
+        this.api.post(
+          `
             /account/${this.configuration.accountName}
             /project/${this.configuration.projectName}
             /contract/${this.configuration.network}/${address}
             /rename
           `,
-            { display_name: payload.displayName },
-          ),
-        );
-      }
-
-      await Promise.all(promiseArray);
-
-      return this.get(address);
-    } catch (error) {
-      console.error('Error: ', error);
+          { display_name: payload.displayName },
+        ),
+      );
     }
+
+    await Promise.all(promiseArray);
+
+    return this.get(address);
   };
-  getBy = (queryObject: Partial<Contract>) =>
-    new Promise((resolve: (x: Contract) => void) => {
-      resolve(queryObject as Contract);
-    });
+
+  getBy = async (queryObject: GetByParams = {}) => {
+    const contracts = await this.api.get<ContractResponse[]>(`
+      /account/${this.configuration.accountName}
+      /project/${this.configuration.projectName}
+      /contracts
+    `);
+
+    const retVal = filterEntities<ContractResponse>(
+      contracts.data,
+      queryObject,
+      contractsOrWalletsFilterMap,
+    ).map(mapContractResponseToContractModel);
+
+    return retVal;
+  };
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     const result = await this.api.post(
-      `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`, {
-      config: {
-        optimization_count:
-          verificationRequest.solc.compiler.settings.optimizer.enabled
+      `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,
+      {
+        config: {
+          optimization_count: verificationRequest.solc.compiler.settings.optimizer.enabled
             ? verificationRequest.solc.compiler.settings.optimizer.runs
             : null,
-
-      }, contracts: Object.keys(verificationRequest.solc.sources).map((path: string) => ({
-        contractName: verificationRequest.solc.sources[path].name,
-        source: verificationRequest.solc.sources[path].source,
-        sourcePath: path,
-        networks: {
-          [this.configuration.network]: { address: address, links: {} }
         },
-        compiler: {
-          name: 'solc',
-          version: verificationRequest.solc.compiler.version,
-        }
-      }))
-    });
+        contracts: Object.keys(verificationRequest.solc.sources).map((path: string) => ({
+          contractName: verificationRequest.solc.sources[path].name,
+          source: verificationRequest.solc.sources[path].source,
+          sourcePath: path,
+          networks: {
+            [this.configuration.network]: { address: address, links: {} },
+          },
+          compiler: {
+            name: 'solc',
+            version: verificationRequest.solc.compiler.version,
+          },
+        })),
+      },
+    );
 
     return result;
-  };
+  }
 }

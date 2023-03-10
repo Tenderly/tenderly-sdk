@@ -1,5 +1,6 @@
 export type WalletResponse = {
   id: string;
+  account_type: 'wallet';
   display_name: string;
   account: {
     id: string;
