@@ -1,8 +1,5 @@
 import { AxiosError } from 'axios';
-import * as dotenv from 'dotenv';
 import { Tenderly, Network, SolidityCompilerVersions } from '../lib';
-
-dotenv.config();
 
 let tenderly: Tenderly = null;
 let rinkebyTenderly: Tenderly = null;

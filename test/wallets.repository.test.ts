@@ -1,10 +1,7 @@
 import { AxiosError } from 'axios';
-import * as dotenv from 'dotenv';
 import { Tenderly, Network } from '../lib';
 
-dotenv.config();
-
-const liquityActivePoolWallet = '0xDf9Eb223bAFBE5c5271415C75aeCD68C21fE3D7F'.toLowerCase();
+const liquidityActivePoolWallet = '0xDf9Eb223bAFBE5c5271415C75aeCD68C21fE3D7F'.toLowerCase();
 const canonicalTransactionChainWalletAddress =
   '0x5E4e65926BA27467555EB562121fac00D24E9dD2'.toLowerCase();
 const polygonEtherBridgeWalletAddress = '0x8484Ef722627bf18ca5Ae6BcF031c23E6e922B30'.toLowerCase();
@@ -30,7 +27,7 @@ beforeAll(async () => {
   });
 
   await Promise.all([
-    tenderly.wallets.add(liquityActivePoolWallet),
+    tenderly.wallets.add(liquidityActivePoolWallet),
     tenderly.wallets.add(canonicalTransactionChainWalletAddress),
     tenderly.wallets.add(golemMultiSigWalletAddress),
     getByTenderly.wallets.add(binance7WalletAddress),
@@ -40,7 +37,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await Promise.all([
-    tenderly.wallets.remove(liquityActivePoolWallet),
+    tenderly.wallets.remove(liquidityActivePoolWallet),
     tenderly.wallets.remove(canonicalTransactionChainWalletAddress),
     tenderly.wallets.remove(polygonEtherBridgeWalletAddress),
     tenderly.wallets.remove(golemMultiSigWalletAddress),

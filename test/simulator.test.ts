@@ -1,7 +1,5 @@
-import * as dotenv from 'dotenv';
 import { Network, Tenderly } from '../lib';
 import { Interface } from 'ethers';
-dotenv.config();
 
 let tenderly: Tenderly = null;
 
