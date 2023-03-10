@@ -3,6 +3,7 @@ node_modules
 
 coverage
 
+# I think we should ignore the whole .vscode folder ?
 .vscode/settings.json
 .idea
 .env
