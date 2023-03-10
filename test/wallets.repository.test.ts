@@ -64,6 +64,7 @@ describe('wallets.add', () => {
     expect(wallet.address).toEqual(polygonEtherBridgeWalletAddress);
   });
 
+  // Also, here was the initial plan to only have displayName without tags, and adding a wallet that already exists in the project should throw an error.
   test('adding wallet data will successfuly update wallet', async () => {
     const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
       displayName: 'VB3',

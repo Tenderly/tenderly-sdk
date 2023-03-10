@@ -132,6 +132,7 @@ export class ContractRepository implements Repository<Contract> {
     return retVal;
   };
 
+  // There is a newer version of this route that we can use
   async verify(address: string, verificationRequest: VerificationRequest) {
     const result = await this.api.post(
       `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,

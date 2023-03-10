@@ -26,8 +26,9 @@ beforeAll(async () => {
     network: Network.MAINNET,
   });
 
-  rinkebyTenderly = tenderly.with({ network: Network.RINKEBY });
+  rinkebyTenderly = tenderly.withNetwork(Network.RINKEBY);
 
+  // there shouldn't be a way to override the accountName or projectName
   getByTenderly = tenderly.with({ projectName: process.env.TENDERLY_GET_BY_PROJECT_NAME });
 
   await Promise.all([
@@ -65,6 +66,9 @@ describe('contracts.add', () => {
     expect(contract.address).toEqual(lidoContract);
   });
 
+  // Initial idea for contracts.add wasn't to update if the contract already exists and contract data is provided
+  // Initial idea was to only have displayName as parameter so the displayName could be initially set during contract adding
+  // I don't think we should override network and tags here, contracts.update should be used for that
   test('adding contract data will successfuly update contract', async () => {
     const lidoContractResponse = await tenderly.contracts.add(lidoContract, {
       displayName: 'Lido',
@@ -93,6 +97,7 @@ describe('contracts.remove', () => {
     expect(removeContractResponse).toBeFalsy();
   });
 
+  // This should throw an error if contract doesn't exist, or not? It's up for debate
   test("returns false value if contract doesn't exist", async () => {
     const removeContractResponse = await tenderly.contracts.remove('0xfake_contract_address');
 
