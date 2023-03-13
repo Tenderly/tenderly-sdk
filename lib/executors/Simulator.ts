@@ -1,7 +1,10 @@
 import { ApiClient } from "../core/ApiClient";
-import { TenderlyConfiguration, TransactionParameters } from "../models";
-import { SimulationRequest } from "./Simulation.request";
-import { SimulationResponse } from "./Simulation.response";
+import {
+  SimulationDetails,
+  SimulationRequest,
+  SimulationResponse
+} from "./Simulator.models";
+import { TenderlyConfiguration } from '../models';
 
 export class Simulator {
   api: ApiClient;
@@ -17,11 +20,7 @@ export class Simulator {
       transaction,
       blockNumber,
       override
-    }: {
-      transaction: TransactionParameters,
-      blockNumber?: number,
-      override?: Record<string, unknown>
-    }): Promise<SimulationResponse['transaction']> {
+    }: SimulationDetails): Promise<SimulationResponse['transaction']> {
     try {
       const { data } = await this.api.post<SimulationRequest, SimulationResponse>(`
         /account/${this.configuration.accountName}
@@ -37,6 +36,32 @@ export class Simulator {
       });
 
       return data.transaction;
+    } catch (error) {
+      console.error('Error: ', error);
+    }
+  }
+
+  async simulateBundle(simulationDetailsArray: SimulationDetails[]) {
+    try {
+      const { data } = await this.api.post<
+        { simulations: SimulationRequest[] },
+        { simulation_results: SimulationResponse[] }>(`
+        /account/${this.configuration.accountName}
+        /project/${this.configuration.projectName}
+        /simulate-batch
+        `, {
+
+          simulations: simulationDetailsArray.map((simulationDetails) => ({
+            block_number: simulationDetails.blockNumber,
+            from: simulationDetails.transaction.from,
+            to: simulationDetails.transaction.to,
+            input: simulationDetails.transaction.input,
+            state_objects: simulationDetails.override,
+            network_id: `${this.configuration.network}`,
+          }))
+        });
+
+      return data;
     } catch (error) {
       console.error('Error: ', error);
     }
