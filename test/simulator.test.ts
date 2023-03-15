@@ -74,16 +74,16 @@ test('simulateTransaction works', async () => {
     blockNumber: 12354651,
     override: {
       [counterContract]: {
-        "storage": {
-          "0x0000000000000000000000000000000000000000000000000000000000000000":
-            "0x0000000000000000000000000000000000000000000000000000000000000009"
+        "value": {
+          "count":
+            "66"
         }
       }
     }
   });
 
   expect(transaction.timestamp).toBeDefined();
-  expect(transaction.transaction_info.state_diff[0].dirty).toBe("10");
+  expect(transaction.transaction_info.state_diff[0].dirty).toBe("67");
 
 });
 
@@ -98,16 +98,17 @@ test('simulateBundle works', async () => {
       blockNumber: 12354651,
       override: {
         [counterContract]: {
-          "storage": {
-            "0x0000000000000000000000000000000000000000000000000000000000000000":
-              "0x0000000000000000000000000000000000000000000000000000000000000009"
+          "value": {
+            "count":
+              "66"
           }
         }
       }
     }]
   );
+  console.log("sbr:", JSON.stringify(simulationBundleResult));
 
-  expect(simulationBundleResult.simulation_results[0].transaction.transaction_info.state_diff[0].dirty).toBe("10");
+  expect(simulationBundleResult.simulation_results[0].transaction.transaction_info.state_diff[0].dirty).toBe("67");
 });
 
 afterAll(async () => {
