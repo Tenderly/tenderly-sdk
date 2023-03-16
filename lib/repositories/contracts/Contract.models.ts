@@ -1,3 +1,23 @@
+import { Network } from '../../models';
+
+export interface Contract {
+  address: string;
+  network: Network;
+  displayName?: string;
+  tags?: string[];
+}
+
+export interface ContractRequest extends Record<string, string> {
+  address: string;
+  network_id: string;
+}
+
+export type GetByParams = {
+  tags?: string | string[];
+  displayName?: string | string[];
+  network?: Network | Network[];
+};
+
 export type ContractResponse = {
   id: string;
   account_type: 'contract';
@@ -86,10 +106,14 @@ export type ContractResponse = {
     account_type: string;
     verification_type: string;
     added_at: string;
-  },
+  };
   display_name: string;
   tags?: {
     tag: string;
-  }[]
+  }[];
+};
 
-}
+export type UpdateContractRequest = {
+  displayName?: string;
+  appendTags?: string[];
+};
