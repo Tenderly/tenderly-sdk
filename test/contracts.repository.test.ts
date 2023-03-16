@@ -62,7 +62,7 @@ describe('contracts.add', () => {
     expect(contract.address).toEqual(lidoContract);
   });
 
-  test('adding contract data will successfuly update contract', async () => {
+  test('adding contract data will successfuly add with specified data', async () => {
     const lidoContractResponse = await tenderly.contracts.add(lidoContract, {
       displayName: 'Lido',
       tags: ['staking', 'eth2'],
@@ -81,6 +81,22 @@ describe('contracts.add', () => {
 
     expect(contract.address).toEqual(lidoContract);
   });
+
+  test("doesn't update contract if it already exists", async () => {
+    await tenderly.contracts.add(lidoContract, {
+      displayName: 'NewDisplayName1',
+      tags: ['NewTag1'],
+    });
+    const contract = await tenderly.contracts.add(lidoContract, {
+      displayName: 'NewDisplayName2',
+      tags: ['NewTag2'],
+    });
+
+    expect(contract.address).toEqual(lidoContract);
+    expect(contract.displayName).toEqual('NewDisplayName1');
+    // tags don't work yet
+    // expect(contract.tags.sort()).toEqual(['eth2', 'staking']);
+  });
 });
 
 describe('contracts.remove', () => {
@@ -90,7 +106,7 @@ describe('contracts.remove', () => {
     expect(removeContractResponse).toBeFalsy();
   });
 
-  test("returns false value if contract doesn't exist", async () => {
+  test("returns falsy value if contract doesn't exist", async () => {
     const removeContractResponse = await tenderly.contracts.remove('0xfake_contract_address');
 
     expect(removeContractResponse).toBeFalsy();
@@ -104,7 +120,7 @@ describe('contracts.get', () => {
     expect(contract.address).toEqual(kittyCoreContract);
   });
 
-  test('returns undefined if contract does not exist', async () => {
+  test("throws 400 error with non_existing_contract slug if contract doesn't exist on project", async () => {
     const contract = tenderly.contracts.get('0xfake_contract_address');
 
     await expect(contract).rejects.toThrowError(AxiosError);
@@ -124,7 +140,7 @@ describe('contracts.update', () => {
     await tenderly.contracts.remove(wrappedEtherContract);
   });
 
-  test("doesn't throw an error when called correctly", async () => {
+  test('updates tags and display name if both are passed', async () => {
     const contract = await tenderly.contracts.update(wrappedEtherContract, {
       displayName: 'NewDisplayName',
       appendTags: ['NewTag', 'NewTag2'],
@@ -268,14 +284,16 @@ describe('contract.getBy', () => {
   const bitDAOTreasuryContractTags = [tag2, tag3];
 
   beforeAll(async () => {
-    await getByTenderly.contracts.update(beaconDepositContract, {
-      displayName: beaconDepositContractDisplayName,
-      appendTags: beaconDepositContractTags,
-    });
-    await getByTenderly.contracts.update(bitDAOTreasuryContract, {
-      displayName: bitDAOTreasuryContractDisplayName,
-      appendTags: bitDAOTreasuryContractTags,
-    });
+    await Promise.all([
+      getByTenderly.contracts.update(beaconDepositContract, {
+        displayName: beaconDepositContractDisplayName,
+        appendTags: beaconDepositContractTags,
+      }),
+      getByTenderly.contracts.update(bitDAOTreasuryContract, {
+        displayName: bitDAOTreasuryContractDisplayName,
+        appendTags: bitDAOTreasuryContractTags,
+      }),
+    ]);
   });
 
   describe('tags', () => {

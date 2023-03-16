@@ -61,7 +61,7 @@ describe('wallets.add', () => {
     expect(wallet.address).toEqual(polygonEtherBridgeWalletAddress);
   });
 
-  test('adding wallet data will successfuly update wallet', async () => {
+  test('adding wallet data will successfuly add with specified data', async () => {
     const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
       displayName: 'VB3',
       tags: ['tag1', 'tag2'],
@@ -83,6 +83,22 @@ describe('wallets.add', () => {
       expect(error.response.data.error.slug).toEqual('already_added');
     });
   });
+
+  test("doesn't update wallet if it exists", async () => {
+    await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
+      displayName: 'VB3',
+      tags: ['tag1', 'tag2'],
+    });
+
+    const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
+      displayName: 'VB4',
+      tags: ['tag3', 'tag4'],
+    });
+
+    expect(wallet.displayName).toEqual('VB3');
+    // tags don't work yet
+    // expect(walletResponse.tags.sort()).toEqual(['tag1', 'tag2']);
+  });
 });
 
 describe('wallets.remove', () => {
@@ -101,13 +117,9 @@ describe('wallets.remove', () => {
 
 describe('wallets.get', () => {
   test('returns wallet if it exists', async () => {
-    const walletResponse = tenderly.wallets.get(golemMultiSigWalletAddress);
+    const walletResponse = await tenderly.wallets.get(golemMultiSigWalletAddress);
 
-    await expect(walletResponse).resolves.toEqual(
-      expect.objectContaining({
-        address: golemMultiSigWalletAddress,
-      }),
-    );
+    expect(walletResponse.address).toEqual(golemMultiSigWalletAddress);
   });
 
   test("returns undefined value if wallet doesn't exist", async () => {
@@ -134,7 +146,7 @@ describe('wallets.update', () => {
     await tenderly.wallets.remove(kraken13WalletAddress);
   });
 
-  test("doesn't throw an error when called correctly", async () => {
+  test('updates tags and display name if both are passed', async () => {
     const wallet = await tenderly.wallets.update(kraken13WalletAddress, {
       displayName,
       appendTags: [tag1, tag2],
@@ -142,7 +154,7 @@ describe('wallets.update', () => {
 
     expect(wallet.address).toEqual(kraken13WalletAddress);
     expect(wallet.displayName).toEqual(displayName);
-    expect(wallet.tags.sort()).toEqual(expect.arrayContaining([tag1, tag2]));
+    expect(wallet.tags.sort()).toEqual([tag1, tag2]);
   });
 
   test('updates only displayName', async () => {
