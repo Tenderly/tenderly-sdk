@@ -4,8 +4,8 @@ import {
   filterByNetwork,
   filterByTags,
 } from '../lib/filters/contractsAndWallets';
-import { ContractResponse } from '../lib/repositories/contracts/Contract.response';
-import { WalletResponse } from '../lib/repositories/wallets/Wallet.response';
+import { ContractResponse } from '../lib/repositories/contracts/Contract.models';
+import { WalletResponse } from '../lib/repositories/wallets/Wallet.models';
 
 const tag1 = 'tag1';
 const tag2 = 'tag2';
