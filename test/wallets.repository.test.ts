@@ -84,21 +84,22 @@ describe('wallets.add', () => {
     });
   });
 
-  test("doesn't update wallet if it exists", async () => {
-    await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
-      displayName: 'VB3',
-      tags: ['tag1', 'tag2'],
-    });
+  // TODO: decide if we want to update wallet data if it exists
+  // test("doesn't update wallet if it exists", async () => {
+  //   await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
+  //     displayName: 'VB3',
+  //     tags: ['tag1', 'tag2'],
+  //   });
 
-    const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
-      displayName: 'VB4',
-      tags: ['tag3', 'tag4'],
-    });
+  //   const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
+  //     displayName: 'VB4',
+  //     tags: ['tag3', 'tag4'],
+  //   });
 
-    expect(wallet.displayName).toEqual('VB3');
-    // tags don't work yet
-    // expect(walletResponse.tags.sort()).toEqual(['tag1', 'tag2']);
-  });
+  //   expect(wallet.displayName).toEqual('VB3');
+  //   // tags don't work yet
+  //   // expect(walletResponse.tags.sort()).toEqual(['tag1', 'tag2']);
+  // });
 });
 
 describe('wallets.remove', () => {

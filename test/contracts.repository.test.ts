@@ -82,21 +82,22 @@ describe('contracts.add', () => {
     expect(contract.address).toEqual(lidoContract);
   });
 
-  test("doesn't update contract if it already exists", async () => {
-    await tenderly.contracts.add(lidoContract, {
-      displayName: 'NewDisplayName1',
-      tags: ['NewTag1'],
-    });
-    const contract = await tenderly.contracts.add(lidoContract, {
-      displayName: 'NewDisplayName2',
-      tags: ['NewTag2'],
-    });
+  // TODO: decide whether we want to update contract if it already exists
+  // test("doesn't update contract if it already exists", async () => {
+  //   await tenderly.contracts.add(lidoContract, {
+  //     displayName: 'NewDisplayName1',
+  //     tags: ['NewTag1'],
+  //   });
+  //   const contract = await tenderly.contracts.add(lidoContract, {
+  //     displayName: 'NewDisplayName2',
+  //     tags: ['NewTag2'],
+  //   });
 
-    expect(contract.address).toEqual(lidoContract);
-    expect(contract.displayName).toEqual('NewDisplayName1');
-    // tags don't work yet
-    // expect(contract.tags.sort()).toEqual(['eth2', 'staking']);
-  });
+  //   expect(contract.address).toEqual(lidoContract);
+  //   expect(contract.displayName).toEqual('NewDisplayName1');
+  //   // tags don't work yet
+  //   // expect(contract.tags.sort()).toEqual(['eth2', 'staking']);
+  // });
 });
 
 describe('contracts.remove', () => {
