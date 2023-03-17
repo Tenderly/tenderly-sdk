@@ -106,7 +106,6 @@ test('simulateBundle works', async () => {
       }
     }]
   );
-  console.log("sbr:", JSON.stringify(simulationBundleResult));
 
   expect(simulationBundleResult.simulation_results[0].transaction.transaction_info.state_diff[0].dirty).toBe("67");
 });
