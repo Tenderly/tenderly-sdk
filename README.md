@@ -35,23 +35,23 @@ Full documentation with example snippets here:<br /><a href='https://docs.tender
 
 ### Installation
 
-Available on npm as <a href='https://www.npmjs.com/package/tenderly-sdk-js'>tenderly-sdk-js</a>
+Available on npm as <a href='https://www.npmjs.com/package/tenderly-sdk-js'>tenderly-sdk</a>
 npm
 
 ```sh
-npm i tenderly-sdk-js
+npm i tenderly-sdk
 ```
 
 yarn
 
 ```sh
-yarn add tenderly-sdk-js
+yarn add tenderly-sdk
 ```
 
 pnpm
 
 ```sh
-pnpm add tenderly-sdk-js
+pnpm add tenderly-sdk
 ```
 
 ### Basic usage
@@ -59,7 +59,7 @@ pnpm add tenderly-sdk-js
 Instantiate a new tenderly instance
 
 ```ts
-import { Tenderly, Network } from 'tenderly-sdk-js';
+import { Tenderly, Network } from '@tenderly/sdk';
 
 const tenderlyInstance = new TenderlyInstance({
   accessKey: process.env.TENDERLY_ACCESS_KEY,
