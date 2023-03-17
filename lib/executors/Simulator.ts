@@ -31,7 +31,7 @@ export class Simulator {
       transaction,
       blockNumber,
       override
-    }: SimulationDetails): Promise<SimulationResponse['transaction']> {
+    }: SimulationDetails) {
     try {
       const { data: encodedStates } =
         await this.api.post<unknown, { stateOverrides: Record<Web3Address, Record<Web3Address, string>> }>(
