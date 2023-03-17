@@ -13,9 +13,7 @@ function mapToStorageOverrides(override: Record<Web3Address, Record<Web3Address,
     storage: override[key].value,
   }));
   const finalResult = {};
-
   result.forEach((item) => { finalResult[item.address] = { storage: item.storage } });
-
   return finalResult;
 }
 
@@ -45,18 +43,20 @@ export class Simulator {
           stateOverrides: override,
         });
 
-      const { data } = await this.api.post<SimulationRequest, SimulationResponse>(`
-        /account/${this.configuration.accountName}
-        /project/${this.configuration.projectName}
-        /simulate
-        `, {
+      const requestBody = {
         block_number: blockNumber,
         from: transaction.from,
         to: transaction.to,
         input: transaction.input,
         state_objects: mapToStorageOverrides(encodedStates.stateOverrides),
-        network_id: `${this.configuration.network}`,
-      });
+        network_id: `${this.configuration.network}`
+      };
+
+      const { data } = await this.api.post<SimulationRequest, SimulationResponse>(`
+        /account/${this.configuration.accountName}
+        /project/${this.configuration.projectName}
+        /simulate
+        `, requestBody);
 
       return data.transaction;
     } catch (error) {
