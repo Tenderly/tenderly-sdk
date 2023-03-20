@@ -1,2 +1,2 @@
-export { ContractRepository } from './contracts/Contract.repository';
-export { WalletRepository } from './wallets/Wallet.repository';
+export { ContractRepository } from './contracts/contracts.repository';
+export { WalletRepository } from './wallets/wallets.repository';

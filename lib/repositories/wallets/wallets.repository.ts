@@ -1,8 +1,8 @@
 import { Network, TenderlyConfiguration } from '../../models';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
-import { Wallet, WalletResponse, UpdateWalletRequest, WalletRequest } from './Wallet.models';
-import { GetByParams } from '../contracts/Contract.models';
+import { Wallet, WalletResponse, UpdateWalletRequest, WalletRequest } from './wallets.models';
+import { GetByParams } from '../contracts/contracts.models';
 import { filterEntities } from '../../filters';
 import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 

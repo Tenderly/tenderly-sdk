@@ -1,4 +1,4 @@
-import { Network } from '../../models';
+import { Network, Path, Web3Address } from '../../models';
 
 export interface Contract {
   address: string;
@@ -117,3 +117,29 @@ export type UpdateContractRequest = {
   displayName?: string;
   appendTags?: string[];
 };
+
+export enum SolidityCompilerVersions {
+  v0_8_4 = "v0.8.4",
+  v0_8_13 = "v0.8.13",
+  v0_8_17 = "v0.8.17",
+
+}
+
+export type VerificationRequest = {
+  solc: {
+    compiler: {
+      version: SolidityCompilerVersions,
+      settings: {
+        optimizer: {
+          enabled: boolean,
+          runs: number,
+        },
+        libraries: Record<Path, Record<string, Web3Address>>
+      },
+    },
+    sources: Record<Path, { name: string, source: string }>
+  },
+  config: {
+    mode: "private" | "public"
+  }
+}
