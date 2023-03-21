@@ -7,6 +7,8 @@ export interface Wallet {
   network: Network;
 }
 
+export type TenderlyWallet = Wallet
+
 export type WalletRequest = {
   address: string;
   display_name: string;

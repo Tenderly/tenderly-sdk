@@ -2,7 +2,7 @@ import { Network, TenderlyConfiguration } from '../../models';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
 import {
-  Contract,
+  TenderlyContract,
   ContractRequest,
   GetByParams,
   UpdateContractRequest,
@@ -12,8 +12,8 @@ import {
 import { filterEntities } from '../../filters';
 import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 
-function mapContractResponseToContractModel(contractResponse: ContractResponse): Contract {
-  const retVal: Contract = {
+function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
+  const retVal: TenderlyContract = {
     address: contractResponse.contract.address,
     network: Number.parseInt(contractResponse.contract.network_id) as unknown as Network,
   };
@@ -29,7 +29,7 @@ function mapContractResponseToContractModel(contractResponse: ContractResponse):
   return retVal;
 }
 
-function mapContractModelToContractRequest(contract: Contract): ContractRequest {
+function mapContractModelToContractRequest(contract: TenderlyContract): ContractRequest {
   return {
     address: contract.address,
     network_id: `${contract.network}`,
@@ -37,7 +37,7 @@ function mapContractModelToContractRequest(contract: Contract): ContractRequest 
   };
 }
 
-export class ContractRepository implements Repository<Contract> {
+export class ContractRepository implements Repository<TenderlyContract> {
   api: ApiClient;
   configuration: TenderlyConfiguration;
 
@@ -77,7 +77,7 @@ export class ContractRepository implements Repository<Contract> {
    * // or
    * const contract = await tenderly.contracts.add('0x1234567890', { displayName: 'MyContract', tags: ['my-tag'] });
    */
-  add = async (address: string, contractData: Partial<Omit<Contract, 'address'>> = {}) => {
+  add = async (address: string, contractData: Partial<Omit<TenderlyContract, 'address'>> = {}) => {
     const { data } = await this.api.post<ContractRequest, ContractResponse>(
       `
         /account/${this.configuration.accountName}

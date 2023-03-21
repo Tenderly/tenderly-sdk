@@ -1,13 +1,13 @@
 import { Network, TenderlyConfiguration } from '../../models';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
-import { Wallet, WalletResponse, UpdateWalletRequest, WalletRequest } from './wallets.models';
+import { TenderlyWallet, WalletResponse, UpdateWalletRequest, WalletRequest } from './wallets.models';
 import { GetByParams } from '../contracts/contracts.models';
 import { filterEntities } from '../../filters';
 import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 
 function mapWalletResponseToWalletModel(walletResponse: WalletResponse) {
-  const retVal: Wallet = {
+  const retVal: TenderlyWallet = {
     address: walletResponse.account.address,
     network: Number.parseInt(walletResponse.account.network_id) as unknown as Network,
   };
@@ -23,7 +23,7 @@ function mapWalletResponseToWalletModel(walletResponse: WalletResponse) {
   return retVal;
 }
 
-function mapWalletModelToWalletRequest(wallet: Partial<Wallet>): WalletRequest {
+function mapWalletModelToWalletRequest(wallet: Partial<TenderlyWallet>): WalletRequest {
   return {
     address: wallet.address,
     display_name: wallet.displayName,
@@ -31,7 +31,7 @@ function mapWalletModelToWalletRequest(wallet: Partial<Wallet>): WalletRequest {
   };
 }
 
-export class WalletRepository implements Repository<Wallet> {
+export class WalletRepository implements Repository<TenderlyWallet> {
   api: ApiClient;
   configuration: TenderlyConfiguration;
 
@@ -67,7 +67,7 @@ export class WalletRepository implements Repository<Wallet> {
    * @example
    * const wallet = await tenderly.contracts.add('0x1234567890', { displayName: 'My Wallet', tags: ['my-tag'] });
    */
-  add = async (address: string, walletData?: Partial<Wallet>) => {
+  add = async (address: string, walletData?: Partial<TenderlyWallet>) => {
     const { data } = await this.api.post<WalletRequest, WalletResponse>(
       `
         /account/${this.configuration.accountName}
