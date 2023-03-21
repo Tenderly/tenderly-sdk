@@ -7,6 +7,8 @@ export interface Contract {
   tags?: string[];
 }
 
+export type TenderlyContract = Contract;
+
 export interface ContractRequest extends Record<string, string> {
   address: string;
   network_id: string;

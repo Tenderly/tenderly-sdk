@@ -98,7 +98,7 @@ export class Simulator {
           }))
         });
 
-      return data;
+      return data.simulation_results.map((simulationResult) => simulationResult.transaction);
     } catch (error) {
       console.error('Error: ', error);
     }
