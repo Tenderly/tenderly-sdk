@@ -1,6 +1,6 @@
 import { Network } from '../models';
-import { ContractResponse } from '../repositories/contracts/Contract.models';
-import { WalletResponse } from '../repositories/wallets/Wallet.models';
+import { ContractResponse } from '../repositories/contracts/contracts.models';
+import { WalletResponse } from '../repositories/wallets/wallets.models';
 
 type FilterMapKeys = 'displayName' | 'tags' | 'network';
 
@@ -93,7 +93,7 @@ export const contractsOrWalletsFilterMap = new Map<
 
 export interface ContractsAndWalletsFilterFields
   extends Record<string, unknown>,
-    Partial<Record<FilterMapKeys, unknown>> {
+  Partial<Record<FilterMapKeys, unknown>> {
   tags?: string | string[];
   displayName?: string | string[];
   network?: Network | Network[];
