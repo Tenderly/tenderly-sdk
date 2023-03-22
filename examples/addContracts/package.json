@@ -1,0 +1,13 @@
+{
+  "name": "add-contracts",
+  "authors": "zdenkolini",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

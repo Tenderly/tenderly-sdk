@@ -1,0 +1,12 @@
+{
+  "name": "allow-and-swap-simulation-example",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "ethers": "^5.7.2"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

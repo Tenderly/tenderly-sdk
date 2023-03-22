@@ -62,11 +62,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
       /contract/${this.configuration.network}/${address}
     `);
       return mapContractResponseToContractModel(data);
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Add a contract to the Tenderly's instances' project
@@ -98,11 +97,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
       );
 
       return mapContractResponseToContractModel(data);
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Remove a contract from the Tenderly's instances' project
@@ -123,7 +121,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
     } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Update a contract in the Tenderly's instances' project
@@ -180,7 +178,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
     } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Get all contracts in the Tenderly's instances' project
@@ -212,36 +210,33 @@ export class ContractRepository implements Repository<TenderlyContract> {
     } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     try {
-      const result = await this.api.post(
-        `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,
-        {
-          config: {
-            optimization_count: verificationRequest.solc.compiler.settings.optimizer.enabled
-              ? verificationRequest.solc.compiler.settings.optimizer.runs
-              : null,
-          },
-          contracts: Object.keys(verificationRequest.solc.sources).map((path: string) => ({
-            contractName: verificationRequest.solc.sources[path].name,
-            source: verificationRequest.solc.sources[path].source,
-            sourcePath: path,
+      const payload = {
+        contracts: [
+          {
+            compiler: verificationRequest.solc.compiler,
+            sources: verificationRequest.solc.sources,
             networks: {
-              [this.configuration.network]: { address: address, links: {} },
+              [this.configuration.network]: { address },
             },
-            compiler: {
-              name: 'solc',
-              version: verificationRequest.solc.compiler.version,
-            },
-          })),
-        },
+            contractToVerify: verificationRequest.contractToVerify,
+          },
+        ],
+      };
+
+      const result = await this.api.post(
+        verificationRequest.mode === 'private'
+          ? // eslint-disable-next-line max-len
+            `/accounts/${this.configuration.accountName}/projects/${this.configuration.projectName}/contracts/verify`
+          : '/public/contracts/verify',
+        payload,
       );
 
       return result;
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
   }

@@ -1,0 +1,14 @@
+{
+  "name": "deploy-and-add-contract",
+  "authors": "zdenkolini",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "solc": "^0.8.19"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

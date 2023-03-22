@@ -1,0 +1,14 @@
+{
+  "name": "multisig-tx",
+  "authors": "zdenkolini",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "@gnosis.pm/safe-deployments": "^1.19.0",
+    "ethers": "^6.2.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

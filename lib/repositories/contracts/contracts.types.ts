@@ -121,27 +121,26 @@ export type UpdateContractRequest = {
 };
 
 export enum SolidityCompilerVersions {
-  v0_8_4 = "v0.8.4",
-  v0_8_13 = "v0.8.13",
-  v0_8_17 = "v0.8.17",
-
+  v0_8_4 = 'v0.8.4',
+  v0_8_13 = 'v0.8.13',
+  v0_8_17 = 'v0.8.17',
+  v0_8_19 = 'v0.8.19',
 }
 
 export type VerificationRequest = {
+  mode: 'private' | 'public';
+  contractToVerify: Path;
   solc: {
     compiler: {
-      version: SolidityCompilerVersions,
+      version: SolidityCompilerVersions;
       settings: {
         optimizer: {
-          enabled: boolean,
-          runs: number,
-        },
-        libraries: Record<Path, Record<string, Web3Address>>
-      },
-    },
-    sources: Record<Path, { name: string, source: string }>
-  },
-  config: {
-    mode: "private" | "public"
-  }
-}
+          enabled: boolean;
+          runs: number;
+        };
+        libraries?: Record<Path, Record<string, Web3Address>>;
+      };
+    };
+    sources: Record<Path, { name: string; code: string }>;
+  };
+};

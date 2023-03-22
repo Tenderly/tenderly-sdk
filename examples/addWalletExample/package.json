@@ -1,0 +1,14 @@
+{
+  "name": "add-wallet-example",
+  "description": "adds a wallet to the user's project, and console.logs it",
+  "authors": "zdenkolini",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

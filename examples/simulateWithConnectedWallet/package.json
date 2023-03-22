@@ -1,0 +1,14 @@
+{
+  "name": "simulate-with-connected-wallet",
+  "description": "executes a simulation via the tenderly web3 gateway rpc",
+  "authors": "zdenkolini",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "ethers": "^5.7.2"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
