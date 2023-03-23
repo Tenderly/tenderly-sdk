@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { errorHandler } from ".";
 import { GeneralError } from "./GeneralError";
-import { TenderlyError } from "./TenderlyError";
+import { TenderlyError } from "./models";
 
 @errorHandler
 export class ApiError extends GeneralError {

@@ -3,3 +3,7 @@ export interface TenderlyError {
   readonly message: string;
   readonly slug: string;
 }
+
+export type ErrorHandler = {
+  handle(error: Error): void;
+}

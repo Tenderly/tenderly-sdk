@@ -1,6 +1,6 @@
-import { GeneralError } from "./GeneralError";
+import { ErrorHandler } from "./models";
 
-export const errorHandlers: { handle: ((error: Error) => void) }[] = [];
+export const errorHandlers: ErrorHandler[] = [];
 
 /**
  *  Use only as a decorator
@@ -9,6 +9,6 @@ export const errorHandlers: { handle: ((error: Error) => void) }[] = [];
  *    export class ApiError extends GeneralError {}
  *'
 */
-export function errorHandler(handlerClass: typeof GeneralError & { handle: (error: Error) => void }) {
+export function errorHandler(handlerClass: ErrorHandler) {
   errorHandlers.push(handlerClass);
 }

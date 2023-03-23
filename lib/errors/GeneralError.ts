@@ -1,4 +1,4 @@
-import { TenderlyError } from "./TenderlyError";
+import { TenderlyError } from "./models";
 
 export abstract class GeneralError extends Error implements TenderlyError {
   public readonly id: string;
