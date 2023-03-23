@@ -2,37 +2,35 @@ name: Build the package and run integration tests
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ['master']
   pull_request:
-    branches: [ "master" ]
+    branches: ['master']
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     environment: CI
 
     strategy:
       matrix:
-        node-version: [14.x]
-        # , 16.x, 18.x add back once issue with paralel execution is fixed
+        node-version: [16.x]
+        # , 14.x, 18.x add back once issue with paralel execution is fixed
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'yarn'
-    - run: npm install -g yarn
-    - run: yarn
-    - run: yarn build
-    - name: Run tests
-      run: yarn test
-      env:
-        TENDERLY_ACCESS_KEY: ${{secrets.TENDERLY_ACCESS_KEY}}
-        TENDERLY_ACCOUNT_NAME: ${{secrets.TENDERLY_ACCOUNT_NAME}}
-        TENDERLY_PROJECT_NAME: ${{secrets.TENDERLY_PROJECT_NAME}}
-        TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
-        
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+      - run: npm install -g yarn
+      - run: yarn
+      - run: yarn build
+      - name: Run tests
+        run: yarn test
+        env:
+          TENDERLY_ACCESS_KEY: ${{secrets.TENDERLY_ACCESS_KEY}}
+          TENDERLY_ACCOUNT_NAME: ${{secrets.TENDERLY_ACCOUNT_NAME}}
+          TENDERLY_PROJECT_NAME: ${{secrets.TENDERLY_PROJECT_NAME}}
+          TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
