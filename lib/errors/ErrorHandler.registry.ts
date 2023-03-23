@@ -9,6 +9,6 @@ export const errorHandlers: { handle: ((error: Error) => void) }[] = [];
  *    export class ApiError extends GeneralError {}
  *'
 */
-export function errorHandler(handlerClass: typeof GeneralError) {
+export function errorHandler(handlerClass: typeof GeneralError & { handle: (error: Error) => void }) {
   errorHandlers.push(handlerClass);
 }
