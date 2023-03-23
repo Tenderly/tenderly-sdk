@@ -5,10 +5,10 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@adraffy/ens-normalize@npm:1.8.9":
-  version: 1.8.9
-  resolution: "@adraffy/ens-normalize@npm:1.8.9"
-  checksum: 17791dce03a4320a88c377136c48d0c16ac3e5b07aad321d028c8342fcf821b95c0082cd269cddd488472d1273e8157ae101f2e4e7f9e6be42667ed7ab9614d9
+"@adraffy/ens-normalize@npm:1.9.0":
+  version: 1.9.0
+  resolution: "@adraffy/ens-normalize@npm:1.9.0"
+  checksum: a8d47f85db7a0bba01227fae8781a3245a4517875503d6848a47ca29e7f7da271742a2f93b55afc1b9201e74eda1fd1f1e6e79e70f967359fd7f6ec3d45bf243
   languageName: node
   linkType: hard
 
@@ -1095,7 +1095,7 @@ __metadata:
     eslint: ^8.34.0
     eslint-config-prettier: ^8.6.0
     eslint-plugin-prettier: ^4.2.1
-    ethers: ^6.1.0
+    ethers: ^6.2.0
     husky: ^8.0.3
     jest: ^29.4.3
     prettier: ^2.8.4
@@ -2503,17 +2503,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "ethers@npm:6.1.0"
+"ethers@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "ethers@npm:6.2.0"
   dependencies:
-    "@adraffy/ens-normalize": 1.8.9
+    "@adraffy/ens-normalize": 1.9.0
     "@noble/hashes": 1.1.2
     "@noble/secp256k1": 1.7.1
     aes-js: 4.0.0-beta.3
     tslib: 2.4.0
     ws: 8.5.0
-  checksum: a216c3e84f93851ed0effe6cf611926ec276e1227ed970dca2e138e8bca953db746bbe8807deec18473d5d4608a2602fca53993ef97ad62b2f6859b4ca20f101
+  checksum: c5f1bbe50924be0add5e5ad1577f1a62d2ac7fd3c0ce348caa69a12136690dd343620d97028ae3b73cb648d6d7be54348503c20368fbb576f4484050a731a8e4
   languageName: node
   linkType: hard
 
