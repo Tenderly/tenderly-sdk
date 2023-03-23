@@ -1,5 +1,5 @@
-import { AxiosError } from 'axios';
 import { Tenderly, Network, SolidityCompilerVersions } from '../lib';
+import { ApiError } from '../lib/errors/ApiError';
 
 let tenderly: Tenderly = null;
 let rinkebyTenderly: Tenderly = null;
@@ -122,13 +122,15 @@ describe('contracts.get', () => {
   });
 
   test("throws 400 error with non_existing_contract slug if contract doesn't exist on project", async () => {
-    const contract = tenderly.contracts.get('0xfake_contract_address');
-
-    await expect(contract).rejects.toThrowError(AxiosError);
-    await contract.catch(error => {
-      expect(error.response.status).toEqual(400);
-      expect(error.response.data.error.slug).toEqual('non_existing_contract');
-    });
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const contract = await tenderly.contracts.get('0xfake_contract_address');
+    }
+    catch (error) {
+      expect(error instanceof ApiError).toBeTruthy();
+      expect(error.status).toBe(400);
+      expect(error.slug).toEqual('non_existing_contract');
+    }
   });
 });
 
@@ -224,27 +226,26 @@ describe('contracts.verify', () => {
   });
 
   test('contracts.verify fails for wrong compiler version', async () => {
-    expect(
-      async () =>
-        await rinkebyTenderly.contracts.verify(counterContract, {
-          config: {
-            mode: 'public',
-          },
-          solc: {
-            compiler: {
-              version: SolidityCompilerVersions.v0_8_4,
-              settings: {
-                libraries: {},
-                optimizer: {
-                  enabled: true,
-                  runs: 200,
-                },
+    try {
+      await rinkebyTenderly.contracts.verify(counterContract, {
+        config: {
+          mode: 'public',
+        },
+        solc: {
+          compiler: {
+            version: SolidityCompilerVersions.v0_8_4,
+            settings: {
+              libraries: {},
+              optimizer: {
+                enabled: true,
+                runs: 200,
               },
             },
-            sources: {
-              'Counter.sol': {
-                name: 'Counter',
-                source: `
+          },
+          sources: {
+            'Counter.sol': {
+              name: 'Counter',
+              source: `
               // SPDX-License-Identifier: MIT
               pragma solidity ^0.8.17;
 
@@ -267,11 +268,17 @@ describe('contracts.verify', () => {
                 }
               }
             `,
-              },
             },
           },
-        }),
-    ).rejects.toThrow(AxiosError);
+        },
+      });
+    }
+    catch (error) {
+      expect(error instanceof ApiError).toBeTruthy();
+      expect(error.status).toBe(422);
+      expect(error.slug).toEqual('compile_error');
+    }
+
   });
 });
 
