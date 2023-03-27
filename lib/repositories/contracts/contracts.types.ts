@@ -1,4 +1,4 @@
-import { Network, Path, Web3Address } from '../../models';
+import { Network, Path, Web3Address } from '../../types';
 
 export interface Contract {
   address: string;

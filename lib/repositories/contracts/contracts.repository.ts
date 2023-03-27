@@ -1,4 +1,4 @@
-import { Network, TenderlyConfiguration } from '../../models';
+import { Network, TenderlyConfiguration } from '../../types';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
 import {
@@ -8,9 +8,10 @@ import {
   UpdateContractRequest,
   ContractResponse,
   VerificationRequest,
-} from './contracts.models';
+} from './contracts.types';
 import { filterEntities } from '../../filters';
 import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
+import { handleError } from '../../errors';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
   const retVal: TenderlyContract = {
@@ -53,14 +54,18 @@ export class ContractRepository implements Repository<TenderlyContract> {
    * @example
    * const contract = await tenderly.contracts.get('0x1234567890');
    */
-  get = async (address: string) => {
-    const { data } = await this.api.get<ContractResponse>(`
+  async get(address: string) {
+    try {
+      const { data } = await this.api.get<ContractResponse>(`
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /contract/${this.configuration.network}/${address}
     `);
-
-    return mapContractResponseToContractModel(data);
+      return mapContractResponseToContractModel(data);
+    }
+    catch (error) {
+      handleError(error);
+    }
   };
 
   /**
@@ -77,21 +82,26 @@ export class ContractRepository implements Repository<TenderlyContract> {
    * // or
    * const contract = await tenderly.contracts.add('0x1234567890', { displayName: 'MyContract', tags: ['my-tag'] });
    */
-  add = async (address: string, contractData: Partial<Omit<TenderlyContract, 'address'>> = {}) => {
-    const { data } = await this.api.post<ContractRequest, ContractResponse>(
-      `
+  async add(address: string, contractData: Partial<Omit<TenderlyContract, 'address'>> = {}) {
+    try {
+      const { data } = await this.api.post<ContractRequest, ContractResponse>(
+        `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /address
       `,
-      mapContractModelToContractRequest({
-        address,
-        network: this.configuration.network,
-        ...contractData,
-      }),
-    );
+        mapContractModelToContractRequest({
+          address,
+          network: this.configuration.network,
+          ...contractData,
+        }),
+      );
 
-    return mapContractResponseToContractModel(data);
+      return mapContractResponseToContractModel(data);
+    }
+    catch (error) {
+      handleError(error);
+    }
   };
 
   /**
@@ -101,14 +111,18 @@ export class ContractRepository implements Repository<TenderlyContract> {
    * @example
    * await tenderly.contracts.remove('0x1234567890');
    */
-  remove = async (address: string) => {
-    await this.api.delete(
-      `
+  async remove(address: string) {
+    try {
+      await this.api.delete(
+        `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /contract/${this.configuration.network}/${address}
       `,
-    );
+      );
+    } catch (error) {
+      handleError(error);
+    }
   };
 
   /**
@@ -128,40 +142,44 @@ export class ContractRepository implements Repository<TenderlyContract> {
    * // or
    * const contract = await tenderly.contracts.update('0x1234567890', { appendTags: ['my-tag'] });
    */
-  update = async (address: string, payload: UpdateContractRequest) => {
-    let promiseArray = payload.appendTags?.map(tag =>
-      this.api.post(
-        `
+  async update(address: string, payload: UpdateContractRequest) {
+    try {
+      let promiseArray = payload.appendTags?.map(tag =>
+        this.api.post(
+          `
           /account/${this.configuration.accountName}
           /project/${this.configuration.projectName}
           /tag
         `,
-        {
-          contract_ids: [`eth:${this.configuration.network}:${address}`],
-          tag,
-        },
-      ),
-    );
+          {
+            contract_ids: [`eth:${this.configuration.network}:${address}`],
+            tag,
+          },
+        ),
+      );
 
-    promiseArray ||= [];
+      promiseArray ||= [];
 
-    if (payload.displayName) {
-      promiseArray.push(
-        this.api.post(
-          `
+      if (payload.displayName) {
+        promiseArray.push(
+          this.api.post(
+            `
             /account/${this.configuration.accountName}
             /project/${this.configuration.projectName}
             /contract/${this.configuration.network}/${address}
             /rename
           `,
-          { display_name: payload.displayName },
-        ),
-      );
+            { display_name: payload.displayName },
+          ),
+        );
+      }
+
+      await Promise.all(promiseArray);
+
+      return this.get(address);
+    } catch (error) {
+      handleError(error);
     }
-
-    await Promise.all(promiseArray);
-
-    return this.get(address);
   };
 
   /**
@@ -176,46 +194,55 @@ export class ContractRepository implements Repository<TenderlyContract> {
    *   network: [Networks.Mainnet, Networks.Rinkeby],
    * });
    */
-  getBy = async (queryObject: GetByParams = {}) => {
-    const contracts = await this.api.get<ContractResponse[]>(`
+  async getBy(queryObject: GetByParams = {}) {
+    try {
+      const contracts = await this.api.get<ContractResponse[]>(`
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /contracts
     `);
 
-    const retVal = filterEntities<ContractResponse>(
-      contracts.data,
-      queryObject,
-      contractsOrWalletsFilterMap,
-    ).map(mapContractResponseToContractModel);
+      const retVal = filterEntities<ContractResponse>(
+        contracts.data,
+        queryObject,
+        contractsOrWalletsFilterMap,
+      ).map(mapContractResponseToContractModel);
 
-    return retVal;
+      return retVal;
+    } catch (error) {
+      handleError(error);
+    }
   };
 
   async verify(address: string, verificationRequest: VerificationRequest) {
-    const result = await this.api.post(
-      `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,
-      {
-        config: {
-          optimization_count: verificationRequest.solc.compiler.settings.optimizer.enabled
-            ? verificationRequest.solc.compiler.settings.optimizer.runs
-            : null,
+    try {
+      const result = await this.api.post(
+        `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,
+        {
+          config: {
+            optimization_count: verificationRequest.solc.compiler.settings.optimizer.enabled
+              ? verificationRequest.solc.compiler.settings.optimizer.runs
+              : null,
+          },
+          contracts: Object.keys(verificationRequest.solc.sources).map((path: string) => ({
+            contractName: verificationRequest.solc.sources[path].name,
+            source: verificationRequest.solc.sources[path].source,
+            sourcePath: path,
+            networks: {
+              [this.configuration.network]: { address: address, links: {} },
+            },
+            compiler: {
+              name: 'solc',
+              version: verificationRequest.solc.compiler.version,
+            },
+          })),
         },
-        contracts: Object.keys(verificationRequest.solc.sources).map((path: string) => ({
-          contractName: verificationRequest.solc.sources[path].name,
-          source: verificationRequest.solc.sources[path].source,
-          sourcePath: path,
-          networks: {
-            [this.configuration.network]: { address: address, links: {} },
-          },
-          compiler: {
-            name: 'solc',
-            version: verificationRequest.solc.compiler.version,
-          },
-        })),
-      },
-    );
+      );
 
-    return result;
+      return result;
+    }
+    catch (error) {
+      handleError(error);
+    }
   }
 }

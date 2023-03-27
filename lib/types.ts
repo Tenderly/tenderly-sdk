@@ -13,3 +13,6 @@ export type TenderlyConfiguration = {
   accessKey: string;
   network: Network;
 }
+
+// helper types
+export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }

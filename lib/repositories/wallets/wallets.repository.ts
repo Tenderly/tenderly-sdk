@@ -1,10 +1,11 @@
-import { Network, TenderlyConfiguration } from '../../models';
+import { Network, TenderlyConfiguration } from '../../types';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
-import { TenderlyWallet, WalletResponse, UpdateWalletRequest, WalletRequest } from './wallets.models';
-import { GetByParams } from '../contracts/contracts.models';
+import { TenderlyWallet, WalletResponse, UpdateWalletRequest, WalletRequest } from './wallets.types';
+import { GetByParams } from '../contracts/contracts.types';
 import { filterEntities } from '../../filters';
 import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
+import { handleError } from '../../errors';
 
 function mapWalletResponseToWalletModel(walletResponse: WalletResponse) {
   const retVal: TenderlyWallet = {
@@ -48,16 +49,20 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    * @example
    * const wallet = await tenderly.contracts.get('0x1234567890');
    */
-  get = async (address: string) => {
-    const { data } = await this.api.get<WalletResponse>(`
+  async get(address: string) {
+    try {
+      const { data } = await this.api.get<WalletResponse>(`
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /wallet/${address}
       /network/${this.configuration.network}
     `);
 
-    return mapWalletResponseToWalletModel(data);
-  };
+      return mapWalletResponseToWalletModel(data);
+    } catch (error) {
+      handleError(error);
+    }
+  }
 
   /**
    * Add a wallet to the project.
@@ -67,22 +72,26 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    * @example
    * const wallet = await tenderly.contracts.add('0x1234567890', { displayName: 'My Wallet', tags: ['my-tag'] });
    */
-  add = async (address: string, walletData?: Partial<TenderlyWallet>) => {
-    const { data } = await this.api.post<WalletRequest, WalletResponse>(
-      `
+  async add(address: string, walletData?: Partial<TenderlyWallet>) {
+    try {
+      const { data } = await this.api.post<WalletRequest, WalletResponse>(
+        `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /wallet
       `,
-      mapWalletModelToWalletRequest({
-        address,
-        network: this.configuration.network,
-        ...walletData,
-      }),
-    );
+        mapWalletModelToWalletRequest({
+          address,
+          network: this.configuration.network,
+          ...walletData,
+        }),
+      );
 
-    return mapWalletResponseToWalletModel(data[0]);
-  };
+      return mapWalletResponseToWalletModel(data[0]);
+    } catch (error) {
+      handleError(error);
+    }
+  }
 
   /**
    * Remove a wallet from the Tenderly instances' project.
@@ -91,16 +100,21 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    * @example
    * await tenderly.contracts.remove('0x1234567890');
    */
-  remove = async (address: string) => {
-    await this.api.delete(
-      `
+  async remove(address: string) {
+    try {
+      await this.api.delete(
+        `
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /contracts
       `,
-      { account_ids: [`eth:${this.configuration.network}:${address}`] },
-    );
-  };
+        { account_ids: [`eth:${this.configuration.network}:${address}`] },
+      );
+    }
+    catch (error) {
+      handleError(error);
+    }
+  }
 
   /**
    * Update a wallet's displayName and/or tags.
@@ -115,40 +129,44 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    * const wallet = await tenderly.contracts.update('0x1234567890', { displayName: 'My Wallet' });
    * const wallet = await tenderly.contracts.update('0x1234567890', { appendTags: ['my-tag'] });
    */
-  update = async (address: string, payload: UpdateWalletRequest) => {
-    let promiseArray = payload.appendTags?.map(tag =>
-      this.api.post(
-        `
+  async update(address: string, payload: UpdateWalletRequest) {
+    try {
+      let promiseArray = payload.appendTags?.map(tag =>
+        this.api.post(
+          `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /tag
       `,
-        {
-          contract_ids: [`eth:${this.configuration.network}:${address}`],
-          tag,
-        },
-      ),
-    );
+          {
+            contract_ids: [`eth:${this.configuration.network}:${address}`],
+            tag,
+          },
+        ),
+      );
 
-    promiseArray ||= [];
+      promiseArray ||= [];
 
-    if (payload.displayName) {
-      promiseArray.push(
-        this.api.post(
-          `
+      if (payload.displayName) {
+        promiseArray.push(
+          this.api.post(
+            `
             /account/${this.configuration.accountName}
             /project/${this.configuration.projectName}
             /contract/${this.configuration.network}/${address}
             /rename
           `,
-          { display_name: payload.displayName },
-        ),
-      );
+            { display_name: payload.displayName },
+          ),
+        );
+      }
+
+      await Promise.all(promiseArray);
+
+      return this.get(address);
+    } catch (error) {
+      handleError(error);
     }
-
-    await Promise.all(promiseArray);
-
-    return this.get(address);
   };
 
   /**
@@ -163,15 +181,19 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    *   tags: ['my-tag']
    * });
    */
-  getBy = async (queryObject: GetByParams = {}) => {
-    const wallets = await this.api.get<WalletResponse[]>(`
+  async getBy(queryObject: GetByParams = {}) {
+    try {
+      const wallets = await this.api.get<WalletResponse[]>(`
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /contracts?accountType=wallet
     `);
 
-    return filterEntities(wallets.data, queryObject, contractsOrWalletsFilterMap).map(
-      mapWalletResponseToWalletModel,
-    );
+      return filterEntities(wallets.data, queryObject, contractsOrWalletsFilterMap).map(
+        mapWalletResponseToWalletModel,
+      );
+    } catch (error) {
+      handleError(error);
+    }
   };
 }
