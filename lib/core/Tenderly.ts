@@ -1,8 +1,8 @@
-import { TenderlyConfiguration } from '../models';
+import { TenderlyConfiguration } from '../types';
 import { ApiClient } from './ApiClient';
 import { WalletRepository, ContractRepository } from '../repositories';
 import { Simulator } from '../executors';
-import { VerificationRequest } from '../repositories/contracts/contracts.models';
+import { VerificationRequest } from '../repositories/contracts/contracts.types';
 
 /**
  * The main class of the Tenderly SDK

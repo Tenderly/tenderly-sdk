@@ -1,4 +1,4 @@
-import { Network, TenderlyConfiguration } from '../../models';
+import { Network, TenderlyConfiguration } from '../../types';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
 import {
@@ -8,7 +8,7 @@ import {
   UpdateContractRequest,
   ContractResponse,
   VerificationRequest,
-} from './contracts.models';
+} from './contracts.types';
 import { filterEntities } from '../../filters';
 import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 import { handleError } from '../../errors';

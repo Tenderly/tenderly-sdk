@@ -1,11 +1,11 @@
 import { ApiClient } from "../core/ApiClient";
-import { Web3Address } from "../models";
+import { Web3Address } from "../types";
 import {
   SimulationDetails,
   SimulationRequest,
   SimulationResponse
-} from "./Simulator.models";
-import { TenderlyConfiguration } from '../models';
+} from "./Simulator.types";
+import { TenderlyConfiguration } from '../types';
 import { handleError } from "../errors";
 
 function mapToStorageOverrides(override: Record<Web3Address, Record<Web3Address, string>>) {

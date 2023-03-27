@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
-import { errorHandler } from ".";
+import { errorHandler } from "./Error.handlerRegistry";
 import { GeneralError } from "./GeneralError";
-import { TenderlyError } from "./models";
+import { isTenderlyAxiosError, TenderlyError } from "./Error.types";
 
 @errorHandler
 export class ApiError extends GeneralError {
@@ -13,8 +13,8 @@ export class ApiError extends GeneralError {
   }
 
   static handle(error: AxiosError<{ error: TenderlyError }>) {
-    if (error?.response?.data?.error && error?.response?.status) {
-      throw new ApiError({ status: error.response.status, ...error.response.data.error as TenderlyError });
+    if (isTenderlyAxiosError(error)) {
+      throw new ApiError({ status: error.response.status, ...error.response.data.error });
     }
   }
 }

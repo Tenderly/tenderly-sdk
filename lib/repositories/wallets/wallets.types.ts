@@ -1,4 +1,4 @@
-import { Network } from '../../models';
+import { Network } from '../../types';
 
 export interface Wallet {
   address: string;

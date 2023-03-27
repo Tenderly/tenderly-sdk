@@ -1,4 +1,4 @@
-import { ErrorHandler } from "./models";
+import { ErrorHandler } from "./Error.types";
 
 export const errorHandlers: ErrorHandler[] = [];
 

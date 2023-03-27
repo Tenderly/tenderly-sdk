@@ -1,6 +1,6 @@
-import { Network } from '../models';
-import { ContractResponse } from '../repositories/contracts/contracts.models';
-import { WalletResponse } from '../repositories/wallets/wallets.models';
+import { Network } from '../types';
+import { ContractResponse } from '../repositories/contracts/contracts.types';
+import { WalletResponse } from '../repositories/wallets/wallets.types';
 
 type FilterMapKeys = 'displayName' | 'tags' | 'network';
 
