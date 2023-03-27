@@ -23,7 +23,7 @@ export class Tenderly {
    * Contract repository - used for managing contracts on your project
    */
   public readonly contracts: ContractRepository & {
-    verify: (address: string, verificationRequest: VerificationRequest) => Promise<any>;
+    verify: (address: string, verificationRequest: VerificationRequest) => Promise<unknown>;
   };
 
   /**

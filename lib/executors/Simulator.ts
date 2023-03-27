@@ -104,7 +104,7 @@ export class Simulator {
 
       return data.simulation_results.map((simulationResult) => simulationResult.transaction);
     } catch (error) {
-      handleError(error)
+      handleError(error);
     }
   }
 
