@@ -1,5 +1,5 @@
-import { AxiosError, isAxiosError } from "axios";
-import { WithRequired } from "../types";
+import { AxiosError, isAxiosError } from 'axios';
+import { WithRequired } from '../types';
 
 export interface TenderlyError {
   readonly id: string;
@@ -8,11 +8,14 @@ export interface TenderlyError {
 }
 
 export interface ErrorHandler {
-  handle: (error: Error) => void
+  handle: (error: Error) => void;
 }
 
 type TenderlyAxiosError = WithRequired<AxiosError<{ error: TenderlyError }>, 'response'>;
 
 export const isTenderlyAxiosError = (error: unknown): error is TenderlyAxiosError => {
-  return isAxiosError<{ error: TenderlyError }>(error) && !!(error?.response?.data?.error && error?.response?.status);
+  return (
+    isAxiosError<{ error: TenderlyError }>(error) &&
+    !!(error?.response?.data?.error && error?.response?.status)
+  );
 };

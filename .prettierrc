@@ -6,5 +6,7 @@
   "bracketSpacing": true,
   "trailingComma": "all",
   "arrowParens": "avoid",
-  "quoteProps": "as-needed"
+  "quoteProps": "as-needed",
+  "parser": "typescript",
+  "editorconfig": true
 }

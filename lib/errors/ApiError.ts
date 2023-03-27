@@ -1,7 +1,7 @@
-import { AxiosError } from "axios";
-import { errorHandler } from "./Error.handlerRegistry";
-import { GeneralError } from "./GeneralError";
-import { isTenderlyAxiosError, TenderlyError } from "./Error.types";
+import { AxiosError } from 'axios';
+import { errorHandler } from './Error.handlerRegistry';
+import { GeneralError } from './GeneralError';
+import { isTenderlyAxiosError, TenderlyError } from './Error.types';
 
 @errorHandler
 export class ApiError extends GeneralError {
