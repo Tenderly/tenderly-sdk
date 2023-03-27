@@ -26,6 +26,7 @@ jobs:
           cache: 'yarn'
       - run: npm install -g yarn
       - run: yarn
+      - run: yarn lint
       - run: yarn build
       - name: Run tests
         run: yarn test
