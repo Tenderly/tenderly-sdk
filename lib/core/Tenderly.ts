@@ -3,6 +3,7 @@ import { ApiClient } from './ApiClient';
 import { WalletRepository, ContractRepository } from '../repositories';
 import { Simulator } from '../executors';
 import { VerificationRequest } from '../repositories/contracts/contracts.types';
+import { InvalidConstructorParametersError } from '../errors/InvalidConstructorError';
 
 /**
  * The main class of the Tenderly SDK
@@ -48,6 +49,15 @@ export class Tenderly {
    * })
    */
   constructor(configuration: TenderlyConfiguration) {
+    if (
+      !configuration.accessKey ||
+      !configuration.accountName ||
+      !configuration.projectName ||
+      !configuration.network
+    ) {
+      throw new InvalidConstructorParametersError();
+    }
+
     this.configuration = configuration;
     this.api = new ApiClient({ apiKey: configuration.accessKey });
 

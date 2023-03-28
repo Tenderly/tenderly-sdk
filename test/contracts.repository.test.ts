@@ -2,7 +2,7 @@ import { Tenderly, Network, SolidityCompilerVersions } from '../lib';
 import { ApiError } from '../lib/errors/ApiError';
 
 let tenderly: Tenderly = null;
-let rinkebyTenderly: Tenderly = null;
+let sepoliaTenderly: Tenderly = null;
 let getByTenderly: Tenderly = null;
 
 jest.setTimeout(20000);
@@ -23,7 +23,7 @@ beforeAll(async () => {
     network: Network.MAINNET,
   });
 
-  rinkebyTenderly = tenderly.with({ network: Network.SEPOLIA });
+  sepoliaTenderly = tenderly.with({ network: Network.SEPOLIA });
 
   getByTenderly = tenderly.with({ projectName: process.env.TENDERLY_GET_BY_PROJECT_NAME });
 
@@ -176,7 +176,7 @@ describe('contracts.update', () => {
 describe('contracts.verify', () => {
   test('contracts.verify works for correct config', async () => {
     try {
-      const result = await rinkebyTenderly.contracts.verify(helloWorldContract, {
+      const result = await sepoliaTenderly.contracts.verify(helloWorldContract, {
         mode: 'public',
         contractToVerify: 'HelloWorld',
         solc: {
@@ -224,7 +224,7 @@ describe('contracts.verify', () => {
 
   test('contracts.verify fails for wrong compiler version', async () => {
     try {
-      await rinkebyTenderly.contracts.verify(helloWorldContract, {
+      await sepoliaTenderly.contracts.verify(helloWorldContract, {
         mode: 'public',
         contractToVerify: 'HelloWorld',
         solc: {

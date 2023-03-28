@@ -20,7 +20,7 @@ export type GetByParams = {
   network?: Network | Network[];
 };
 
-export type ContractResponse = {
+export type VerifiedContractResponse = {
   id: string;
   account_type: 'contract';
   contract: {
@@ -114,6 +114,16 @@ export type ContractResponse = {
     tag: string;
   }[];
 };
+
+export type UnverifiedContractResponse = {
+  account_type: 'unverified_contract';
+  id: `eth:${Network}:${Web3Address}`;
+  project_id: string;
+  added_by_id: string;
+  added_at: string;
+};
+
+export type ContractResponse = VerifiedContractResponse | UnverifiedContractResponse;
 
 export type UpdateContractRequest = {
   displayName?: string;

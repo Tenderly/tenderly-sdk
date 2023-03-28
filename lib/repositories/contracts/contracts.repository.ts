@@ -8,26 +8,51 @@ import {
   UpdateContractRequest,
   ContractResponse,
   VerificationRequest,
+  VerifiedContractResponse,
+  UnverifiedContractResponse,
 } from './contracts.types';
 import { filterEntities } from '../../filters';
 import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 import { handleError } from '../../errors';
 
+function isVerifiedContract(contract: ContractResponse): contract is VerifiedContractResponse {
+  return contract.account_type === 'contract';
+}
+
+function isUnverifiedContract(contract: ContractResponse): contract is UnverifiedContractResponse {
+  return contract.account_type === 'unverified_contract';
+}
+
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
-  const retVal: TenderlyContract = {
-    address: contractResponse.contract.address,
-    network: Number.parseInt(contractResponse.contract.network_id) as unknown as Network,
-  };
+  // check type by calling isVerifiedContract function
+  if (isUnverifiedContract(contractResponse)) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_ethPrefix, network, address] = contractResponse.id.split(':');
 
-  if (contractResponse.display_name) {
-    retVal.displayName = contractResponse.display_name;
+    return {
+      address,
+      network: Number.parseInt(network) as unknown as Network,
+    };
   }
 
-  if (contractResponse.tags) {
-    retVal.tags = contractResponse.tags.map(({ tag }) => tag);
+  if (isVerifiedContract(contractResponse)) {
+    const retVal: TenderlyContract = {
+      address: contractResponse.contract.address,
+      network: Number.parseInt(contractResponse.contract.network_id) as unknown as Network,
+    };
+
+    if (contractResponse.display_name) {
+      retVal.displayName = contractResponse.display_name;
+    }
+
+    if (contractResponse.tags) {
+      retVal.tags = contractResponse.tags.map(({ tag }) => tag);
+    }
+
+    return retVal;
   }
 
-  return retVal;
+  throw new Error('Unknown contract type');
 }
 
 function mapContractModelToContractRequest(contract: TenderlyContract): ContractRequest {
@@ -194,13 +219,13 @@ export class ContractRepository implements Repository<TenderlyContract> {
    */
   async getBy(queryObject: GetByParams = {}) {
     try {
-      const contracts = await this.api.get<ContractResponse[]>(`
+      const contracts = await this.api.get<VerifiedContractResponse[]>(`
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
       /contracts
     `);
 
-      const retVal = filterEntities<ContractResponse>(
+      const retVal = filterEntities<VerifiedContractResponse>(
         contracts.data,
         queryObject,
         contractsOrWalletsFilterMap,

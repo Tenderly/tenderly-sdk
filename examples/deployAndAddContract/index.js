@@ -109,7 +109,7 @@ dotenv.config();
       },
     });
 
-    console.log('Verification result:\n', verificationResult.data);
+    console.log('Verification result:\n', verificationResult.data.results);
 
     // Add the contract to the Tenderly project
     const addContractResult = await tenderly.contracts.add(contract.address, {

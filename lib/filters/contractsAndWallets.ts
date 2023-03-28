@@ -1,11 +1,11 @@
 import { Network } from '../types';
-import { ContractResponse } from '../repositories/contracts/contracts.types';
+import { VerifiedContractResponse } from '../repositories/contracts/contracts.types';
 import { WalletResponse } from '../repositories/wallets/wallets.types';
 
 type FilterMapKeys = 'displayName' | 'tags' | 'network';
 
 export function filterByDisplayName(
-  contractOrWallet: ContractResponse | WalletResponse,
+  contractOrWallet: VerifiedContractResponse | WalletResponse,
   displayNames?: string | string[],
 ) {
   if (!displayNames) {
@@ -28,7 +28,7 @@ export function filterByDisplayName(
 }
 
 export function filterByTags(
-  contractOrWallet: ContractResponse | WalletResponse,
+  contractOrWallet: VerifiedContractResponse | WalletResponse,
   tags?: string | string[],
 ) {
   if (!tags) {
@@ -53,7 +53,7 @@ export function filterByTags(
 }
 
 export function filterByNetwork(
-  contractOrWallet: ContractResponse | WalletResponse,
+  contractOrWallet: VerifiedContractResponse | WalletResponse,
   networks?: Network | Network[],
 ) {
   if (!networks) {
@@ -84,7 +84,7 @@ export function filterByNetwork(
 
 export const contractsOrWalletsFilterMap = new Map<
   FilterMapKeys,
-  (contractOrWallet: ContractResponse | WalletResponse, value: unknown) => boolean
+  (contractOrWallet: VerifiedContractResponse | WalletResponse, value: unknown) => boolean
 >([
   ['displayName', filterByDisplayName],
   ['tags', filterByTags],
@@ -93,7 +93,7 @@ export const contractsOrWalletsFilterMap = new Map<
 
 export interface ContractsAndWalletsFilterFields
   extends Record<string, unknown>,
-  Partial<Record<FilterMapKeys, unknown>> {
+    Partial<Record<FilterMapKeys, unknown>> {
   tags?: string | string[];
   displayName?: string | string[];
   network?: Network | Network[];
