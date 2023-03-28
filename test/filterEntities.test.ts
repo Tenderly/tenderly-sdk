@@ -1,4 +1,4 @@
-import { Network, ContractResponse } from '../lib';
+import { Network, VerifiedContractResponse } from '../lib';
 import { filterEntities } from '../lib/filters';
 import { contractsOrWalletsFilterMap } from '../lib/filters/contractsAndWallets';
 
@@ -42,7 +42,7 @@ const contracts = [
     account_type: 'contract',
     tags: [{ tag: tag1 }, { tag: tag3 }],
   },
-] as unknown as ContractResponse[];
+] as unknown as VerifiedContractResponse[];
 
 describe('filters by display name', () => {
   it('should filter by single display name', () => {
