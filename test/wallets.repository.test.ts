@@ -1,5 +1,4 @@
-import { AxiosError } from 'axios';
-import { Tenderly, Network } from '../lib';
+import { Tenderly, Network, ApiError } from '../lib';
 
 const liquidityActivePoolWallet = '0xDf9Eb223bAFBE5c5271415C75aeCD68C21fE3D7F'.toLowerCase();
 const canonicalTransactionChainWalletAddress =
@@ -74,14 +73,17 @@ describe('wallets.add', () => {
   });
 
   test('returns undefined if wallet exists', async () => {
-    await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
-    const wallet = tenderly.wallets.add(polygonEtherBridgeWalletAddress);
-
-    await expect(wallet).rejects.toThrowError(AxiosError);
-    await wallet.catch(error => {
-      expect(error.response.status).toEqual(400);
-      expect(error.response.data.error.slug).toEqual('already_added');
-    });
+    try {
+      await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
+      await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
+      throw new Error('Should not reach this');
+    } catch (error) {
+      console.log;
+      expect(error.message).not.toBe('Should not reach this');
+      expect(error instanceof ApiError).toBeTruthy();
+      expect(error.status).toEqual(400);
+      expect(error.slug).toEqual('already_added');
+    }
   });
 
   // TODO: decide if we want to update wallet data if it exists
@@ -124,13 +126,15 @@ describe('wallets.get', () => {
   });
 
   test("returns undefined value if wallet doesn't exist", async () => {
-    const walletResponse = tenderly.wallets.get('0xfake_wallet_address');
-
-    await expect(walletResponse).rejects.toThrowError(AxiosError);
-    await walletResponse.catch(error => {
-      expect(error.response.status).toEqual(400);
-      expect(error.response.data.error.slug).toEqual('non_existing_account');
-    });
+    try {
+      await tenderly.wallets.get('0xfake_wallet_address');
+      throw new Error('Should not reach this');
+    } catch (error) {
+      expect(error.message).not.toBe('Should not reach this');
+      expect(error instanceof ApiError).toBeTruthy();
+      expect(error.status).toEqual(400);
+      expect(error.slug).toEqual('non_existing_account');
+    }
   });
 });
 

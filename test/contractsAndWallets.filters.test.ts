@@ -1,4 +1,4 @@
-import { Network, ContractResponse, WalletResponse } from '../lib';
+import { Network, WalletResponse, VerifiedContractResponse } from '../lib';
 import {
   filterByDisplayName,
   filterByNetwork,
@@ -45,7 +45,7 @@ const contracts = [
     account_type: 'contract',
     tags: [{ tag: tag1 }, { tag: tag3 }],
   },
-] as unknown as ContractResponse[];
+] as unknown as VerifiedContractResponse[];
 
 const wallets = [
   {
