@@ -2,6 +2,12 @@
 
 In this example you will see how to instantiate a new `Tenderly` instance and add both a verified, and unverified `Contract` to your project.
 
+To do this you will need to call the `add` function in the `contracts` namespace on the `Tenderly` instance.
+```javascript
+const contract = await tenderlyInstance.contracts.add('0x1234567890123456789012345678901234567890');
+```
+
+
 ## To Run this example
 
 Install dependencies
@@ -43,10 +49,4 @@ Run the example
 
 ```bash
 yarn start
-```
-
-## TLDR
-
-```javascript
-const wallet = await tenderlyInstance.wallets.add('0x1234567890123456789012345678901234567890');
 ```
