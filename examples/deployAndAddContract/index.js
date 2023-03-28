@@ -10,7 +10,7 @@ const { Tenderly, Network, SolidityCompilerVersions } = require('@tenderly/sdk')
 dotenv.config();
 
 (async function main() {
-  // Read the Solidity contract source code from a file
+  console.log('Reading source code...');
   const contractSourceCode = fs.readFileSync(
     path.join(__dirname, 'contracts', 'HelloWorld.sol'),
     'utf-8',
@@ -40,10 +40,10 @@ dotenv.config();
     },
   };
 
-  // Compile the Solidity contract
+  console.log('Compiling contract...');
   const compiledContract = JSON.parse(solc.compile(JSON.stringify(input)));
 
-  console.log(contractSourceCode);
+  console.log('Contract source code:\n', contractSourceCode);
 
   // Get the compiled bytecode and ABI
   const bytecode = compiledContract.contracts['HelloWorld.sol'].HelloWorld.evm.bytecode.object;
@@ -63,9 +63,11 @@ dotenv.config();
   // Create a new ethers.ContractFactory object with the signer set to the wallet
   const contractFactory = new ethers.ContractFactory(abi, bytecode, wallet);
 
+  console.log('Getting transaction count for nonce...');
   // Get new nonce, because it doesn't work sometimes
   const nonce = await wallet.getTransactionCount();
 
+  console.log('Deploying contract...');
   // Deploy the contract to the Sepolia test network
   const contract = await contractFactory.deploy('Hello World', { nonce });
 
@@ -91,6 +93,7 @@ dotenv.config();
   });
 
   try {
+    console.log('Verifying contract...');
     // Verify the contract on Tenderly
     const verificationResult = await tenderly.contracts.verify(contract.address, {
       mode: 'private',
