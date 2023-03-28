@@ -1,11 +1,14 @@
 import { Tenderly, Network } from '@tenderly/sdk';
 import { ethers } from 'ethers';
-import { approveContractAbi, universalRouterContractAbi } from './contractAbis';
+import dotenv from 'dotenv';
+import { approveContractAbi, universalRouterContractAbi } from './contractAbis.js';
+
+dotenv.config();
 
 const tenderly = new Tenderly({
   accessKey: process.env.TENDERLY_ACCESS_KEY,
-  accountName: process.env.TENDERLY_ACCOUNT,
-  projectName: process.env.TENDERLY_PROJECT,
+  accountName: process.env.TENDERLY_ACCOUNT_NAME,
+  projectName: process.env.TENDERLY_PROJECT_NAME,
   network: Network.POLYGON,
 });
 
@@ -18,45 +21,49 @@ const approveContractAbiInterface = new ethers.utils.Interface(approveContractAb
 const universalRouterContractAbiInterface = new ethers.utils.Interface(universalRouterContractAbi);
 
 (async () => {
-  const transaction = await tenderly.simulator.simulateBundle([
-    {
-      transaction: {
-        from: fromWalletAddress,
-        to: approveContractAddress,
-        gas: 0,
-        gas_price: ethers.utils.hexValue(0),
-        value: ethers.utils.hexValue(0),
-        input: approveContractAbiInterface.encodeFunctionData('approve', [
-          fromWalletAddress,
-          1234567890,
-        ]),
+  try {
+    const transaction = await tenderly.simulator.simulateBundle([
+      {
+        transaction: {
+          from: fromWalletAddress,
+          to: approveContractAddress,
+          gas: 0,
+          gas_price: ethers.utils.hexValue(0),
+          value: ethers.utils.hexValue(0),
+          input: approveContractAbiInterface.encodeFunctionData('approve', [
+            fromWalletAddress,
+            1234567890,
+          ]),
+        },
+        override: {
+          [approveContractAddress]: {},
+        },
       },
-      override: {
-        [approveContractAddress]: {},
+      {
+        transaction: {
+          from: fromWalletAddress,
+          to: universalRouterContractAddress,
+          gas: 0,
+          gas_price: ethers.utils.hexValue(0),
+          value: ethers.utils.hexValue(0),
+          input: universalRouterContractAbiInterface.encodeFunctionData('execute', [
+            '0x0b00',
+            [
+              /* eslint-disable max-len */
+              '0x000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000001b1ae4d6e2ef500000',
+              '0x000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000001b1ae4d6e2ef5000000000000000000000000000000000000000000000000000000000000022251b7b00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000420d500b1d8e8ef31e21c99d1db9a6444d3adf12700001f42791bca1f2de4661ed88a30c99a7a9449aa84174000064c2132d05d31c914a87c6611c10748aeb04b58e8f000000000000000000000000000000000000000000000000000000000000',
+              /* eslint-enable max-len */
+            ],
+          ]),
+        },
+        override: {
+          [universalRouterContractAddress]: {},
+        },
       },
-    },
-    {
-      transaction: {
-        from: fromWalletAddress,
-        to: universalRouterContractAddress,
-        gas: 0,
-        gas_price: ethers.utils.hexValue(0),
-        value: ethers.utils.hexValue(0),
-        input: universalRouterContractAbiInterface.encodeFunctionData('execute', [
-          '0x0b00',
-          [
-            /* eslint-disable max-len */
-            '0x000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000001b1ae4d6e2ef500000',
-            '0x000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000001b1ae4d6e2ef5000000000000000000000000000000000000000000000000000000000000022251b7b00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000420d500b1d8e8ef31e21c99d1db9a6444d3adf12700001f42791bca1f2de4661ed88a30c99a7a9449aa84174000064c2132d05d31c914a87c6611c10748aeb04b58e8f000000000000000000000000000000000000000000000000000000000000',
-            /* eslint-enable max-len */
-          ],
-        ]),
-      },
-      override: {
-        [universalRouterContractAddress]: {},
-      },
-    },
-  ]);
+    ]);
 
-  console.log(JSON.stringify(transaction, null, 2));
+    console.log(JSON.stringify(transaction, null, 2));
+  } catch (e) {
+    console.log(e.response);
+  }
 })();

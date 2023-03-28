@@ -5,8 +5,8 @@ dotenv.config();
 
 const tenderlyInstance = new Tenderly({
   accessKey: process.env.TENDERLY_ACCESS_KEY,
-  accountName: process.env.TENDERLY_ACCOUNT,
-  projectName: process.env.TENDERLY_PROJECT,
+  accountName: process.env.TENDERLY_ACCOUNT_NAME,
+  projectName: process.env.TENDERLY_PROJECT_NAME,
   network: Network.MAINNET,
 });
 
