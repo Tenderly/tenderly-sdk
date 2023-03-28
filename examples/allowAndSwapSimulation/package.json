@@ -1,13 +1,15 @@
 {
   "name": "allow-and-swap-simulation-example",
   "version": "1.0.0",
-  "main": "index.js",
-  "type": "module",
+  "main": "index.ts",
   "dependencies": {
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "ts-node index.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1"
   }
 }

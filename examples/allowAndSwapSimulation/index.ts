@@ -1,16 +1,27 @@
-import { Tenderly, Network } from '@tenderly/sdk';
 import { ethers } from 'ethers';
 import dotenv from 'dotenv';
-import { approveContractAbi, universalRouterContractAbi } from './contractAbis.js';
+import { approveContractAbi, universalRouterContractAbi } from './contractAbis';
+import { Tenderly, Network, InvalidConstructorParametersError } from '../../lib';
 
 dotenv.config();
 
-const tenderly = new Tenderly({
-  accessKey: process.env.TENDERLY_ACCESS_KEY,
-  accountName: process.env.TENDERLY_ACCOUNT_NAME,
-  projectName: process.env.TENDERLY_PROJECT_NAME,
-  network: Network.POLYGON,
-});
+let tenderly: Tenderly;
+
+try {
+  tenderly = new Tenderly({
+    accessKey: process.env.TENDERLY_ACCESS_KEY,
+    accountName: process.env.TENDERLY_ACCOUNT_NAME,
+    projectName: process.env.TENDERLY_PROJECT_NAME,
+    network: Network.POLYGON,
+  });
+} catch (e) {
+  if (e instanceof InvalidConstructorParametersError) {
+    console.log('Please populate your .env file with the correct values');
+    process.exit(1);
+  } else {
+    throw e;
+  }
+}
 
 const approveContractAddress = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174';
 const universalRouterContractAddress = '0x4c60051384bd2d3c01bfc845cf5f4b44bcbe9de5';
