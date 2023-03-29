@@ -2,13 +2,17 @@
   "name": "deploy-and-add-contract",
   "authors": "zdenkolini",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.ts",
   "dependencies": {
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "solc": "^0.8.19"
   },
   "scripts": {
-    "start": "node index.js"
+    "start:with-solc-json": "ts-node verifyWithSolcJson.ts",
+    "start:with-deployment": "ts-node verifyWithDeploy.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1"
   }
 }

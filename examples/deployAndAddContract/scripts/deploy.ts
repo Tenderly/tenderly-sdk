@@ -1,18 +1,12 @@
-/* eslint-disable */
-const fs = require('fs');
-const { ethers } = require('ethers');
-const solc = require('solc');
-const path = require('path');
-const dotenv = require('dotenv');
-const { Tenderly, Network, SolidityCompilerVersions } = require('@tenderly/sdk');
+import fs from 'fs';
+import { ethers } from 'ethers';
+import solc from 'solc';
+import path from 'path';
 
-// Load the environment variables from the .env file
-dotenv.config();
-
-(async function main() {
+export const deployContract = async () => {
   console.log('Reading source code...');
   const contractSourceCode = fs.readFileSync(
-    path.join(__dirname, 'contracts', 'HelloWorld.sol'),
+    path.join(__dirname, '..', 'contracts', 'HelloWorld.sol'),
     'utf-8',
   );
 
@@ -36,6 +30,9 @@ dotenv.config();
         '*': {
           '*': ['*'],
         },
+      },
+      metadata: {
+        useLiteralContent: true,
       },
     },
   };
@@ -83,44 +80,5 @@ dotenv.config();
 
   // Print the contract address
   console.log('Contract address:', contract.address);
-
-  // Create Tenderly instance
-  const tenderly = new Tenderly({
-    accessKey: process.env.TENDERLY_ACCESS_KEY,
-    accountName: process.env.TENDERLY_ACCOUNT_NAME,
-    projectName: process.env.TENDERLY_PROJECT_NAME,
-    network: Network.SEPOLIA,
-  });
-
-  try {
-    console.log('Verifying contract...');
-    // Verify the contract on Tenderly
-    const verificationResult = await tenderly.contracts.verify(contract.address, {
-      mode: 'private',
-      contractToVerify: 'HelloWorld',
-      solc: {
-        compiler: {
-          version: SolidityCompilerVersions.v0_8_19,
-          settings: compilerSettings,
-        },
-        sources: {
-          'HelloWorld.sol': {
-            name: 'HelloWorld',
-            code: contractSourceCode,
-          },
-        },
-      },
-    });
-
-    console.log('Verification result:\n', verificationResult.data.results);
-
-    // Add the contract to the Tenderly project
-    const addContractResult = await tenderly.contracts.add(contract.address, {
-      displayName: 'HelloWorld',
-    });
-
-    console.log('Contract from project:\n', addContractResult);
-  } catch (e) {
-    console.log('Error verifying contract:');
-  }
-})();
+  return { address: contract.address, sourceCode: contractSourceCode, compilerSettings };
+};
