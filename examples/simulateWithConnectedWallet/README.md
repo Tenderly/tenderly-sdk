@@ -1,60 +1,23 @@
-# Simulate A Transaction With A Connected Wallet
+# Vite + React 18 + TS + TailwindCSS + ESLint
 
-In this example you will see how to instantiate a new `Tenderly` instance and `Simulate` a transaction with a connected `Wallet`.
+This is a starter template for React (TypeScript) using Vite. I've also added TailwindCSS so you can style your app without writing CSS code, and ESLint to analyze your code and suggest some optimizations.
 
-## To Run this example
+You can find more about these technologies in the following links: [Vite](https://vitejs.dev/), [React](https://reactjs.org/), [Typescript](https://www.typescriptlang.org/), [TailwindCSS](https://tailwindcss.com/), [Eslint](https://eslint.org/).
 
-Install dependencies
+## How to install
 
-```bash
-# If you want to use current local changes
+Just run the next command in a terminal (make sure that you have installed NPM).
 
-yarn link # in the root of the repo
-
-yarn link @tenderly/hardhat-tenderly # in this directory
-
-yarn
-
-# otherwise just install all packages
-
-yarn
+```
+npx degit dserranoc/vite-reactts18-eslint-tailwindcss project-name
 ```
 
-Update the `Tenderly` constructor with your `accessKey`, `project` and `username` in `index.js`
+## How to start
 
-```javascript
-const tenderly = new Tenderly({
-  accessKey: process.env.ACCESS_KEY,
-  project: process.env.PROJECT,
-  username: process.env.USERNAME,
-});
+After the installation of the dependencies run:
+
+```
+npm run dev
 ```
 
-Run the example
-
-```bash
-yarn start
-```
-
-## TLDR
-
-```javascript
-const provider = new ethers.providers.JsonRpcProvider(
-  // Replace $YOUR_GATEWAY_KEY$ with your gateway key
-  'https://mainnet.gateway.tenderly.co/$YOUR_GATEWAY_KEY$',
-);
-
-const transaction = await provider.send('tenderly_simulateTransaction', [
-  {
-    from: fromWallet.address,
-    to: toWallet.address,
-    gas: ethers.utils.hexValue(0),
-    gasPrice: ethers.utils.hexValue(0),
-    value: ethers.utils.hexValue(0),
-    data:
-      '0xa9059cbb00000000000000000000000020a5814b73ef3537c6e099a0d45c798f4bd6e1d60000000' +
-      '000000000000000000000000000000000000000000000000000000001',
-  },
-  'latest',
-]);
-```
+Made with ❤️ by Daniel Serrano Cobos

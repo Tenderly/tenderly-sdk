@@ -1,14 +1,26 @@
 {
   "name": "simulate-with-connected-wallet",
-  "description": "executes a simulation via the tenderly web3 gateway rpc",
-  "authors": "zdenkolini",
-  "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "version": "0.0.0",
   "type": "module",
-  "dependencies": {
-    "ethers": "^5.7.2"
-  },
   "scripts": {
-    "start": "node index.js"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "ethers": "^5.7.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.15",
+    "@types/react-dom": "^18.0.6",
+    "@vitejs/plugin-react": "^3.0.0",
+    "autoprefixer": "^10.4.8",
+    "postcss": "^8.4.16",
+    "tailwindcss": "^3.1.8",
+    "typescript": "^4.6.4",
+    "vite": "^4.0.1"
   }
 }
