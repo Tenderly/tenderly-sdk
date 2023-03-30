@@ -3,13 +3,11 @@ import { Tenderly, Network, InvalidConstructorParametersError } from '../../lib'
 
 dotenv.config();
 
-let tenderlyInstance: Tenderly;
-
 const mainnetWallet = '0x0D0E328B8fBc4a148Eeae9E7b4791D7A6A0D2d07';
 
 (async () => {
   try {
-    tenderlyInstance = new Tenderly({
+    const tenderlyInstance = new Tenderly({
       accessKey: process.env.TENDERLY_ACCESS_KEY,
       accountName: process.env.TENDERLY_ACCOUNT_NAME,
       projectName: process.env.TENDERLY_PROJECT_NAME,
