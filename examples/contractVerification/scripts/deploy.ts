@@ -31,9 +31,6 @@ export const deployContract = async () => {
           '*': ['*'],
         },
       },
-      metadata: {
-        useLiteralContent: true,
-      },
     },
   };
 

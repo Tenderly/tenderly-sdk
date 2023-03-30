@@ -3,8 +3,13 @@
 In this example you will see how to instantiate a new `Tenderly` instance and add both a verified, and unverified `Contract` to your project.
 
 To do this you will need to call the `add` function in the `contracts` namespace on the `Tenderly` instance.
+
+This function accepts a second parameter for additional metadata for the contract.
 ```javascript
-const contract = await tenderlyInstance.contracts.add('0x1234567890123456789012345678901234567890');
+const contract = await tenderlyInstance.contracts.add('0x1234567890123456789012345678901234567890', {
+  displayName: 'My Contract',
+  network: Network.MAINNET,
+});
 ```
 
 

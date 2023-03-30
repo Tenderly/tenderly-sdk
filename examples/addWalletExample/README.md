@@ -2,6 +2,16 @@
 
 In this example you will see how to instantiate a new `Tenderly` instance and add a `Wallet` to your project.
 
+To do this you will need to call the `add` function in the `wallets` namespace on the `Tenderly` instance.
+
+This function accepts a second parameter for additional metadata for the wallet.
+```javascript
+const wallet = await tenderlyInstance.wallets.add('0x1234567890123456789012345678901234567890', {
+  displayName: 'My Wallet',
+  network: Network.MAINNET,
+});
+```
+
 ## To Run this example
 
 Install dependencies
@@ -43,11 +53,4 @@ Run the example
 
 ```bash
 yarn start
-```
-
-## TLDR
-
-```javascript
-const verifiedContract = await tenderlyInstance.contracts.add('0x1234567890123456789012345678901234567890');
-const unverifiedContract = await tenderlyInstance.contracts.add('0x1234567890123456789012345678901234567890');
 ```
