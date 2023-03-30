@@ -5,12 +5,12 @@ export class ApiClient {
   private readonly api: AxiosInstance;
 
   /**
-   * @param apiKey API key to be used for the requests. 
-   * Can be generated in the Tenderly dashboard: https://dashboard.tenderly.co/account/authorization 
+   * @param apiKey API key to be used for the requests.
+   * Can be generated in the Tenderly dashboard: https://dashboard.tenderly.co/account/authorization
    */
-  constructor({ apiKey }: { apiKey: string }) {
+  constructor({ apiKey, version = 1 }: { apiKey: string; version?: number }) {
     this.api = axios.create({
-      baseURL: `${TENDERLY_API_BASE_URL}/api/v1`,
+      baseURL: `${TENDERLY_API_BASE_URL}/api/v${version}`,
       headers: {
         'Content-Type': 'application/json',
         'X-Access-Key': apiKey,
@@ -20,11 +20,11 @@ export class ApiClient {
   }
 
   /**
-   * 
+   *
    * @param path url path to the resource
    * @param params url query params
    * @returns Promise with AxiosResponse that
-   * contains the response data model with a type of a given generic parameter 
+   * contains the response data model with a type of a given generic parameter
    */
   public get<ResponseModel>(path: string, params?: Record<string, string>) {
     return this.api.get<ResponseModel>(path.replace(/\s/g, ''), { params });
@@ -35,14 +35,14 @@ export class ApiClient {
    * @param path url path to the resource
    * @param data data to be sent to the server. Type of data expected can be specified with a second generic parameter
    * @returns Promise with AxiosResponse that
-   * contains the response data model with a type of a second generic parameter 
+   * contains the response data model with a type of a second generic parameter
    */
   public post<RequestModel, ResponseModel>(path: string, data?: RequestModel) {
     return this.api.post<ResponseModel>(path.replace(/\s/g, ''), data);
   }
 
   /**
-   * 
+   *
    * @param path url path to the resource
    * @param data data to be sent to the server in order to update the model.
    * Type of data expected can be specified with a second generic parameter

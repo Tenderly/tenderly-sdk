@@ -9,8 +9,6 @@ import {
   ContractResponse,
   VerificationRequest,
 } from './contracts.types';
-import { filterEntities } from '../../filters';
-import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 import { handleError } from '../../errors';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
@@ -40,10 +38,20 @@ function mapContractModelToContractRequest(contract: TenderlyContract): Contract
 
 export class ContractRepository implements Repository<TenderlyContract> {
   api: ApiClient;
+  apiV2: ApiClient;
   configuration: TenderlyConfiguration;
 
-  constructor({ api, configuration }: { api: ApiClient; configuration: TenderlyConfiguration }) {
+  constructor({
+    api,
+    apiV2,
+    configuration,
+  }: {
+    api: ApiClient;
+    apiV2: ApiClient;
+    configuration: TenderlyConfiguration;
+  }) {
     this.api = api;
+    this.apiV2 = apiV2;
     this.configuration = configuration;
   }
 
@@ -62,11 +70,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
       /contract/${this.configuration.network}/${address}
     `);
       return mapContractResponseToContractModel(data);
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Add a contract to the Tenderly's instances' project
@@ -98,11 +105,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
       );
 
       return mapContractResponseToContractModel(data);
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Remove a contract from the Tenderly's instances' project
@@ -123,7 +129,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
     } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Update a contract in the Tenderly's instances' project
@@ -180,7 +186,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
     } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Get all contracts in the Tenderly's instances' project
@@ -196,23 +202,26 @@ export class ContractRepository implements Repository<TenderlyContract> {
    */
   async getBy(queryObject: GetByParams = {}) {
     try {
-      const contracts = await this.api.get<ContractResponse[]>(`
-      /account/${this.configuration.accountName}
-      /project/${this.configuration.projectName}
-      /contracts
-    `);
+      const queryFilter = Object.entries(queryObject)
+        .map(([key, value]) => {
+          if (Array.isArray(value)) {
+            return value.map(valueElement => `${key}s=${valueElement}`).join('&');
+          }
 
-      const retVal = filterEntities<ContractResponse>(
-        contracts.data,
-        queryObject,
-        contractsOrWalletsFilterMap,
-      ).map(mapContractResponseToContractModel);
+          return `${key}=${value}`;
+        })
+        .join('&');
 
-      return retVal;
+      const response = await this.apiV2.get<{ contracts?: ContractResponse[] }>(`
+        /accounts/${this.configuration.accountName}
+        /projects/${this.configuration.projectName}
+        /contracts?${queryFilter}`);
+
+      return response.data.contracts?.map(mapContractResponseToContractModel) || [];
     } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     try {
@@ -240,8 +249,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
       );
 
       return result;
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
   }

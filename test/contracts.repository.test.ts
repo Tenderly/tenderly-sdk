@@ -125,8 +125,7 @@ describe('contracts.get', () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const contract = await tenderly.contracts.get('0xfake_contract_address');
-    }
-    catch (error) {
+    } catch (error) {
       expect(error instanceof ApiError).toBeTruthy();
       expect(error.status).toBe(400);
       expect(error.slug).toEqual('non_existing_contract');
@@ -272,13 +271,11 @@ describe('contracts.verify', () => {
           },
         },
       });
-    }
-    catch (error) {
+    } catch (error) {
       expect(error instanceof ApiError).toBeTruthy();
       expect(error.status).toBe(422);
       expect(error.slug).toEqual('compile_error');
     }
-
   });
 });
 
@@ -307,6 +304,7 @@ describe('contract.getBy', () => {
   describe('tags', () => {
     test('returns 1 contract, when 1 tag matches (passed as 1 string, not an array)', async () => {
       const contracts = await getByTenderly.contracts.getBy({ tags: tag1 });
+      console.log(contracts);
 
       expect(contracts).toHaveLength(1);
       expect(contracts[0].address).toEqual(beaconDepositContract);
