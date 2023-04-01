@@ -38,20 +38,10 @@ function mapContractModelToContractRequest(contract: TenderlyContract): Contract
 
 export class ContractRepository implements Repository<TenderlyContract> {
   api: ApiClient;
-  apiV2: ApiClient;
   configuration: TenderlyConfiguration;
 
-  constructor({
-    api,
-    apiV2,
-    configuration,
-  }: {
-    api: ApiClient;
-    apiV2: ApiClient;
-    configuration: TenderlyConfiguration;
-  }) {
+  constructor({ api, configuration }: { api: ApiClient; configuration: TenderlyConfiguration }) {
     this.api = api;
-    this.apiV2 = apiV2;
     this.configuration = configuration;
   }
 
@@ -208,11 +198,11 @@ export class ContractRepository implements Repository<TenderlyContract> {
             return value.map(valueElement => `${key}s=${valueElement}`).join('&');
           }
 
-          return `${key}=${value}`;
+          return `${key}s=${value}`;
         })
         .join('&');
 
-      const response = await this.apiV2.get<{ contracts?: ContractResponse[] }>(`
+      const response = await this.api.with({ version: 2 }).get<{ contracts?: ContractResponse[] }>(`
         /accounts/${this.configuration.accountName}
         /projects/${this.configuration.projectName}
         /contracts?${queryFilter}`);

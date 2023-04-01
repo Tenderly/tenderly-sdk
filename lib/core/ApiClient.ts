@@ -3,12 +3,14 @@ import { TENDERLY_API_BASE_URL, TENDERLY_SDK_VERSION } from '../constants';
 
 export class ApiClient {
   private readonly api: AxiosInstance;
+  private readonly apiKey: string;
 
   /**
    * @param apiKey API key to be used for the requests.
    * Can be generated in the Tenderly dashboard: https://dashboard.tenderly.co/account/authorization
    */
   constructor({ apiKey, version = 1 }: { apiKey: string; version?: number }) {
+    this.apiKey = apiKey;
     this.api = axios.create({
       baseURL: `${TENDERLY_API_BASE_URL}/api/v${version}`,
       headers: {
@@ -17,6 +19,19 @@ export class ApiClient {
         'User-Agent': `@tenderly/sdk-js/${TENDERLY_SDK_VERSION}`,
       },
     });
+  }
+
+  private instances: Record<string, ApiClient> = {};
+
+  public with({ version }: { version: number }) {
+    if (!this.instances[version]) {
+      this.instances[version] = new ApiClient({
+        apiKey: this.apiKey,
+        version,
+      });
+    }
+
+    return this.instances[version];
   }
 
   /**

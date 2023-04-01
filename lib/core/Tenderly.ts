@@ -18,7 +18,6 @@ import { VerificationRequest } from '../repositories/contracts/contracts.types';
 export class Tenderly {
   public readonly configuration: TenderlyConfiguration;
   public readonly api: ApiClient;
-  public readonly apiV2: ApiClient;
 
   /**
    * Contract repository - used for managing contracts on your project
@@ -51,13 +50,11 @@ export class Tenderly {
   constructor(configuration: TenderlyConfiguration) {
     this.configuration = configuration;
     this.api = new ApiClient({ apiKey: configuration.accessKey });
-    this.apiV2 = new ApiClient({ apiKey: configuration.accessKey, version: 2 });
 
     this.simulator = new Simulator({ api: this.api, configuration });
 
     this.contracts = new ContractRepository({
       api: this.api,
-      apiV2: this.apiV2,
       configuration,
     });
 
