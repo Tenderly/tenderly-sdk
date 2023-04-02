@@ -11,10 +11,16 @@ const tenderlyInstance = new Tenderly({
   network: Network.MAINNET,
 });
 
+// utility types not relevant to logic
+type Unwrap<T> = T extends Promise<infer K> ? K : T;
+
 function App() {
   const [addresses, setAddresses] = useState<string[]>([]);
   const [amountToSend, setAmountToSend] = useState(0);
   const [addressToSend, setAddressToSend] = useState('');
+  const [simulationResult, setSimulationResult] = useState<Unwrap<
+    ReturnType<typeof tenderlyInstance.simulator.simulateTransaction>
+  > | null>(null);
 
   if (!window.ethereum) {
     return (
@@ -48,6 +54,7 @@ function App() {
       });
 
       console.log(simulationResult);
+      setSimulationResult(simulationResult);
     } catch (error) {
       if ((error as { code: number })?.code === 4001) {
         alert('Transaction rejected');
@@ -66,13 +73,13 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col gap-y-2 p-3 justify-center items-center">
+    <div className="flex flex-col items-center justify-center p-3 gap-y-2">
       <h1>Simulate with connected wallet</h1>
-      <div className="p-3 flex flex-col gap-y-2 bg-gray-100 rounded shadow">
+      <div className="flex flex-col p-3 bg-gray-100 rounded shadow gap-y-2">
         {addresses.length === 0 && (
           <>
             <p>Connect MetaMask to see your connected addresses and simulate a transaction</p>
-            <button className="p-3 bg-blue-500 text-white rounded" onClick={requestAccounts}>
+            <button className="p-3 text-white bg-blue-500 rounded" onClick={requestAccounts}>
               Connect MetaMask
             </button>
           </>
@@ -100,12 +107,12 @@ function App() {
               />
             </div>
             <h2>Connected addresses</h2>
-            <div className="p-3 flex gap-2">
+            <div className="flex gap-2 p-3">
               {addresses.map(address => (
-                <div key={address} className="p-3 flex flex-col gap-y-2 rounded shadow bg-gray-50">
+                <div key={address} className="flex flex-col p-3 rounded shadow gap-y-2 bg-gray-50">
                   <p className="">{address}</p>
                   <button
-                    className="py-2 px-4 ml-auto bg-green-400 text-white rounded"
+                    className="px-4 py-2 ml-auto text-white bg-green-400 rounded"
                     onClick={() => handleSend(address)}
                   >
                     Send
@@ -113,6 +120,15 @@ function App() {
                 </div>
               ))}
             </div>
+          </>
+        )}
+
+        {simulationResult && (
+          <>
+            <h2>Simulation Result:</h2>
+            <pre className="p-3 text-black bg-gray-300 border border-black border-solid rounded shadow-inner">
+              {JSON.stringify(simulationResult, null, 2)}
+            </pre>
           </>
         )}
       </div>

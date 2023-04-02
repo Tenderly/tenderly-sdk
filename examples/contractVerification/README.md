@@ -7,7 +7,7 @@ To do this you will need to call the `verify` function in the `contracts` namesp
 The `verify` function takes two arguments, the first is the address of the contract you want to verify, the second is an object with the following properties:
 ```javascript
 const contract = await tenderlyInstance.contracts.verify('0x1234567890123456789012345678901234567890', {
-    mode: 'private/public',
+    mode: 'private or public',
     contractToVerify: 'ContractName',
     solc: {
       compiler: {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import dotenv from 'dotenv';
-import { Tenderly, Network, ApiError, InvalidConstructorParametersError } from '../../../lib';
+import { Tenderly, Network, ApiError, InvalidConstructorParametersError } from '../../lib';
 
 dotenv.config();
 
@@ -19,7 +19,7 @@ const fakeContractAddress = '0xfake_contract_address';
     const contractResult = await tenderly.contracts.add(fakeContractAddress);
 
     // Will error before this line
-    console.log(contractResult);
+    console.log('Contract result:', contractResult);
   } catch (e) {
     if (e instanceof InvalidConstructorParametersError) {
       console.log('Please populate your .env file with the correct values');

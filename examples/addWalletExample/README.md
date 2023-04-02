@@ -17,35 +17,16 @@ const wallet = await tenderlyInstance.wallets.add('0x123456789012345678901234567
 Install dependencies
 
 ```bash
-# If you want to use current local changes
-
-# install packages in the root directory
-yarn
-
-# build the package in the root directory
-yarn build
-
-# create yarn link in the root directory
-yarn link
-
-# link the package in this directory
-yarn link @tenderly/hardhat-tenderly
-
-# install packages in this directory
-yarn
-
-# otherwise just install all packages
-
 yarn
 ```
 
-Update the `Tenderly` constructor with your `accessKey`, `project` and `username` in `index.js`
+Update the `Tenderly` constructor with your `accessKey`, `projectName` and `accountName` in `index.js`
 
 ```javascript
 const tenderly = new Tenderly({
   accessKey: process.env.ACCESS_KEY,
-  project: process.env.PROJECT,
-  username: process.env.USERNAME,
+  projectName: process.env.PROJECT_NAME,
+  accountName: process.env.ACCOUNT_NAME,
 });
 ```
 

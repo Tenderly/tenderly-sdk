@@ -1,0 +1,16 @@
+{
+  "name": "add-non-existing-contract",
+  "authors": "zdenkolini",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  },
+  "scripts": {
+    "start": "ts-node index.ts",
+    "start:error-handling": "ts-node ./errorCases/nonExistingContract.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1"
+  }
+}
