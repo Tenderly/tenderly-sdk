@@ -2,7 +2,7 @@ import { Network, Tenderly } from '../lib';
 import { Interface } from 'ethers';
 import { ApiError } from '../lib/errors/ApiError';
 
-jest.setTimeout(25000);
+jest.setTimeout(60000);
 
 let tenderly: Tenderly = null;
 
@@ -75,17 +75,15 @@ test('simulateTransaction works', async () => {
     blockNumber: 12354651,
     override: {
       [counterContract]: {
-        "value": {
-          "count":
-            "66"
-        }
-      }
-    }
+        value: {
+          count: '66',
+        },
+      },
+    },
   });
 
   expect(transaction.timestamp).toBeDefined();
-  expect(transaction.transaction_info.state_diff[0].dirty).toBe("67");
-
+  expect(transaction.transaction_info.state_diff[0].dirty).toBe('67');
 });
 
 test('simulateTransaction throws when block number is set to high', async () => {
@@ -101,14 +99,14 @@ test('simulateTransaction throws when block number is set to high', async () => 
     });
   } catch (error) {
     expect(error instanceof ApiError).toBeTruthy();
-    expect(error.slug).toBe("invalid_transaction_simulation");
+    expect(error.slug).toBe('invalid_transaction_simulation');
     expect(error.message).toBe('Unknown block number');
   }
 });
 
 test('simulateBundle works', async () => {
-  const simulationBundleResult = await tenderly.simulator.simulateBundle(
-    [{
+  const simulationBundleResult = await tenderly.simulator.simulateBundle([
+    {
       transaction: {
         from: nullAddress,
         to: counterContract,
@@ -117,16 +115,15 @@ test('simulateBundle works', async () => {
       blockNumber: 12354651,
       override: {
         [counterContract]: {
-          "value": {
-            "count":
-              "66"
-          }
-        }
-      }
-    }]
-  );
+          value: {
+            count: '66',
+          },
+        },
+      },
+    },
+  ]);
 
-  expect(simulationBundleResult[0].transaction_info.state_diff[0].dirty).toBe("67");
+  expect(simulationBundleResult[0].transaction_info.state_diff[0].dirty).toBe('67');
 });
 
 afterAll(async () => {

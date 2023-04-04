@@ -7,7 +7,7 @@ export interface Wallet {
   network: Network;
 }
 
-export type TenderlyWallet = Wallet
+export type TenderlyWallet = Wallet;
 
 export type WalletRequest = {
   address: string;
@@ -26,6 +26,20 @@ export type WalletResponse = {
     network_id: string;
     address: string;
     // ...
+  };
+  contract?: {
+    id: string;
+    contract_id: string;
+    balance: string;
+    network_id: string;
+    address: string;
+  };
+  wallet?: {
+    id: string;
+    contract_id: string;
+    balance: string;
+    network_id: string;
+    address: string;
   };
   tags?: { tag: string }[];
 };
