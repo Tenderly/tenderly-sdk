@@ -1,17 +1,28 @@
 import { Network, TenderlyConfiguration } from '../../types';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
-import { TenderlyWallet, WalletResponse, UpdateWalletRequest, WalletRequest } from './wallets.types';
+import {
+  TenderlyWallet,
+  WalletResponse,
+  UpdateWalletRequest,
+  WalletRequest,
+  Wallet,
+} from './wallets.types';
 import { GetByParams } from '../contracts/contracts.types';
-import { filterEntities } from '../../filters';
-import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 import { handleError } from '../../errors';
+import { ApiClientProvider } from '../../core/ApiClientProvider';
+
+function getContractFromResponse(contractResponse: WalletResponse): Wallet {
+  const getterProperty: 'account' | 'contract' = contractResponse.account ? 'account' : 'contract';
+
+  return {
+    address: contractResponse[getterProperty].address,
+    network: Number.parseInt(contractResponse[getterProperty].network_id) as unknown as Network,
+  };
+}
 
 function mapWalletResponseToWalletModel(walletResponse: WalletResponse) {
-  const retVal: TenderlyWallet = {
-    address: walletResponse.account.address,
-    network: Number.parseInt(walletResponse.account.network_id) as unknown as Network,
-  };
+  const retVal: TenderlyWallet = getContractFromResponse(walletResponse);
 
   if (walletResponse.tags) {
     retVal.tags = walletResponse.tags.map(({ tag }) => tag);
@@ -33,11 +44,19 @@ function mapWalletModelToWalletRequest(wallet: Partial<TenderlyWallet>): WalletR
 }
 
 export class WalletRepository implements Repository<TenderlyWallet> {
-  api: ApiClient;
-  configuration: TenderlyConfiguration;
+  private readonly api: ApiClient;
+  private readonly apiV2: ApiClient;
+  private readonly configuration: TenderlyConfiguration;
 
-  constructor({ api, configuration }: { api: ApiClient; configuration: TenderlyConfiguration }) {
-    this.api = api;
+  constructor({
+    apiProvider,
+    configuration,
+  }: {
+    apiProvider: ApiClientProvider;
+    configuration: TenderlyConfiguration;
+  }) {
+    this.api = apiProvider.getApiClient({ version: 'v1' });
+    this.apiV2 = apiProvider.getApiClient({ version: 'v2' });
     this.configuration = configuration;
   }
 
@@ -110,8 +129,7 @@ export class WalletRepository implements Repository<TenderlyWallet> {
       `,
         { account_ids: [`eth:${this.configuration.network}:${address}`] },
       );
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
   }
@@ -167,7 +185,32 @@ export class WalletRepository implements Repository<TenderlyWallet> {
     } catch (error) {
       handleError(error);
     }
-  };
+  }
+
+  /**
+   * Get all wallets in the Tenderly instances' project.
+   *
+   */
+  async getAll(): Promise<Wallet[]> {
+    try {
+      const wallets = await this.apiV2.get<{ accounts: WalletResponse[] }>(
+        `
+      /accounts/${this.configuration.accountName}
+      /projects/${this.configuration.projectName}
+      /accounts
+    `,
+        { 'types[]': 'wallet' },
+      );
+
+      if (wallets?.data?.accounts?.length) {
+        return wallets.data.accounts.map(mapWalletResponseToWalletModel);
+      } else {
+        return [];
+      }
+    } catch (error) {
+      handleError(error);
+    }
+  }
 
   /**
    * Get all wallets in the Tenderly instances' project.
@@ -181,19 +224,41 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    *   tags: ['my-tag']
    * });
    */
-  async getBy(queryObject: GetByParams = {}) {
+  async getBy(queryObject: GetByParams = {}): Promise<TenderlyWallet[]> {
     try {
-      const wallets = await this.api.get<WalletResponse[]>(`
-      /account/${this.configuration.accountName}
-      /project/${this.configuration.projectName}
-      /contracts?accountType=wallet
-    `);
-
-      return filterEntities(wallets.data, queryObject, contractsOrWalletsFilterMap).map(
-        mapWalletResponseToWalletModel,
+      const queryParams = this.buildQueryParams(queryObject);
+      const wallets = await this.apiV2.get<{ accounts: WalletResponse[] }>(
+        `
+      /accounts/${this.configuration.accountName}
+      /projects/${this.configuration.projectName}
+      /accounts
+    `,
+        { ...queryParams, 'types[]': 'wallet' },
       );
+
+      if (wallets?.data?.accounts?.length) {
+        return wallets.data.accounts.map(mapWalletResponseToWalletModel);
+      } else {
+        return [];
+      }
     } catch (error) {
       handleError(error);
     }
-  };
+  }
+
+  private buildQueryParams(queryObject: GetByParams = {}) {
+    const queryParams: { [key: string]: string | string[] } = {
+      'networkIDs[]': `${this.configuration.network}`,
+    };
+
+    if (queryObject.displayNames && queryObject.displayNames.filter(x => !!x).length > 0) {
+      queryParams['display_names[]'] = queryObject.displayNames;
+    }
+
+    if (queryObject.tags && queryObject.tags.filter(x => !!x).length > 0) {
+      queryParams['tags[]'] = queryObject.tags;
+    }
+
+    return queryParams;
+  }
 }

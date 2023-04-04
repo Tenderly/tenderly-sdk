@@ -1,8 +1,8 @@
 import { TenderlyConfiguration } from '../types';
-import { ApiClient } from './ApiClient';
 import { WalletRepository, ContractRepository } from '../repositories';
 import { Simulator } from '../executors';
 import { VerificationRequest } from '../repositories/contracts/contracts.types';
+import { ApiClientProvider } from './ApiClientProvider';
 
 /**
  * The main class of the Tenderly SDK
@@ -17,7 +17,7 @@ import { VerificationRequest } from '../repositories/contracts/contracts.types';
  */
 export class Tenderly {
   public readonly configuration: TenderlyConfiguration;
-  public readonly api: ApiClient;
+  // public readonly api: ApiClient;
 
   /**
    * Contract repository - used for managing contracts on your project
@@ -36,6 +36,8 @@ export class Tenderly {
    */
   public readonly simulator: Simulator;
 
+  private readonly apiClientProvider: ApiClientProvider;
+
   /**
    * The main class of the Tenderly SDK
    * Instantiate this class with your config and you're ready to go
@@ -49,19 +51,11 @@ export class Tenderly {
    */
   constructor(configuration: TenderlyConfiguration) {
     this.configuration = configuration;
-    this.api = new ApiClient({ apiKey: configuration.accessKey });
+    const apiProvider = new ApiClientProvider({ apiKey: configuration.accessKey });
 
-    this.simulator = new Simulator({ api: this.api, configuration });
-
-    this.contracts = new ContractRepository({
-      api: this.api,
-      configuration,
-    });
-
-    this.wallets = new WalletRepository({
-      api: this.api,
-      configuration,
-    });
+    this.simulator = new Simulator({ apiProvider, configuration });
+    this.contracts = new ContractRepository({ apiProvider, configuration });
+    this.wallets = new WalletRepository({ apiProvider, configuration });
   }
 
   /**

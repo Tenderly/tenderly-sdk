@@ -8,10 +8,10 @@ import {
   UpdateContractRequest,
   ContractResponse,
   VerificationRequest,
+  Contract,
 } from './contracts.types';
-import { filterEntities } from '../../filters';
-import { contractsOrWalletsFilterMap } from '../../filters/contractsAndWallets';
 import { handleError } from '../../errors';
+import { ApiClientProvider } from '../../core/ApiClientProvider';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
   const retVal: TenderlyContract = {
@@ -39,11 +39,20 @@ function mapContractModelToContractRequest(contract: TenderlyContract): Contract
 }
 
 export class ContractRepository implements Repository<TenderlyContract> {
-  api: ApiClient;
-  configuration: TenderlyConfiguration;
+  private readonly api: ApiClient;
+  private readonly apiV2: ApiClient;
 
-  constructor({ api, configuration }: { api: ApiClient; configuration: TenderlyConfiguration }) {
-    this.api = api;
+  private readonly configuration: TenderlyConfiguration;
+
+  constructor({
+    apiProvider,
+    configuration,
+  }: {
+    apiProvider: ApiClientProvider;
+    configuration: TenderlyConfiguration;
+  }) {
+    this.api = apiProvider.getApiClient({ version: 'v1' });
+    this.apiV2 = apiProvider.getApiClient({ version: 'v2' });
     this.configuration = configuration;
   }
 
@@ -62,11 +71,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
       /contract/${this.configuration.network}/${address}
     `);
       return mapContractResponseToContractModel(data);
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Add a contract to the Tenderly's instances' project
@@ -98,11 +106,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
       );
 
       return mapContractResponseToContractModel(data);
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Remove a contract from the Tenderly's instances' project
@@ -123,7 +130,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
     } catch (error) {
       handleError(error);
     }
-  };
+  }
 
   /**
    * Update a contract in the Tenderly's instances' project
@@ -180,7 +187,24 @@ export class ContractRepository implements Repository<TenderlyContract> {
     } catch (error) {
       handleError(error);
     }
-  };
+  }
+
+  async getAll(): Promise<Contract[]> {
+    try {
+      const wallets = await this.api.get<{ accounts: ContractResponse[] }>(
+        `
+      /accounts/${this.configuration.accountName}
+      /projects/${this.configuration.projectName}
+      /accounts
+    `,
+        { 'types[]': 'contract' },
+      );
+
+      return wallets.data.accounts.map(mapContractResponseToContractModel);
+    } catch (error) {
+      handleError(error);
+    }
+  }
 
   /**
    * Get all contracts in the Tenderly's instances' project
@@ -196,23 +220,41 @@ export class ContractRepository implements Repository<TenderlyContract> {
    */
   async getBy(queryObject: GetByParams = {}) {
     try {
-      const contracts = await this.api.get<ContractResponse[]>(`
-      /account/${this.configuration.accountName}
-      /project/${this.configuration.projectName}
-      /contracts
-    `);
+      const queryParams = this.buildQueryParams(queryObject);
+      const contracts = await this.apiV2.get<{ accounts: ContractResponse[] }>(
+        `
+      /accounts/${this.configuration.accountName}
+      /projects/${this.configuration.projectName}
+      /accounts
+    `,
+        { ...queryParams, 'types[]': 'contract' },
+      );
 
-      const retVal = filterEntities<ContractResponse>(
-        contracts.data,
-        queryObject,
-        contractsOrWalletsFilterMap,
-      ).map(mapContractResponseToContractModel);
-
-      return retVal;
+      if (contracts?.data?.accounts?.length) {
+        return contracts.data.accounts.map(mapContractResponseToContractModel);
+      } else {
+        return [];
+      }
     } catch (error) {
       handleError(error);
     }
-  };
+  }
+
+  private buildQueryParams(queryObject: GetByParams = {}) {
+    const queryParams: { [key: string]: string | string[] } = {
+      'networkIDs[]': `${this.configuration.network}`,
+    };
+
+    if (queryObject.displayNames && queryObject.displayNames.filter(x => !!x).length > 0) {
+      queryParams['display_names[]'] = queryObject.displayNames;
+    }
+
+    if (queryObject.tags && queryObject.tags.filter(x => !!x).length > 0) {
+      queryParams['tags[]'] = queryObject.tags;
+    }
+
+    return queryParams;
+  }
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     try {
@@ -240,8 +282,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
       );
 
       return result;
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error);
     }
   }

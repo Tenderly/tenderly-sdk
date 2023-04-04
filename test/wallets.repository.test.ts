@@ -55,13 +55,13 @@ describe('wallets.add', () => {
     await tenderly.wallets.remove(polygonEtherBridgeWalletAddress);
   });
 
-  test('succesfuly adds wallet', async () => {
+  test('successfully adds wallet', async () => {
     const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
 
     expect(wallet.address).toEqual(polygonEtherBridgeWalletAddress);
   });
 
-  test('adding wallet data will successfuly add with specified data', async () => {
+  test('adding wallet data will successfully add with specified data', async () => {
     const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
       displayName: 'VB3',
       tags: ['tag1', 'tag2'],
@@ -70,7 +70,7 @@ describe('wallets.add', () => {
     expect(wallet.address).toEqual(polygonEtherBridgeWalletAddress);
     expect(wallet.displayName).toEqual('VB3');
     // tags don't work yet
-    // expect(walletResponse.tags.sort()).toEqual(['tag1', 'tag2']);
+    // expect(wallet.tags.sort()).toEqual(['tag1', 'tag2']);
   });
 
   test('returns undefined if wallet exists', async () => {
@@ -83,23 +83,6 @@ describe('wallets.add', () => {
       expect(error.response.data.error.slug).toEqual('already_added');
     });
   });
-
-  // TODO: decide if we want to update wallet data if it exists
-  // test("doesn't update wallet if it exists", async () => {
-  //   await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
-  //     displayName: 'VB3',
-  //     tags: ['tag1', 'tag2'],
-  //   });
-
-  //   const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
-  //     displayName: 'VB4',
-  //     tags: ['tag3', 'tag4'],
-  //   });
-
-  //   expect(wallet.displayName).toEqual('VB3');
-  //   // tags don't work yet
-  //   // expect(walletResponse.tags.sort()).toEqual(['tag1', 'tag2']);
-  // });
 });
 
 describe('wallets.remove', () => {
@@ -203,7 +186,7 @@ describe('wallets.getBy', () => {
 
   describe('tags', () => {
     test('returns 1 wallet, when 1 tag matches (passed as 1 string, not an array)', async () => {
-      const wallets = await getByTenderly.wallets.getBy({ tags: tag1 });
+      const wallets = await getByTenderly.wallets.getBy({ tags: [tag1] });
 
       expect(wallets).toHaveLength(1);
       expect(wallets[0].address).toEqual(binance7WalletAddress);
@@ -212,7 +195,7 @@ describe('wallets.getBy', () => {
     });
 
     test('returns 0 wallets, when no tags match', async () => {
-      const wallets = await getByTenderly.wallets.getBy({ tags: 'Tag4' });
+      const wallets = await getByTenderly.wallets.getBy({ tags: ['Tag4'] });
 
       expect(wallets).toHaveLength(0);
     });
@@ -309,7 +292,7 @@ describe('wallets.getBy', () => {
   describe('displayName', () => {
     test('returns 1 wallet, when displayName matches', async () => {
       const wallets = await getByTenderly.wallets.getBy({
-        displayName: binance7WalletDisplayName,
+        displayNames: [binance7WalletDisplayName],
       });
 
       expect(wallets).toHaveLength(1);
@@ -320,7 +303,7 @@ describe('wallets.getBy', () => {
 
     test('returns 0 wallets, when displayName does not match', async () => {
       const wallets = await getByTenderly.wallets.getBy({
-        displayName: 'non existing display name',
+        displayNames: ['non existing display name'],
       });
 
       expect(wallets).toHaveLength(0);
@@ -343,63 +326,7 @@ describe('wallets.getBy', () => {
     test('returns 2 contracts, when both displayNames match', async () => {
       const wallets = (
         await getByTenderly.wallets.getBy({
-          displayName: [binance7WalletDisplayName, binance8WalletDisplayName],
-        })
-      ).sort((a, b) => (a.address > b.address ? 1 : -1));
-
-      expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
-    });
-  });
-
-  describe('network', () => {
-    test('returns 2 wallets, when network matches', async () => {
-      const wallets = (
-        await getByTenderly.wallets.getBy({
-          network: Network.MAINNET,
-        })
-      ).sort((a, b) => (a.address > b.address ? 1 : -1));
-
-      expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
-    });
-
-    test('returns 0 wallets, when network does not match', async () => {
-      const wallets = await getByTenderly.wallets.getBy({
-        network: Network.ROPSTEN,
-      });
-
-      expect(wallets).toHaveLength(0);
-    });
-
-    test('returns 2 wallets, when network is not passed', async () => {
-      const wallets = (await getByTenderly.wallets.getBy()).sort((a, b) =>
-        a.address > b.address ? 1 : -1,
-      );
-
-      expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
-    });
-
-    test('returns 2 contracts, when empty array is passed', async () => {
-      const wallets = (
-        await getByTenderly.wallets.getBy({
-          network: [],
+          displayNames: [binance7WalletDisplayName, binance8WalletDisplayName],
         })
       ).sort((a, b) => (a.address > b.address ? 1 : -1));
 

@@ -15,9 +15,8 @@ export interface ContractRequest extends Record<string, string> {
 }
 
 export type GetByParams = {
-  tags?: string | string[];
-  displayName?: string | string[];
-  network?: Network | Network[];
+  tags?: string[];
+  displayNames?: string[];
 };
 
 export type ContractResponse = {
@@ -121,27 +120,26 @@ export type UpdateContractRequest = {
 };
 
 export enum SolidityCompilerVersions {
-  v0_8_4 = "v0.8.4",
-  v0_8_13 = "v0.8.13",
-  v0_8_17 = "v0.8.17",
-
+  v0_8_4 = 'v0.8.4',
+  v0_8_13 = 'v0.8.13',
+  v0_8_17 = 'v0.8.17',
 }
 
 export type VerificationRequest = {
   solc: {
     compiler: {
-      version: SolidityCompilerVersions,
+      version: SolidityCompilerVersions;
       settings: {
         optimizer: {
-          enabled: boolean,
-          runs: number,
-        },
-        libraries: Record<Path, Record<string, Web3Address>>
-      },
-    },
-    sources: Record<Path, { name: string, source: string }>
-  },
+          enabled: boolean;
+          runs: number;
+        };
+        libraries: Record<Path, Record<string, Web3Address>>;
+      };
+    };
+    sources: Record<Path, { name: string; source: string }>;
+  };
   config: {
-    mode: "private" | "public"
-  }
-}
+    mode: 'private' | 'public';
+  };
+};
