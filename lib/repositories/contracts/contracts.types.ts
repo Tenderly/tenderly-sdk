@@ -114,31 +114,32 @@ export type ContractResponse = {
   }[];
 };
 
-export type AlreadyAddedContractResponse = {
-  // id: 'eth:1:0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
-  id: string;
-  // project_id: '606aefca-49d9-4b3b-adba-75fe8f610f17',
-  project_id: string;
-  // added_by_id: 'ec6c0c98-c4fd-4ce7-8d68-d33062b6b2ae',
-  added_by_id: string;
-  // details_visible: true,
-  details_visible: boolean;
+// abomination. Leaving it just in case we can't fix this before release and we need to revert to the old API
+// export type AlreadyAddedContractResponse = {
+//   // id: 'eth:1:0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae',
+//   id: string;
+//   // project_id: '606aefca-49d9-4b3b-adba-75fe8f610f17',
+//   project_id: string;
+//   // added_by_id: 'ec6c0c98-c4fd-4ce7-8d68-d33062b6b2ae',
+//   added_by_id: string;
+//   // details_visible: true,
+//   details_visible: boolean;
 
-  // include_in_transaction_listing: true;
-  include_in_transaction_listing: boolean;
-  // display_name: 'Unverified Contract';
+//   // include_in_transaction_listing: true;
+//   include_in_transaction_listing: boolean;
+//   // display_name: 'Unverified Contract';
 
-  display_name: string;
-  account_type: 'unverified_contract' | 'contract' | 'wallet';
-  // added_at: '2023-04-05 09:38:18.686258 +0000 UTC';
-  added_at: string;
-};
+//   display_name: string;
+//   account_type: 'unverified_contract' | 'contract' | 'wallet';
+//   // added_at: '2023-04-05 09:38:18.686258 +0000 UTC';
+//   added_at: string;
+// };
 
-export function isAlreadyAddedContractResponse(
-  contractResponse: ContractResponse | AlreadyAddedContractResponse,
-): contractResponse is AlreadyAddedContractResponse {
-  return !(contractResponse as ContractResponse).contract;
-}
+// export function isAlreadyAddedContractResponse(
+//   contractResponse: ContractResponse | AlreadyAddedContractResponse,
+// ): contractResponse is AlreadyAddedContractResponse {
+//   return !(contractResponse as ContractResponse).contract;
+// }
 
 export type UpdateContractRequest = {
   displayName?: string;

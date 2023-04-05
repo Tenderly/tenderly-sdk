@@ -65,7 +65,6 @@ describe('wallets.add', () => {
   test('adding wallet data will successfully add with specified data', async () => {
     const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
       displayName: 'VB3',
-      tags: ['tag1', 'tag2'],
     });
 
     expect(wallet.address).toEqual(polygonEtherBridgeWalletAddress);

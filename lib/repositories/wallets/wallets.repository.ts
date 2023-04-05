@@ -77,8 +77,8 @@ export class WalletRepository implements Repository<TenderlyWallet> {
       /accounts
     `,
         {
-          'addresses[]': [address],
-          'network_ids[]': [`${this.configuration.network}`],
+          'addresses[]': [address.toLowerCase()],
+          'networkIDs[]': [`${this.configuration.network}`],
           'types[]': ['wallet'],
         },
       );
@@ -101,22 +101,38 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    * @example
    * const wallet = await tenderly.contracts.add('0x1234567890', { displayName: 'My Wallet', tags: ['my-tag'] });
    */
-  async add(address: string, walletData?: Partial<TenderlyWallet>) {
+  async add(address: string, walletData?: { displayName?: string; tags?: string[] }) {
     try {
-      const { data } = await this.api.post<WalletRequest, WalletResponse>(
+      await this.api.post<WalletRequest, WalletResponse>(
         `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /wallet
       `,
         mapWalletModelToWalletRequest({
-          address,
+          address: address.toLowerCase(),
           network: this.configuration.network,
           ...walletData,
         }),
       );
-
-      return mapWalletResponseToWalletModel(data[0]);
+      if (!!walletData?.tags && walletData?.tags?.length > 0) {
+        await Promise.all(
+          walletData?.tags?.map(tag =>
+            this.api.post(
+              `
+          /account/${this.configuration.accountName}
+          /project/${this.configuration.projectName}
+          /tag
+        `,
+              {
+                contract_ids: [`eth:${this.configuration.network}:${address}`],
+                tag,
+              },
+            ),
+          ),
+        );
+      }
+      return this.get(address);
     } catch (error) {
       handleError(error);
     }

@@ -9,23 +9,12 @@ import {
   ContractResponse,
   VerificationRequest,
   Contract,
-  AlreadyAddedContractResponse,
-  isAlreadyAddedContractResponse,
 } from './contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
 import { NotFoundError } from '../../errors/NotFoundError';
 
-function mapContractResponseToContractModel(
-  contractResponse: ContractResponse | AlreadyAddedContractResponse,
-): TenderlyContract {
-  if (isAlreadyAddedContractResponse(contractResponse)) {
-    return {
-      address: contractResponse.id.split(':')[2],
-      network: Number.parseInt(contractResponse.id.split(':')[1]) as unknown as Network,
-      displayName: contractResponse.display_name,
-    };
-  }
+function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
   const retVal: TenderlyContract = {
     address: contractResponse.contract.address,
     network: Number.parseInt(contractResponse.contract.network_id) as unknown as Network,
@@ -68,19 +57,6 @@ export class ContractRepository implements Repository<TenderlyContract> {
     this.configuration = configuration;
   }
 
-  private async getUnverified(address: string) {
-    try {
-      const { data } = await this.api.get<{ account: AlreadyAddedContractResponse }>(`
-      /accounts/${this.configuration.accountName}
-      /projects/${this.configuration.projectName}
-      /contract/${this.configuration.network}/${address}
-    /unverified`);
-      return mapContractResponseToContractModel(data.account);
-    } catch (error) {
-      handleError(error);
-    }
-  }
-
   /**
    * Get a contract by address if it exists in the Tenderly's instances' project
    * @param address - The address of the contract
@@ -90,7 +66,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
    */
   async get(address: string) {
     try {
-      const { data } = await this.apiV2.get<{ accounts: ContractResponse[] }>(
+      const result = await this.apiV2.get<{ accounts: ContractResponse[] }>(
         `
       /accounts/${this.configuration.accountName}
       /projects/${this.configuration.projectName}
@@ -98,18 +74,17 @@ export class ContractRepository implements Repository<TenderlyContract> {
     `,
         {
           'addresses[]': [address],
-          'network_ids[]': [`${this.configuration.network}`],
+          'networkIDs[]': [`${this.configuration.network}`],
           'types[]': ['contract', 'unverified_contract'],
         },
       );
 
-      if (!data?.accounts || data?.accounts?.length === 0) {
+      if (!result.data?.accounts || result.data?.accounts?.length === 0) {
         throw new NotFoundError(`Contract with address ${address} not found`);
       }
 
-      return mapContractResponseToContractModel(data.accounts[0]);
+      return mapContractResponseToContractModel(result.data.accounts[0]);
     } catch (error) {
-      return await this.getUnverified(address);
       handleError(error);
     }
   }
@@ -124,13 +99,11 @@ export class ContractRepository implements Repository<TenderlyContract> {
    * // or
    * const contract = await tenderly.contracts.add('0x1234567890', { displayName: 'MyContract' });
    * // or
-   * const contract = await tenderly.contracts.add('0x1234567890', { tags: ['my-tag'] });
-   * // or
    * const contract = await tenderly.contracts.add('0x1234567890', { displayName: 'MyContract', tags: ['my-tag'] });
    */
-  async add(address: string, contractData: Partial<Omit<TenderlyContract, 'address'>> = {}) {
+  async add(address: string, contractData: { displayName?: string; tags?: string[] } = {}) {
     try {
-      const { data } = await this.api.post<ContractRequest, ContractResponse>(
+      await this.api.post<ContractRequest, ContractResponse>(
         `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
@@ -143,7 +116,24 @@ export class ContractRepository implements Repository<TenderlyContract> {
         }),
       );
 
-      return mapContractResponseToContractModel(data);
+      if (!!contractData?.tags && contractData?.tags?.length > 0) {
+        await Promise.all(
+          contractData?.tags?.map(tag =>
+            this.api.post(
+              `
+          /account/${this.configuration.accountName}
+          /project/${this.configuration.projectName}
+          /tag
+        `,
+              {
+                contract_ids: [`eth:${this.configuration.network}:${address}`],
+                tag,
+              },
+            ),
+          ),
+        );
+      }
+      return this.get(address);
     } catch (error) {
       handleError(error);
     }

@@ -74,8 +74,6 @@ describe('contracts.add', () => {
   test('adding contract data will successfully add with specified data', async () => {
     const lidoContractResponse = await tenderly.contracts.add(lidoContract, {
       displayName: 'Lido',
-      tags: ['staking', 'eth2'],
-      network: Network.MAINNET,
     });
 
     expect(lidoContractResponse.address).toEqual(lidoContract);
