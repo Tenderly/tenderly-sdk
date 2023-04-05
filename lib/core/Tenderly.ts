@@ -3,6 +3,7 @@ import { WalletRepository, ContractRepository } from '../repositories';
 import { Simulator } from '../executors';
 import { VerificationRequest } from '../repositories/contracts/contracts.types';
 import { ApiClientProvider } from './ApiClientProvider';
+import { InvalidArgumentsError } from '../errors/InvalidArgumentsError';
 
 /**
  * The main class of the Tenderly SDK
@@ -50,6 +51,8 @@ export class Tenderly {
    * })
    */
   constructor(configuration: TenderlyConfiguration) {
+    this.checkConfiguration(configuration);
+
     this.configuration = configuration;
     const apiProvider = new ApiClientProvider({ apiKey: configuration.accessKey });
 
@@ -70,5 +73,20 @@ export class Tenderly {
    */
   public with(configurationOverride: Partial<TenderlyConfiguration>) {
     return new Tenderly({ ...this.configuration, ...configurationOverride });
+  }
+
+  checkConfiguration(configuration: TenderlyConfiguration) {
+    if (!configuration.accessKey) {
+      throw new InvalidArgumentsError('Missing access key.');
+    }
+    if (!configuration.accountName) {
+      throw new InvalidArgumentsError('Missing account name.');
+    }
+    if (!configuration.projectName) {
+      throw new InvalidArgumentsError('Missing project name.');
+    }
+    if (!configuration.network) {
+      throw new InvalidArgumentsError('Missing network.');
+    }
   }
 }
