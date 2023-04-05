@@ -3,6 +3,6 @@
   "exclude": ["node_modules", "coverage", "dist"],
   "compilerOptions": {
     "esModuleInterop": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
   }
 }

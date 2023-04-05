@@ -14,6 +14,7 @@ const wrappedEtherContract = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'.toLowe
 const beaconDepositContract = '0x00000000219ab540356cBB839Cbe05303d7705Fa'.toLowerCase();
 const bitDAOTreasuryContract = '0x78605Df79524164911C144801f41e9811B7DB73D'.toLowerCase();
 const arbitrumBridgeContract = '0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a'.toLowerCase();
+const unverifiedContract = '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae'.toLowerCase();
 
 beforeAll(async () => {
   tenderly = new Tenderly({
@@ -29,6 +30,7 @@ beforeAll(async () => {
 
   await Promise.all([
     tenderly.contracts.add(kittyCoreContract),
+    tenderly.contracts.add(unverifiedContract, { displayName: 'Unverified Contract' }),
     tenderly.contracts.add(wrappedEtherContract),
     tenderly.contracts.add(arbitrumBridgeContract),
     getByTenderly.contracts.add(beaconDepositContract),
@@ -62,7 +64,13 @@ describe('contracts.add', () => {
     expect(contract.address).toEqual(lidoContract);
   });
 
-  test('adding contract data will successfuly add with specified data', async () => {
+  test(`adding contract twice doesn't throw an error`, async () => {
+    await tenderly.contracts.add(lidoContract);
+    const contract = await tenderly.contracts.add(lidoContract);
+    expect(contract.address).toEqual(lidoContract);
+  });
+
+  test('adding contract data will successfully add with specified data', async () => {
     const lidoContractResponse = await tenderly.contracts.add(lidoContract, {
       displayName: 'Lido',
       tags: ['staking', 'eth2'],
@@ -121,14 +129,21 @@ describe('contracts.get', () => {
     expect(contract.address).toEqual(kittyCoreContract);
   });
 
+  test('returns unverified contract if it exists', async () => {
+    const contract = await tenderly.contracts.get(unverifiedContract);
+    expect(contract.address).toEqual(unverifiedContract);
+  });
+
   test("throws 400 error with non_existing_contract slug if contract doesn't exist on project", async () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const contract = await tenderly.contracts.get('0xfake_contract_address');
     } catch (error) {
       expect(error instanceof ApiError).toBeTruthy();
-      expect(error.status).toBe(400);
-      expect(error.slug).toEqual('non_existing_contract');
+      // this has been changed to 404 from 400 and slug has been changed to account_not_found from non_existing_contract
+      // since we have an extra call for unverified contracts
+      expect(error.status).toBe(404);
+      expect(error.slug).toEqual('account_not_found');
     }
   });
 });

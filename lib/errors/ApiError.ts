@@ -10,6 +10,7 @@ export class ApiError extends GeneralError {
   constructor({ status, ...error }: { status: number } & TenderlyError) {
     super(error);
     this.status = status;
+    this.name = 'ApiError';
   }
 
   static handle(error: AxiosError<{ error: TenderlyError }>) {

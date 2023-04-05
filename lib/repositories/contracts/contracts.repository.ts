@@ -9,11 +9,22 @@ import {
   ContractResponse,
   VerificationRequest,
   Contract,
+  AlreadyAddedContractResponse,
+  isAlreadyAddedContractResponse,
 } from './contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
 
-function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
+function mapContractResponseToContractModel(
+  contractResponse: ContractResponse | AlreadyAddedContractResponse,
+): TenderlyContract {
+  if (isAlreadyAddedContractResponse(contractResponse)) {
+    return {
+      address: contractResponse.id.split(':')[2],
+      network: Number.parseInt(contractResponse.id.split(':')[1]) as unknown as Network,
+      displayName: contractResponse.display_name,
+    };
+  }
   const retVal: TenderlyContract = {
     address: contractResponse.contract.address,
     network: Number.parseInt(contractResponse.contract.network_id) as unknown as Network,
@@ -56,6 +67,19 @@ export class ContractRepository implements Repository<TenderlyContract> {
     this.configuration = configuration;
   }
 
+  private async getUnverified(address: string) {
+    try {
+      const { data } = await this.api.get<{ account: AlreadyAddedContractResponse }>(`
+      /accounts/${this.configuration.accountName}
+      /projects/${this.configuration.projectName}
+      /contract/${this.configuration.network}/${address}
+    /unverified`);
+      return mapContractResponseToContractModel(data.account);
+    } catch (error) {
+      handleError(error);
+    }
+  }
+
   /**
    * Get a contract by address if it exists in the Tenderly's instances' project
    * @param address - The address of the contract
@@ -72,6 +96,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
     `);
       return mapContractResponseToContractModel(data);
     } catch (error) {
+      return await this.getUnverified(address);
       handleError(error);
     }
   }
