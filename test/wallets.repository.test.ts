@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import { Tenderly, Network } from '../lib';
+import { NotFoundError } from '../lib/errors/NotFoundError';
 
 const liquidityActivePoolWallet = '0xDf9Eb223bAFBE5c5271415C75aeCD68C21fE3D7F'.toLowerCase();
 const canonicalTransactionChainWalletAddress =
@@ -107,13 +108,13 @@ describe('wallets.get', () => {
   });
 
   test("returns undefined value if wallet doesn't exist", async () => {
-    const walletResponse = tenderly.wallets.get('0xfake_wallet_address');
-
-    await expect(walletResponse).rejects.toThrowError(AxiosError);
-    await walletResponse.catch(error => {
-      expect(error.response.status).toEqual(400);
-      expect(error.response.data.error.slug).toEqual('non_existing_account');
-    });
+    try {
+      await tenderly.wallets.get('0xfake_wallet_address');
+      throw new Error('Should not be here');
+    } catch (error) {
+      expect(error instanceof NotFoundError).toBeTruthy();
+      expect(error.slug).toEqual('resource_not_found');
+    }
   });
 });
 

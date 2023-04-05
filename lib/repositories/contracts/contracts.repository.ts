@@ -14,6 +14,7 @@ import {
 } from './contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
+import { NotFoundError } from '../../errors/NotFoundError';
 
 function mapContractResponseToContractModel(
   contractResponse: ContractResponse | AlreadyAddedContractResponse,
@@ -89,12 +90,24 @@ export class ContractRepository implements Repository<TenderlyContract> {
    */
   async get(address: string) {
     try {
-      const { data } = await this.api.get<ContractResponse>(`
-      /account/${this.configuration.accountName}
-      /project/${this.configuration.projectName}
-      /contract/${this.configuration.network}/${address}
-    `);
-      return mapContractResponseToContractModel(data);
+      const { data } = await this.apiV2.get<{ accounts: ContractResponse[] }>(
+        `
+      /accounts/${this.configuration.accountName}
+      /projects/${this.configuration.projectName}
+      /accounts
+    `,
+        {
+          'addresses[]': [address],
+          'network_ids[]': [`${this.configuration.network}`],
+          'types[]': ['contract', 'unverified_contract'],
+        },
+      );
+
+      if (!data?.accounts || data?.accounts?.length === 0) {
+        throw new NotFoundError(`Contract with address ${address} not found`);
+      }
+
+      return mapContractResponseToContractModel(data.accounts[0]);
     } catch (error) {
       return await this.getUnverified(address);
       handleError(error);

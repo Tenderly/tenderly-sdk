@@ -1,5 +1,6 @@
 import { Tenderly, Network, SolidityCompilerVersions } from '../lib';
 import { ApiError } from '../lib/errors/ApiError';
+import { NotFoundError } from '../lib/errors/NotFoundError';
 
 let tenderly: Tenderly = null;
 let rinkebyTenderly: Tenderly = null;
@@ -136,14 +137,11 @@ describe('contracts.get', () => {
 
   test("throws 400 error with non_existing_contract slug if contract doesn't exist on project", async () => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const contract = await tenderly.contracts.get('0xfake_contract_address');
+      await tenderly.contracts.get('0xfake_contract_address');
+      throw new Error('Should not be here');
     } catch (error) {
-      expect(error instanceof ApiError).toBeTruthy();
-      // this has been changed to 404 from 400 and slug has been changed to account_not_found from non_existing_contract
-      // since we have an extra call for unverified contracts
-      expect(error.status).toBe(404);
-      expect(error.slug).toEqual('account_not_found');
+      expect(error instanceof NotFoundError).toBeTruthy();
+      expect(error.slug).toEqual('resource_not_found');
     }
   });
 });

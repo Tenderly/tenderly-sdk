@@ -11,6 +11,7 @@ import {
 import { GetByParams } from '../contracts/contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
+import { NotFoundError } from '../../errors/NotFoundError';
 
 function getContractFromResponse(contractResponse: WalletResponse): Wallet {
   const getterProperty: 'account' | 'contract' = contractResponse.account ? 'account' : 'contract';
@@ -61,23 +62,32 @@ export class WalletRepository implements Repository<TenderlyWallet> {
   }
 
   /**
-   * Get a wallet by address if it exists in the Tenderly's instances' project
-   *
-   * @param {string} address - The address of the wallet
-   * @returns The wallet object in a plain format
+   * Get a contract by address if it exists in the Tenderly's instances' project
+   * @param address - The address of the contract
+   * @returns The contract object in a plain format
    * @example
-   * const wallet = await tenderly.contracts.get('0x1234567890');
+   * const contract = await tenderly.contracts.get('0x1234567890');
    */
   async get(address: string) {
     try {
-      const { data } = await this.api.get<WalletResponse>(`
-      /account/${this.configuration.accountName}
-      /project/${this.configuration.projectName}
-      /wallet/${address}
-      /network/${this.configuration.network}
-    `);
+      const { data } = await this.apiV2.get<{ accounts: WalletResponse[] }>(
+        `
+      /accounts/${this.configuration.accountName}
+      /projects/${this.configuration.projectName}
+      /accounts
+    `,
+        {
+          'addresses[]': [address],
+          'network_ids[]': [`${this.configuration.network}`],
+          'types[]': ['wallet'],
+        },
+      );
 
-      return mapWalletResponseToWalletModel(data);
+      if (!data?.accounts || data?.accounts?.length === 0) {
+        throw new NotFoundError(`Wallet with address ${address} not found`);
+      }
+
+      return mapWalletResponseToWalletModel(data.accounts[0]);
     } catch (error) {
       handleError(error);
     }
