@@ -115,6 +115,7 @@ export class WalletRepository implements Repository<TenderlyWallet> {
           ...walletData,
         }),
       );
+
       if (!!walletData?.tags && walletData?.tags?.length > 0) {
         await Promise.all(
           walletData?.tags?.map(tag =>
@@ -132,7 +133,10 @@ export class WalletRepository implements Repository<TenderlyWallet> {
           ),
         );
       }
-      return this.get(address);
+
+      const result = await this.get(address);
+
+      return result;
     } catch (error) {
       handleError(error);
     }

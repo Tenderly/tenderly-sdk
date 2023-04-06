@@ -1,4 +1,4 @@
-import { Tenderly, Network } from '../lib';
+import { Tenderly, Network } from '../dist';
 
 import * as dotenv from 'dotenv';
 dotenv.config();

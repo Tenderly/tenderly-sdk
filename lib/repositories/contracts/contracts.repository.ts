@@ -133,6 +133,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
           ),
         );
       }
+
       return this.get(address);
     } catch (error) {
       handleError(error);
