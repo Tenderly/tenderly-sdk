@@ -1,26 +1,42 @@
 import { ApiClient } from '../core/ApiClient';
 import { Web3Address } from '../types';
-import { SimulationDetails, SimulationRequest, SimulationResponse } from './Simulator.types';
+import {
+  SimulationParameters,
+  SimulationRequest,
+  SimulateSimpleResponse,
+  SimulationOutput,
+  SimulationBundleDetails,
+  SimulationBundleRequest,
+  EncodeStateRequest,
+  StateOverride,
+  EncodedStateOverride,
+  SimulationParametersOverrides,
+  TransactionParameters,
+  SimulationRequestOverrides,
+  SimulateBundleResponse,
+} from './Simulator.types';
 import { TenderlyConfiguration } from '../types';
 import { handleError } from '../errors';
 import { ApiClientProvider } from '../core/ApiClientProvider';
+import { EncodingError } from '../errors/EncodingError';
 
-function mapToStorageOverrides(override: Record<Web3Address, Record<Web3Address, string>>) {
-  const result = Object.keys(override).map(key => ({
-    address: key,
-    storage: override[key].value,
-  }));
-  const finalResult = {};
-  result.forEach(item => {
-    finalResult[item.address] = { storage: item.storage };
-  });
-  return finalResult;
+function mapToSimulationResult(simpleSimulationResponse: SimulateSimpleResponse): SimulationOutput {
+  return {
+    status: simpleSimulationResponse.status,
+    gasUsed: simpleSimulationResponse.gas_used,
+    cumulativeGasUsed: simpleSimulationResponse.cumulative_gas_used,
+    blockNumber: simpleSimulationResponse.block_number,
+    type: simpleSimulationResponse.type,
+    logsBloom: simpleSimulationResponse.logs_bloom,
+    logs: simpleSimulationResponse.logs,
+    trace: simpleSimulationResponse.trace,
+  };
 }
 
 export class Simulator {
   private readonly api: ApiClient;
-  private readonly apiClientProvider: ApiClientProvider;
   private readonly configuration: TenderlyConfiguration;
+  private readonly apiV2: ApiClient;
 
   constructor({
     apiProvider,
@@ -30,95 +46,225 @@ export class Simulator {
     configuration: TenderlyConfiguration;
   }) {
     this.api = apiProvider.getApiClient({ version: 'v1' });
+    this.apiV2 = apiProvider.getApiClient({ version: 'v2' });
     this.configuration = configuration;
   }
 
-  async simulateTransaction({ transaction, blockNumber, override }: SimulationDetails) {
+  private mapStateOverridesToEncodeStateRequest(
+    overrides: SimulationParametersOverrides,
+  ): EncodeStateRequest {
+    return {
+      networkID: `${this.configuration.network}`,
+      stateOverrides: Object.keys(overrides)
+        .map(contractAddress => ({
+          [contractAddress]: overrides[contractAddress as Web3Address].state,
+        }))
+        .map(x => {
+          const y = {};
+          Object.keys(x).forEach(key => {
+            y[key] = { value: x[key] };
+          });
+          return y;
+        })
+        .reduce((acc, curr) => ({ ...acc, ...curr })),
+    };
+  }
+
+  private mapToEncodedOverrides(
+    stateOverrides: Record<Web3Address, StateOverride>,
+  ): EncodedStateOverride {
+    return Object.keys(stateOverrides)
+      .map(address => address.toLowerCase())
+      .reduce((acc, curr) => {
+        acc[curr] = stateOverrides[curr].value;
+        return acc;
+      }, {});
+  }
+
+  private replaceJSONOverridesWithEncodedOverrides(
+    overrides: SimulationParameters['overrides'],
+    encodedStateOverrides: EncodedStateOverride,
+  ): SimulationRequest['overrides'] {
+    if (!overrides) {
+      return null;
+    }
+
+    return Object.keys(overrides)
+      .map(address => address.toLowerCase())
+      .reduce((acc, curr: Web3Address) => {
+        acc[curr] = {};
+        if (encodedStateOverrides[curr]) {
+          acc[curr].state_diff = encodedStateOverrides[curr];
+        }
+        if (overrides[curr].nonce) {
+          acc[curr].nonce = overrides[curr].nonce;
+        }
+
+        if (overrides[curr].code) {
+          acc[curr].code = overrides[curr].code;
+        }
+
+        if (overrides[curr].nonce) {
+          acc[curr].balance = overrides[curr].nonce;
+        }
+
+        return acc;
+      }, {});
+  }
+
+  private buildSimulationBundleRequest(
+    transactions: TransactionParameters[],
+    blockNumber: number,
+    encodedOverrides: SimulationRequestOverrides,
+  ): SimulationBundleRequest {
+    return {
+      network_id: `${this.configuration.network}`,
+      call_args: transactions.map(transaction => ({
+        from: transaction.from,
+        to: transaction.to,
+        gas: transaction.gas,
+        gas_price: transaction.gas_price,
+        max_fee_per_gas: transaction.max_fee_per_gas,
+        max_priority_fee_per_gas: transaction.max_priority_fee_per_gas,
+        value: transaction.value,
+        data: transaction.input,
+        access_list: transaction.access_list,
+      })),
+      block_number_or_hash: {
+        blockNumber: blockNumber,
+      },
+      overrides: encodedOverrides,
+    };
+  }
+
+  private buildSimpleSimulationRequest(
+    transaction: TransactionParameters,
+    blockNumber: number,
+    encodedOverrides: SimulationRequestOverrides,
+  ): SimulationRequest {
+    return {
+      network_id: `${this.configuration.network}`,
+      call_args: {
+        from: transaction.from,
+        to: transaction.to,
+        gas: transaction.gas,
+        gas_price: transaction.gas_price,
+        max_fee_per_gas: transaction.max_fee_per_gas,
+        max_priority_fee_per_gas: transaction.max_priority_fee_per_gas,
+        value: transaction.value,
+        data: transaction.input,
+        access_list: transaction.access_list,
+      },
+      block_number_or_hash: {
+        blockNumber: blockNumber,
+      },
+      overrides: encodedOverrides,
+    };
+  }
+
+  private async encodeOverrideRequest(overrides: SimulationParametersOverrides) {
+    const encodedStateOverrides = await this.encodeStateOverrides(overrides);
+    return this.replaceJSONOverridesWithEncodedOverrides(overrides, encodedStateOverrides);
+  }
+
+  private async encodeStateOverrides(overrides: SimulationParametersOverrides) {
+    if (!overrides) {
+      return null;
+    }
+    const encodingRequest = this.mapStateOverridesToEncodeStateRequest(overrides);
     try {
-      let overrides = null;
-      if (override) {
-        const { data: encodedStates } = await this.api.post<
-          unknown,
-          { stateOverrides: Record<Web3Address, Record<Web3Address, string>> }
-        >(
-          `/account/${this.configuration.accountName}
+      const { data: encodedStates } = await this.api.post<
+        EncodeStateRequest,
+        { stateOverrides: StateOverride }
+      >(
+        `/account/${this.configuration.accountName}
           /project/${this.configuration.projectName}
           /contracts/encode-states
         `,
-          {
-            networkID: `${this.configuration.network}`,
-            stateOverrides: override,
-          },
-        );
-        overrides = mapToStorageOverrides(encodedStates.stateOverrides);
+        encodingRequest,
+      );
+      return this.mapToEncodedOverrides(encodedStates.stateOverrides);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.error) {
+        throw new EncodingError(error.response.data.error);
       }
+      throw error;
+    }
+  }
 
-      const requestBody = {
-        block_number: blockNumber,
-        from: transaction.from,
-        to: transaction.to,
-        input: transaction.input,
-        state_objects: overrides,
-        network_id: `${this.configuration.network}`,
-      };
-
-      const { data } = await this.api.post<SimulationRequest, SimulationResponse>(
-        `
+  private async executeSimpleSimulationRequest(
+    simulationRequest: SimulationRequest,
+  ): Promise<SimulateSimpleResponse> {
+    const { data } = await this.apiV2.post<SimulationRequest, SimulateSimpleResponse>(
+      `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
-        /simulate
+        /simulations/simulate
         `,
-        requestBody,
+      simulationRequest,
+    );
+
+    return data;
+  }
+
+  private async executeSimulationBundleRequest(
+    simulationRequest: SimulationBundleRequest,
+  ): Promise<SimulateBundleResponse> {
+    const { data } = await this.apiV2.post<SimulationBundleRequest, SimulateBundleResponse>(
+      `
+        /account/${this.configuration.accountName}
+        /project/${this.configuration.projectName}
+        /simulations/simulate/bundle
+        `,
+      simulationRequest,
+    );
+
+    return data;
+  }
+
+  async simulateTransaction({ transaction, blockNumber, overrides }: SimulationParameters) {
+    try {
+      // Encode overrides if present
+      const encodedOverrides = await this.encodeOverrideRequest(overrides);
+
+      // Repackage the request body for the POST request for executing simulation
+      const simulationRequest = this.buildSimpleSimulationRequest(
+        transaction,
+        blockNumber,
+        encodedOverrides,
       );
 
-      return data.transaction;
+      // Execute the simulation
+      const simpleSimulationResponse = await this.executeSimpleSimulationRequest(simulationRequest);
+
+      // Map simulation result into a more user friendly format
+      return mapToSimulationResult(simpleSimulationResponse);
     } catch (error) {
       handleError(error);
     }
   }
 
-  async simulateBundle(simulationDetailsArray: SimulationDetails[]) {
+  async simulateBundle({ transactions, overrides, blockNumber }: SimulationBundleDetails) {
     try {
-      const encodedStatesPromises = simulationDetailsArray.map(async sd => {
-        return this.api.post<
-          unknown,
-          { stateOverrides: Record<Web3Address, Record<Web3Address, string>> }
-        >(
-          `/account/${this.configuration.accountName}
-          /project/${this.configuration.projectName}
-          /contracts/encode-states
-        `,
-          {
-            networkID: `${this.configuration.network}`,
-            stateOverrides: sd.override,
-          },
-        );
-      });
+      // Encode overrides if present
+      const encodedOverrides = await this.encodeOverrideRequest(overrides);
 
-      const encodedStates = await Promise.all(encodedStatesPromises);
-
-      const { data } = await this.api.post<
-        { simulations: SimulationRequest[] },
-        { simulation_results: SimulationResponse[] }
-      >(
-        `
-        /account/${this.configuration.accountName}
-        /project/${this.configuration.projectName}
-        /simulate-batch
-        `,
-        {
-          simulations: simulationDetailsArray.map((simulationDetails, index) => ({
-            block_number: simulationDetails.blockNumber,
-            from: simulationDetails.transaction.from,
-            to: simulationDetails.transaction.to,
-            input: simulationDetails.transaction.input,
-            state_objects: mapToStorageOverrides(encodedStates[index].data.stateOverrides),
-            network_id: `${this.configuration.network}`,
-          })),
-        },
+      // Repackage the request body for the POST request for executing simulation bundle
+      const simulationBundleRequest = this.buildSimulationBundleRequest(
+        transactions,
+        blockNumber,
+        encodedOverrides,
       );
 
-      return data.simulation_results.map(simulationResult => simulationResult.transaction);
+      // Execute the simulation
+      const simulationBundleResponse = await this.executeSimulationBundleRequest(
+        simulationBundleRequest,
+      );
+
+      // Map simulation result into a more user friendly format
+      return simulationBundleResponse.simulations.map(simulation =>
+        mapToSimulationResult(simulation),
+      );
     } catch (error) {
       handleError(error);
     }
