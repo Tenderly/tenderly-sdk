@@ -1,4 +1,4 @@
-import { Tenderly, Network } from '../lib';
+import { Tenderly, Network } from '../../lib';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -11,11 +11,11 @@ try {
     network: Network.MAINNET,
   });
 
-  const kittyContractAddress = '0x06012c8cf97BEaD5deAe237070F9587f8E7A266d'.toLowerCase();
+  const daiContract = '0x6b175474e89094c44da98b954eedeac495271d0f'.toLowerCase();
   const unverifiedContractAddress = '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae'.toLowerCase();
 
   (async () => {
-    const kittyContract = await tenderly.contracts.get(kittyContractAddress);
+    const kittyContract = await tenderly.contracts.get(daiContract);
     const unverifiedContract = await tenderly.contracts.get(unverifiedContractAddress);
 
     console.log(unverifiedContract);

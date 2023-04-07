@@ -3,7 +3,7 @@ node_modules
 
 coverage
 
-.vscode/settings.json
+.vscode
 .env
 
 .pnp.*

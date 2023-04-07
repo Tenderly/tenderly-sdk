@@ -29,7 +29,7 @@ export class ApiClient {
    * @returns Promise with AxiosResponse that
    * contains the response data model with a type of a given generic parameter
    */
-  public get<ResponseModel>(path: string, params?: Record<string, string>) {
+  public get<ResponseModel>(path: string, params?: Record<string, string | string[]>) {
     return this.api.get<ResponseModel>(path.replace(/\s/g, ''), { params });
   }
 

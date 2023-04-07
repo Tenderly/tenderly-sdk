@@ -11,6 +11,7 @@ import {
 import { GetByParams } from '../contracts/contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
+import { NotFoundError } from '../../errors/NotFoundError';
 
 function getContractFromResponse(contractResponse: WalletResponse): Wallet {
   const getterProperty: 'account' | 'contract' = contractResponse.account ? 'account' : 'contract';
@@ -44,7 +45,7 @@ function mapWalletModelToWalletRequest(wallet: Partial<TenderlyWallet>): WalletR
 }
 
 export class WalletRepository implements Repository<TenderlyWallet> {
-  private readonly api: ApiClient;
+  private readonly apiV1: ApiClient;
   private readonly apiV2: ApiClient;
   private readonly configuration: TenderlyConfiguration;
 
@@ -55,29 +56,38 @@ export class WalletRepository implements Repository<TenderlyWallet> {
     apiProvider: ApiClientProvider;
     configuration: TenderlyConfiguration;
   }) {
-    this.api = apiProvider.getApiClient({ version: 'v1' });
+    this.apiV1 = apiProvider.getApiClient({ version: 'v1' });
     this.apiV2 = apiProvider.getApiClient({ version: 'v2' });
     this.configuration = configuration;
   }
 
   /**
-   * Get a wallet by address if it exists in the Tenderly's instances' project
-   *
-   * @param {string} address - The address of the wallet
-   * @returns The wallet object in a plain format
+   * Get a contract by address if it exists in the Tenderly's instances' project
+   * @param address - The address of the contract
+   * @returns The contract object in a plain format
    * @example
-   * const wallet = await tenderly.contracts.get('0x1234567890');
+   * const contract = await tenderly.contracts.get('0x1234567890');
    */
   async get(address: string) {
     try {
-      const { data } = await this.api.get<WalletResponse>(`
-      /account/${this.configuration.accountName}
-      /project/${this.configuration.projectName}
-      /wallet/${address}
-      /network/${this.configuration.network}
-    `);
+      const { data } = await this.apiV2.get<{ accounts: WalletResponse[] }>(
+        `
+      /accounts/${this.configuration.accountName}
+      /projects/${this.configuration.projectName}
+      /accounts
+    `,
+        {
+          'addresses[]': [address.toLowerCase()],
+          'networkIDs[]': [`${this.configuration.network}`],
+          'types[]': ['wallet'],
+        },
+      );
 
-      return mapWalletResponseToWalletModel(data);
+      if (!data?.accounts || data?.accounts?.length === 0) {
+        throw new NotFoundError(`Wallet with address ${address} not found`);
+      }
+
+      return mapWalletResponseToWalletModel(data.accounts[0]);
     } catch (error) {
       handleError(error);
     }
@@ -86,24 +96,30 @@ export class WalletRepository implements Repository<TenderlyWallet> {
   /**
    * Add a wallet to the project.
    * @param address - The address of the wallet
-   * @param walletData - Values to populate the displayName, and tags with
+   * @param walletData - Values to populate the displayName
    * @returns The wallet object in a plain format
    * @example
-   * const wallet = await tenderly.contracts.add('0x1234567890', { displayName: 'My Wallet', tags: ['my-tag'] });
+   * const wallet = await tenderly.contracts.add('0x1234567890', { displayName: 'My Wallet' });
    */
-  async add(address: string, walletData?: Partial<TenderlyWallet>) {
+  async add(address: string, walletData?: { displayName?: string }) {
     try {
-      const { data } = await this.api.post<WalletRequest, WalletResponse>(
+      const { data } = await this.apiV1.post<
+        WalletRequest & { return_existing: boolean },
+        WalletResponse
+      >(
         `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
         /wallet
       `,
-        mapWalletModelToWalletRequest({
-          address,
-          network: this.configuration.network,
-          ...walletData,
-        }),
+        {
+          return_existing: true,
+          ...mapWalletModelToWalletRequest({
+            address: address.toLowerCase(),
+            network: this.configuration.network,
+            ...walletData,
+          }),
+        },
       );
 
       return mapWalletResponseToWalletModel(data[0]);
@@ -121,7 +137,7 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    */
   async remove(address: string) {
     try {
-      await this.api.delete(
+      await this.apiV1.delete(
         `
       /account/${this.configuration.accountName}
       /project/${this.configuration.projectName}
@@ -150,7 +166,7 @@ export class WalletRepository implements Repository<TenderlyWallet> {
   async update(address: string, payload: UpdateWalletRequest) {
     try {
       let promiseArray = payload.appendTags?.map(tag =>
-        this.api.post(
+        this.apiV1.post(
           `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
@@ -167,7 +183,7 @@ export class WalletRepository implements Repository<TenderlyWallet> {
 
       if (payload.displayName) {
         promiseArray.push(
-          this.api.post(
+          this.apiV1.post(
             `
             /account/${this.configuration.accountName}
             /project/${this.configuration.projectName}
@@ -219,12 +235,11 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    * @example
    * const wallets = await tenderly.contracts.getBy();
    * const wallets = await tenderly.contracts.getBy({
-   *   network: Network.Mainnet,
    *   displayName: 'My Wallet',
    *   tags: ['my-tag']
    * });
    */
-  async getBy(queryObject: GetByParams = {}): Promise<TenderlyWallet[]> {
+  async getBy(queryObject: GetByParams = {}): Promise<TenderlyWallet[] | undefined> {
     try {
       const queryParams = this.buildQueryParams(queryObject);
       const wallets = await this.apiV2.get<{ accounts: WalletResponse[] }>(

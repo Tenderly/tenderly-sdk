@@ -3,6 +3,12 @@
   "exclude": ["node_modules", "coverage", "dist"],
   "compilerOptions": {
     "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "target": "ES2016",
+    "module": "commonjs",
+    "moduleResolution": "node16",
   }
 }

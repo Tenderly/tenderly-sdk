@@ -1,10 +1,16 @@
 import { Network, Tenderly, Web3Address } from '../lib';
 import { Interface } from 'ethers';
 import { ApiError } from '../lib/errors/ApiError';
+import { RawEvent, SimulationOutput } from '../lib/executors/Simulator.types';
 
 jest.setTimeout(60000);
 
-let tenderly: Tenderly = null;
+const tenderly = new Tenderly({
+  accessKey: process.env.TENDERLY_ACCESS_KEY || '',
+  accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
+  projectName: process.env.TENDERLY_PROJECT_NAME || '',
+  network: Network.SEPOLIA,
+});
 
 const counterContract = '0x93Cc0A80DE37EC4A4F97240B9807CDdfB4a19fB1'.toLowerCase() as Web3Address;
 const callerAddress = '0xDBcB6Db1FFEaA10cd157F985a8543261250eFA46'.toLowerCase() as Web3Address;
@@ -86,13 +92,6 @@ const counterContractAbi = [
 const counterContractAbiInterface = new Interface(counterContractAbi);
 
 beforeAll(async () => {
-  tenderly = new Tenderly({
-    accessKey: process.env.TENDERLY_ACCESS_KEY,
-    accountName: process.env.TENDERLY_ACCOUNT_NAME,
-    projectName: process.env.TENDERLY_PROJECT_NAME,
-    network: Network.SEPOLIA,
-  });
-
   await tenderly.contracts.add(counterContract);
 });
 
@@ -109,9 +108,13 @@ test('simulateTransaction works', async () => {
     blockNumber: 3237677,
   });
 
-  const [eventName, previousValue, newValue, caller] = counterContractAbiInterface
-    .parseLog(transaction.logs[0].raw)
-    .args.toArray();
+  if (!transaction?.logs || transaction.logs.length === 0) {
+    throw new Error('No logs found in transaction');
+  }
+
+  const [eventName, previousValue, newValue, caller] =
+    counterContractAbiInterface?.parseLog(transaction.logs[0].raw as RawEvent)?.args?.toArray() ||
+    [];
 
   expect(eventName).toBe('Increment');
   expect(previousValue).toBe(BigInt(0));
@@ -139,9 +142,13 @@ test('simulateTransaction works with overrides', async () => {
     },
   });
 
-  const [eventName, previousValue, newValue, caller] = counterContractAbiInterface
-    .parseLog(transaction.logs[0].raw)
-    .args.toArray();
+  if (!transaction?.logs || transaction.logs.length === 0) {
+    throw new Error('No logs found in transaction');
+  }
+
+  const [eventName, previousValue, newValue, caller] =
+    counterContractAbiInterface?.parseLog(transaction.logs[0].raw as RawEvent)?.args?.toArray() ||
+    [];
 
   expect(eventName).toBe('Increment');
   expect(previousValue).toBe(BigInt(66));
@@ -193,9 +200,16 @@ test('simulateBundle works', async () => {
     blockNumber: 3237677,
   });
 
-  const firstLog = counterContractAbiInterface
-    .parseLog(simulationBundle[0].logs[0].raw)
-    .args.toArray();
+  if (!simulationBundle || simulationBundle.length !== 2) {
+    throw new Error('Simulation bundle is invalid');
+  }
+
+  const firstSimulation = simulationBundle[0] as SimulationOutput;
+
+  const firstLog =
+    counterContractAbiInterface
+      ?.parseLog(firstSimulation?.logs[0].raw as RawEvent)
+      ?.args?.toArray() || [];
 
   expect(firstLog[0]).toBe('Increment'); // method
   expect(firstLog[1]).toBe(BigInt(0)); // oldNumber

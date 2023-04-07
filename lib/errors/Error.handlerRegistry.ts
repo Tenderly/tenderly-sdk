@@ -1,14 +1,7 @@
 import { ErrorHandler } from './Error.types';
 
-export const errorHandlers: ErrorHandler[] = [];
+export const errorHandlers: Set<ErrorHandler> = new Set();
 
-/**
- *  Use only as a decorator
- * @example
- * '@errorHandler
- *    export class ApiError extends GeneralError {}
- *'
- */
 export function errorHandler(handlerClass: ErrorHandler) {
-  errorHandlers.push(handlerClass);
+  errorHandlers.add(handlerClass);
 }
