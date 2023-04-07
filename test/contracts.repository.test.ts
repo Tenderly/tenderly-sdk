@@ -1,4 +1,4 @@
-import { Tenderly, Network, SolidityCompilerVersions } from '../lib';
+import { Tenderly, Network } from '../lib';
 import { ApiError } from '../lib/errors/ApiError';
 import { NotFoundError } from '../lib/errors/NotFoundError';
 
@@ -196,7 +196,7 @@ describe('contracts.verify', () => {
       },
       solc: {
         compiler: {
-          version: SolidityCompilerVersions.v0_8_13,
+          version: 'v0.8.13',
           settings: {
             libraries: {},
             optimizer: {
@@ -247,7 +247,7 @@ describe('contracts.verify', () => {
         },
         solc: {
           compiler: {
-            version: SolidityCompilerVersions.v0_8_4,
+            version: 'v0.8.4',
             settings: {
               libraries: {},
               optimizer: {
