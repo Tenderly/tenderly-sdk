@@ -40,7 +40,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  console.log('Affter all!');
   await Promise.all([
     tenderly.wallets.add(walletAddress),
     tenderly.wallets.remove(liquidityActivePoolWallet),
