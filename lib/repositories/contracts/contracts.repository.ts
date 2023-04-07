@@ -40,7 +40,7 @@ function mapContractModelToContractRequest(contract: TenderlyContract): Contract
 }
 
 export class ContractRepository implements Repository<TenderlyContract> {
-  private readonly api: ApiClient;
+  private readonly apiV1: ApiClient;
   private readonly apiV2: ApiClient;
 
   private readonly configuration: TenderlyConfiguration;
@@ -52,7 +52,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
     apiProvider: ApiClientProvider;
     configuration: TenderlyConfiguration;
   }) {
-    this.api = apiProvider.getApiClient({ version: 'v1' });
+    this.apiV1 = apiProvider.getApiClient({ version: 'v1' });
     this.apiV2 = apiProvider.getApiClient({ version: 'v2' });
     this.configuration = configuration;
   }
@@ -98,12 +98,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
    * const contract = await tenderly.contracts.add('0x1234567890');
    * // or
    * const contract = await tenderly.contracts.add('0x1234567890', { displayName: 'MyContract' });
-   * // or
-   * const contract = await tenderly.contracts.add('0x1234567890', { displayName: 'MyContract', tags: ['my-tag'] });
    */
-  async add(address: string, contractData: { displayName?: string; tags?: string[] } = {}) {
+  async add(address: string, contractData: { displayName?: string } = {}) {
     try {
-      await this.api.post<ContractRequest, ContractResponse>(
+      await this.apiV1.post<ContractRequest, ContractResponse>(
         `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
@@ -115,24 +113,6 @@ export class ContractRepository implements Repository<TenderlyContract> {
           ...contractData,
         }),
       );
-
-      if (!!contractData?.tags && contractData?.tags?.length > 0) {
-        await Promise.all(
-          contractData?.tags?.map(tag =>
-            this.api.post(
-              `
-          /account/${this.configuration.accountName}
-          /project/${this.configuration.projectName}
-          /tag
-        `,
-              {
-                contract_ids: [`eth:${this.configuration.network}:${address}`],
-                tag,
-              },
-            ),
-          ),
-        );
-      }
 
       return this.get(address);
     } catch (error) {
@@ -149,7 +129,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
    */
   async remove(address: string) {
     try {
-      await this.api.delete(
+      await this.apiV1.delete(
         `
         /account/${this.configuration.accountName}
         /project/${this.configuration.projectName}
@@ -181,7 +161,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
   async update(address: string, payload: UpdateContractRequest) {
     try {
       let promiseArray = payload.appendTags?.map(tag =>
-        this.api.post(
+        this.apiV1.post(
           `
           /account/${this.configuration.accountName}
           /project/${this.configuration.projectName}
@@ -198,7 +178,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
       if (payload.displayName) {
         promiseArray.push(
-          this.api.post(
+          this.apiV1.post(
             `
             /account/${this.configuration.accountName}
             /project/${this.configuration.projectName}
@@ -220,7 +200,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
   async getAll(): Promise<Contract[]> {
     try {
-      const wallets = await this.api.get<{ accounts: ContractResponse[] }>(
+      const wallets = await this.apiV1.get<{ accounts: ContractResponse[] }>(
         `
       /accounts/${this.configuration.accountName}
       /projects/${this.configuration.projectName}
@@ -243,11 +223,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
    * const contracts = await tenderly.contracts.getBy();
    * const contracts = awiat tenderly.contracts.getBy({
    *   tags: ['my-tag'],
-   *   displayName: ['MyContract'],
-   *   network: [Networks.Mainnet, Networks.Rinkeby],
+   *   displayName: ['MyContract']
    * });
    */
-  async getBy(queryObject: GetByParams = {}) {
+  async getBy(queryObject: GetByParams = {}): Promise<TenderlyContract[]> {
     try {
       const queryParams = this.buildQueryParams(queryObject);
       const contracts = await this.apiV2.get<{ accounts: ContractResponse[] }>(
@@ -287,7 +266,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     try {
-      const result = await this.api.post(
+      const result = await this.apiV1.post(
         `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,
         {
           config: {

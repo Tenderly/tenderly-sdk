@@ -34,7 +34,7 @@ function mapToSimulationResult(simpleSimulationResponse: SimulateSimpleResponse)
 }
 
 export class Simulator {
-  private readonly api: ApiClient;
+  private readonly apiV1: ApiClient;
   private readonly configuration: TenderlyConfiguration;
   private readonly apiV2: ApiClient;
 
@@ -45,7 +45,7 @@ export class Simulator {
     apiProvider: ApiClientProvider;
     configuration: TenderlyConfiguration;
   }) {
-    this.api = apiProvider.getApiClient({ version: 'v1' });
+    this.apiV1 = apiProvider.getApiClient({ version: 'v1' });
     this.apiV2 = apiProvider.getApiClient({ version: 'v2' });
     this.configuration = configuration;
   }
@@ -173,7 +173,7 @@ export class Simulator {
     }
     const encodingRequest = this.mapStateOverridesToEncodeStateRequest(overrides);
     try {
-      const { data: encodedStates } = await this.api.post<
+      const { data: encodedStates } = await this.apiV1.post<
         EncodeStateRequest,
         { stateOverrides: StateOverride }
       >(

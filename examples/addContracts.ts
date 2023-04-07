@@ -18,7 +18,6 @@ try {
   (async () => {
     const unverifiedContract = await tenderly.contracts.add(unverifiedContractAddress, {
       displayName: 'Unverified Contract',
-      tags: ['unverified-tag'],
     });
     const verifiedContract = await tenderly.contracts.add(daiContract);
 
@@ -26,7 +25,6 @@ try {
       .with({ network: Network.SEPOLIA })
       .wallets.add(sepoliaWalletAddress, {
         displayName: 'Sepolia Wallet',
-        tags: ['sepolia-tag'],
       });
 
     console.log(unverifiedContract);

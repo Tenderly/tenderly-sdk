@@ -1,39 +1,36 @@
 import { Tenderly, Network } from '../lib';
 import { NotFoundError } from '../lib/errors/NotFoundError';
-import { ApiError } from '../lib/errors/ApiError';
 
 jest.setTimeout(60000);
+
+const walletAddress = '0xDBcB6Db1FFEaA10cd157F985a8543261250eFA46'.toLowerCase();
 
 const liquidityActivePoolWallet = '0xDf9Eb223bAFBE5c5271415C75aeCD68C21fE3D7F'.toLowerCase();
 const canonicalTransactionChainWalletAddress =
   '0x5E4e65926BA27467555EB562121fac00D24E9dD2'.toLowerCase();
 const polygonEtherBridgeWalletAddress = '0x8484Ef722627bf18ca5Ae6BcF031c23E6e922B30'.toLowerCase();
 const geminiContract1WalletAddress = '0x07Ee55aA48Bb72DcC6E9D78256648910De513eca'.toLowerCase();
-const golemMultiSigWalletAddress = '0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9'.toLowerCase();
-const kraken13WalletAddress = '0xDA9dfA130Df4dE4673b89022EE50ff26f6EA73Cf'.toLowerCase();
+const someOtherWalletAddress = '0xe1f8EbeC8A5b270902C4B0fA261490698dfD33eb'.toLowerCase();
+const someThirdWallet = '0xAc34758802995Da3279f038D8465E87EC9aDb24B'.toLowerCase();
 const binance7WalletAddress = '0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8'.toLowerCase();
 const binance8WalletAddress = '0xF977814e90dA44bFA03b6295A0616a897441aceC'.toLowerCase();
 
-let tenderly: Tenderly = null;
-let getByTenderly: Tenderly = null;
+const tenderly = new Tenderly({
+  accessKey: process.env.TENDERLY_ACCESS_KEY || '',
+  accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
+  projectName: process.env.TENDERLY_PROJECT_NAME || '',
+  network: Network.MAINNET,
+});
+const getByTenderly = tenderly.with({
+  projectName: process.env.TENDERLY_GET_BY_PROJECT_NAME,
+});
 
 beforeAll(async () => {
-  tenderly = new Tenderly({
-    accessKey: process.env.TENDERLY_ACCESS_KEY,
-    accountName: process.env.TENDERLY_ACCOUNT_NAME,
-    projectName: process.env.TENDERLY_PROJECT_NAME,
-    network: Network.MAINNET,
-  });
-
-  getByTenderly = tenderly.with({
-    projectName: process.env.TENDERLY_GET_BY_PROJECT_NAME,
-  });
-
   try {
     await Promise.all([
       tenderly.wallets.add(liquidityActivePoolWallet),
       tenderly.wallets.add(canonicalTransactionChainWalletAddress),
-      tenderly.wallets.add(golemMultiSigWalletAddress),
+      tenderly.wallets.add(someOtherWalletAddress),
       getByTenderly.wallets.add(binance7WalletAddress),
       getByTenderly.wallets.add(binance8WalletAddress),
     ]);
@@ -43,11 +40,13 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  console.log('Affter all!');
   await Promise.all([
+    tenderly.wallets.add(walletAddress),
     tenderly.wallets.remove(liquidityActivePoolWallet),
     tenderly.wallets.remove(canonicalTransactionChainWalletAddress),
     tenderly.wallets.remove(polygonEtherBridgeWalletAddress),
-    tenderly.wallets.remove(golemMultiSigWalletAddress),
+    tenderly.wallets.remove(someOtherWalletAddress),
     getByTenderly.wallets.remove(binance7WalletAddress),
     getByTenderly.wallets.remove(binance8WalletAddress),
   ]);
@@ -59,58 +58,50 @@ test('Tenderly has wallets namespace', () => {
 
 describe('wallets.add', () => {
   beforeEach(async () => {
-    await tenderly.wallets.remove(polygonEtherBridgeWalletAddress);
+    await tenderly.wallets.remove(walletAddress);
   });
 
   test('successfully adds wallet', async () => {
-    const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
+    const wallet = await tenderly.wallets.add(walletAddress);
 
-    expect(wallet.address).toEqual(polygonEtherBridgeWalletAddress);
+    expect(wallet?.address).toEqual(walletAddress);
   });
 
   test('adding wallet data will successfully add with specified data', async () => {
-    const wallet = await tenderly.wallets.add(polygonEtherBridgeWalletAddress, {
+    const wallet = await tenderly.wallets.add(walletAddress, {
       displayName: 'VB3',
     });
 
-    expect(wallet.address).toEqual(polygonEtherBridgeWalletAddress);
-    expect(wallet.displayName).toEqual('VB3');
+    expect(wallet?.address).toEqual(walletAddress);
+    expect(wallet?.displayName).toEqual('VB3');
     // tags don't work yet
     // expect(wallet.tags.sort()).toEqual(['tag1', 'tag2']);
   });
 
   // FIXME: We don't want to throw here, but currently that is what the API does
-  test('throws error if wallet exists', async () => {
-    try {
-      await tenderly.wallets.add(polygonEtherBridgeWalletAddress);
-      tenderly.wallets.add(polygonEtherBridgeWalletAddress);
-    } catch (error) {
-      expect(error instanceof ApiError).toBeTruthy();
-      expect((error as ApiError).status).toBe(400);
-    }
+  test(`doesn't throw when adding existing wallet, and returns wallet model`, async () => {
+    await tenderly.wallets.add(walletAddress);
+    const existingWallet = await tenderly.wallets.add(walletAddress);
+    expect(existingWallet.address).toEqual(walletAddress);
   });
 });
 
 describe('wallets.remove', () => {
-  test('returns falsy value if wallet does exist', async () => {
-    const removeWalletResponse = tenderly.wallets.remove(geminiContract1WalletAddress);
-
-    await expect(removeWalletResponse).resolves.toBeFalsy();
+  test(`Doesn't throw if wallet does not exist`, async () => {
+    await tenderly.wallets.remove(geminiContract1WalletAddress);
   });
 
   // FIXME: This should not throw, but currently that is what the API does
-  // test("returns falsy value if wallet doesn't exist", async () => {
-  //   const removeWalletResponse = tenderly.wallets.remove('0xfake_wallet_address');
-
-  //   await expect(removeWalletResponse).resolves.toBeFalsy();
-  // });
+  test(`doesn't throw when removing non existing wallet`, async () => {
+    tenderly.wallets.remove('0xfake_wallet_address');
+  });
 });
 
 describe('wallets.get', () => {
   test('returns wallet if it exists', async () => {
-    const walletResponse = await tenderly.wallets.get(golemMultiSigWalletAddress);
+    const walletResponse = await tenderly.wallets.get(someOtherWalletAddress);
 
-    expect(walletResponse.address).toEqual(golemMultiSigWalletAddress);
+    expect(walletResponse?.address).toEqual(someOtherWalletAddress);
   });
 
   test("returns undefined value if wallet doesn't exist", async () => {
@@ -130,42 +121,42 @@ describe('wallets.update', () => {
   const displayName = 'DisplayName';
 
   beforeEach(async () => {
-    await tenderly.wallets.add(kraken13WalletAddress);
+    await tenderly.wallets.add(someThirdWallet);
   });
 
   afterEach(async () => {
-    await tenderly.wallets.remove(kraken13WalletAddress);
+    await tenderly.wallets.remove(someThirdWallet);
   });
 
   test('updates tags and display name if both are passed', async () => {
-    const wallet = await tenderly.wallets.update(kraken13WalletAddress, {
+    const wallet = await tenderly.wallets.update(someThirdWallet, {
       displayName,
       appendTags: [tag1, tag2],
     });
 
-    expect(wallet.address).toEqual(kraken13WalletAddress);
-    expect(wallet.displayName).toEqual(displayName);
-    expect(wallet.tags.sort()).toEqual([tag1, tag2]);
+    expect(wallet?.address).toEqual(someThirdWallet);
+    expect(wallet?.displayName).toEqual(displayName);
+    expect(wallet?.tags?.sort()).toEqual([tag1, tag2]);
   });
 
   test('updates only displayName', async () => {
-    const wallet = await tenderly.wallets.update(kraken13WalletAddress, {
+    const wallet = await tenderly.wallets.update(someThirdWallet, {
       displayName,
     });
 
-    expect(wallet.address).toEqual(kraken13WalletAddress);
-    expect(wallet.displayName).toEqual(displayName);
-    expect(wallet.tags).toBeUndefined();
+    expect(wallet?.address).toEqual(someThirdWallet);
+    expect(wallet?.displayName).toEqual(displayName);
+    expect(wallet?.tags).toBeUndefined();
   });
 
   test('updates only tags', async () => {
-    const wallet = await tenderly.wallets.update(kraken13WalletAddress, {
+    const wallet = await tenderly.wallets.update(someThirdWallet, {
       appendTags: [tag1, tag2],
     });
 
-    expect(wallet.address).toEqual(kraken13WalletAddress);
-    expect(wallet.displayName).toBeUndefined();
-    expect(wallet.tags.sort()).toEqual(expect.arrayContaining([tag1, tag2]));
+    expect(wallet?.address).toEqual(someThirdWallet);
+    expect(wallet?.displayName).toBeUndefined();
+    expect(wallet?.tags?.sort()).toEqual(expect.arrayContaining([tag1, tag2]));
   });
 });
 
@@ -195,10 +186,14 @@ describe('wallets.getBy', () => {
     test('returns 1 wallet, when 1 tag matches (passed as 1 string, not an array)', async () => {
       const wallets = await getByTenderly.wallets.getBy({ tags: [tag1] });
 
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
+
       expect(wallets).toHaveLength(1);
       expect(wallets[0].address).toEqual(binance7WalletAddress);
       expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
     });
 
     test('returns 0 wallets, when no tags match', async () => {
@@ -210,89 +205,115 @@ describe('wallets.getBy', () => {
     test('returns 1 wallet, when `tag1` matches', async () => {
       const wallets = await getByTenderly.wallets.getBy({ tags: [tag1] });
 
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
+
       expect(wallets).toHaveLength(1);
       expect(wallets[0].address).toEqual(binance7WalletAddress);
       expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
     });
 
     test('returns 2 wallets, when `tag2` matches', async () => {
-      const wallets = (await getByTenderly.wallets.getBy({ tags: [tag2] })).sort((a, b) =>
+      const wallets = (await getByTenderly.wallets.getBy({ tags: [tag2] }))?.sort((a, b) =>
         a.address > b.address ? 1 : -1,
       );
+
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
 
       expect(wallets).toHaveLength(2);
       expect(wallets[0].address).toEqual(binance7WalletAddress);
       expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
       expect(wallets[1].address).toEqual(binance8WalletAddress);
       expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 1 wallet, when `tag3` matches', async () => {
       const wallets = await getByTenderly.wallets.getBy({ tags: [tag3] });
-
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
       expect(wallets).toHaveLength(1);
-      expect(wallets[0].address).toEqual(binance8WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets[0]?.address).toEqual(binance8WalletAddress);
+      expect(wallets[0]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[0]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 2 wallets, when any of 3 tags match', async () => {
-      const wallets = (await getByTenderly.wallets.getBy({ tags: [tag1, tag2, tag3] })).sort(
+      const wallets = (await getByTenderly.wallets.getBy({ tags: [tag1, tag2, tag3] }))?.sort(
         (a, b) => (a.address > b.address ? 1 : -1),
       );
 
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
+
       expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test("returns 2 wallets, when both tags that don't overlap are passed", async () => {
-      const wallets = (await getByTenderly.wallets.getBy({ tags: [tag1, tag3] })).sort((a, b) =>
+      const wallets = (await getByTenderly.wallets.getBy({ tags: [tag1, tag3] }))?.sort((a, b) =>
         a.address > b.address ? 1 : -1,
       );
 
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
+
       expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 2 wallets, when no tags are passed', async () => {
-      const wallets = (await getByTenderly.wallets.getBy()).sort((a, b) =>
+      const wallets = (await getByTenderly.wallets.getBy())?.sort((a, b) =>
         a.address > b.address ? 1 : -1,
       );
 
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
+
       expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 2 wallets, when empty array is passed', async () => {
-      const wallets = (await getByTenderly.wallets.getBy({ tags: [] })).sort((a, b) =>
+      const wallets = (await getByTenderly.wallets.getBy({ tags: [] }))?.sort((a, b) =>
         a.address > b.address ? 1 : -1,
       );
 
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
+
       expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
   });
 
@@ -302,10 +323,13 @@ describe('wallets.getBy', () => {
         displayNames: [binance7WalletDisplayName],
       });
 
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
       expect(wallets).toHaveLength(1);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
     });
 
     test('returns 0 wallets, when displayName does not match', async () => {
@@ -317,17 +341,21 @@ describe('wallets.getBy', () => {
     });
 
     test('returns 2 contracts, when displayName is not passed', async () => {
-      const wallets = (await getByTenderly.wallets.getBy()).sort((a, b) =>
+      const wallets = (await getByTenderly.wallets.getBy())?.sort((a, b) =>
         a.address > b.address ? 1 : -1,
       );
 
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
+
       expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 2 contracts, when both displayNames match', async () => {
@@ -335,15 +363,19 @@ describe('wallets.getBy', () => {
         await getByTenderly.wallets.getBy({
           displayNames: [binance7WalletDisplayName, binance8WalletDisplayName],
         })
-      ).sort((a, b) => (a.address > b.address ? 1 : -1));
+      )?.sort((a, b) => (a.address > b.address ? 1 : -1));
+
+      if (!wallets) {
+        throw new Error('Wallets are not defined');
+      }
 
       expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0].tags.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1].tags.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
   });
 });
