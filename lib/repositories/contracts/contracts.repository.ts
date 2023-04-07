@@ -192,7 +192,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
       await Promise.all(promiseArray);
 
-      return this.get(address);
+      return await this.get(address);
     } catch (error) {
       handleError(error);
     }
@@ -266,7 +266,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     try {
-      await this.apiV1.post(
+      const { data } = await this.apiV1.post<unknown, { contracts: ContractResponse[] }>(
         `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,
         {
           config: {
@@ -288,6 +288,12 @@ export class ContractRepository implements Repository<TenderlyContract> {
           })),
         },
       );
+
+      if (
+        (data as { bytecode_mismatch_errors: unknown; contracts: unknown }).bytecode_mismatch_errors
+      ) {
+        throw new Error('Bytecode mismatch');
+      }
 
       return this.get(address);
     } catch (error) {

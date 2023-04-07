@@ -4,7 +4,7 @@ import { source } from './myToken';
 
 dotenv.config();
 
-const myTokenAddres = '0xe2B2db0165CC69B850Fd86C3A73D05182838E684'.toLowerCase() as Web3Address;
+const myTokenAddres = '0x8aaf9071e6c3129653b2dc39044c3b79c0bfcfbf'.toLowerCase() as Web3Address;
 
 (async () => {
   try {

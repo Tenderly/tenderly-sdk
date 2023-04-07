@@ -2,7 +2,7 @@ import { AxiosError, isAxiosError } from 'axios';
 import { WithRequired } from '../types';
 
 export interface TenderlyError {
-  readonly id: string;
+  readonly id?: string;
   readonly message: string;
   readonly slug: string;
 }
