@@ -221,7 +221,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
    * @returns The contract objects in a plain format
    * @example
    * const contracts = await tenderly.contracts.getBy();
-   * const contracts = awiat tenderly.contracts.getBy({
+   * const contracts = await tenderly.contracts.getBy({
    *   tags: ['my-tag'],
    *   displayName: ['MyContract']
    * });
@@ -266,7 +266,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     try {
-      const result = await this.apiV1.post(
+      await this.apiV1.post(
         `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,
         {
           config: {
@@ -289,7 +289,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
         },
       );
 
-      return result;
+      return this.get(address);
     } catch (error) {
       handleError(error);
     }

@@ -150,6 +150,7 @@ export enum SolidityCompilerVersions {
   v0_8_4 = 'v0.8.4',
   v0_8_13 = 'v0.8.13',
   v0_8_17 = 'v0.8.17',
+  v0_8_18 = 'v0.8.18',
 }
 
 export type VerificationRequest = {

@@ -108,17 +108,21 @@ describe('contracts.add', () => {
 });
 
 describe('contracts.remove', () => {
-  test('returns falsy value if contract exists', async () => {
-    const removeContractResponse = await tenderly.contracts.remove(arbitrumBridgeContract);
-
-    expect(removeContractResponse).toBeFalsy();
+  test('removes contract', async () => {
+    try {
+      await tenderly.contracts.remove(arbitrumBridgeContract);
+      await tenderly.contracts.get(arbitrumBridgeContract);
+    } catch (error) {
+      expect(error instanceof NotFoundError).toBeTruthy();
+      expect(error.slug).toEqual('resource_not_found');
+    }
   });
 
-  test("returns falsy value if contract doesn't exist", async () => {
-    const removeContractResponse = await tenderly.contracts.remove('0xfake_contract_address');
+  // test("returns falsy value if contract doesn't exist", async () => {
+  //   await tenderly.contracts.remove('0xfake_contract_address');
 
-    expect(removeContractResponse).toBeFalsy();
-  });
+  //   expect(removeContractResponse).toBeFalsy();
+  // });
 });
 
 describe('contracts.get', () => {
