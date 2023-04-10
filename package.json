@@ -1,6 +1,6 @@
 {
   "name": "@tenderly/sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Tenderly SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,7 +21,8 @@
     "lint": "tsc && eslint . --ext .ts,.js",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "prepare": "husky install",
-    "release": "pnpm run build && changeset publish"
+    "publish": "pnpm run build && changeset publish",
+    "version": "pnpm changeset version"
   },
   "author": "Tenderly Dev Team",
   "license": "MIT",
