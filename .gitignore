@@ -6,6 +6,10 @@ coverage
 .vscode
 .env
 
+*.output.json
+*.output.txt
+
+
 .pnp.*
 .yarn/*
 !.yarn/patches

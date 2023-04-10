@@ -1,7 +1,8 @@
+/* eslint-disable max-len */
 import { ethers } from 'ethers';
 import { writeFileSync } from 'fs';
-import { Network, Tenderly } from '../lib';
-import { TransactionParameters } from '../lib/executors/Simulator.types';
+import { Network, Tenderly } from '../../lib';
+import { TransactionParameters } from '../../lib/executors/Simulator.types';
 
 const fakeWardAddress = '0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2';
 const daiOwnerEOA = '0xe58b9ee93700a616b50509c8292977fa7a0f8ce1';
@@ -42,7 +43,7 @@ dotenv.config();
     },
   });
 
-  writeFileSync('out.txt', JSON.stringify(simulation, null, 2));
+  writeFileSync(`${__dirname}/simulateBundle.output.txt`, JSON.stringify(simulation, null, 2));
   // TODO: Extract some data and print it out!
 })();
 
