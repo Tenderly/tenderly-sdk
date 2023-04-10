@@ -4,7 +4,7 @@ import { NotFoundError } from '../lib/errors/NotFoundError';
 
 const counterContractSource = `
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.18;
 
 contract CounterWithLogs {
   uint public count;
@@ -236,10 +236,10 @@ describe('contracts.verify', () => {
       config: {
         mode: 'public',
       },
-      contractToVerify: "Counter.sol:Counter",
+      contractToVerify: "Counter.sol:CounterWithLogs",
       solc: {
         compiler: {
-          version: "v0.8.7",
+          version: "v0.8.18",
           sources: {
             'Counter.sol': {
               content: counterContractSource,
@@ -264,7 +264,7 @@ describe('contracts.verify', () => {
         config: {
           mode: 'public',
         },
-        contractToVerify: "Counter.sol:Counter",
+        contractToVerify: "Counter.sol:CounterWithLogs",
         solc: {
           compiler: {
             version: "v0.8.4",
