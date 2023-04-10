@@ -21,7 +21,7 @@
     "lint": "tsc && eslint . --ext .ts,.js",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "prepare": "husky install",
-    "release": "yarn run build && changeset publish"
+    "release": "pnpm run build && changeset publish"
   },
   "author": "Tenderly Dev Team",
   "license": "MIT",
@@ -53,8 +53,8 @@
   },
   "lint-staged": {
     "*.{ts,js}": [
-      "yarn eslint --fix --max-warnings 0",
-      "yarn prettier --write"
+      "pnpm eslint --fix --max-warnings 0",
+      "pnpm prettier --write"
     ]
   },
   "bugs": {
