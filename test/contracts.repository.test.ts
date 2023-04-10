@@ -97,18 +97,6 @@ contract LibraryToken {
         return Library.add(a, b);
     }
 }
-
-contract Tkn {
-    uint public dummyToken = 1;
-
-    constructor() {
-        dummyToken = 2;
-    }
-
-    function add(uint a, uint b) public pure returns (uint) {
-        return Library.add(a, b);
-    }
-}
 `;
 
 const libraryContractSource = `
