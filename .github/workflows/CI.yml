@@ -30,11 +30,14 @@ jobs:
         with:
           node-version: 16.x
           cache: "pnpm"
-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run test
+      - name: "Run tests"
+        run: pnpm run test
         env:
           TENDERLY_ACCESS_KEY: ${{secrets.TENDERLY_ACCESS_KEY}}
           TENDERLY_ACCOUNT_NAME: ${{secrets.TENDERLY_ACCOUNT_NAME}}
           TENDERLY_PROJECT_NAME: ${{secrets.TENDERLY_PROJECT_NAME}}
           TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
+
+        
+
