@@ -11,17 +11,18 @@
     "start:example:allowAndTransfer": "ts-node examples/allowAndTransfer/index.ts",
     "start:example:contractVerification": "ts-node examples/contractVerification/index.ts",
     "start:example:simulateBundle": "ts-node examples/simulateBundle/index.ts",
-
     "test": "jest",
     "test:watch": "jest --watch",
     "build": "tsup lib/index.ts --dts --format cjs,esm",
     "lint": "tsc && eslint . --ext .ts,.js",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "yarn run build && changeset publish"
   },
   "author": "Tenderly Dev Team",
   "license": "MIT",
   "devDependencies": {
+    "@changesets/cli": "^2.26.1",
     "@commitlint/cli": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
     "@safe-global/safe-deployments": "^1.21.1",
