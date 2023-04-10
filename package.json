@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.mjs",
-  "repository": { 
+  "repository": {
     "type": "git",
-    "url": "https://github.com/Tenderly/tenderly-sdk.git"
+    "url": "git+https://github.com/Tenderly/tenderly-sdk.git"
   },
   "scripts": {
     "start:example:addContracts": "ts-node examples/addContracts/index.ts",
@@ -57,5 +57,21 @@
       "yarn prettier --write"
     ]
   },
-  "packageManager": "yarn@3.5.0"
+  "packageManager": "yarn@3.5.0",
+  "bugs": {
+    "url": "https://github.com/Tenderly/tenderly-sdk/issues"
+  },
+  "homepage": "https://github.com/Tenderly/tenderly-sdk#readme",
+  "directories": {
+    "example": "examples",
+    "lib": "lib",
+    "test": "test"
+  },
+  "keywords": [
+    "sdk",
+    "javascript",
+    "web3",
+    "simulations",
+    "ethereum"
+  ]
 }
