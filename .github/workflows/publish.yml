@@ -1,10 +1,6 @@
 name: "Publish"
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types:
-      - completed
   push:
     branches:
       - "master"
@@ -21,7 +17,7 @@ jobs:
         with:
           node-version: 14.x
           cache: "yarn"
-      - run: yarn install -g yarn
+      - run: npm install -g yarn
       - run: yarn
       - run: yarn build
       - name: Publish package
