@@ -1,9 +1,7 @@
 import { AxiosError } from 'axios';
 import { GeneralError } from './GeneralError';
 import { isTenderlyAxiosError, TenderlyError } from './Error.types';
-import { errorHandler } from './Error.handlerRegistry';
 
-@errorHandler
 export class ApiError extends GeneralError {
   public readonly status: number;
 

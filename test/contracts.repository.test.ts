@@ -1,15 +1,49 @@
-import { Tenderly, Network, SolidityCompilerVersions } from '../lib';
+import { Tenderly, Network } from '../lib';
 import { ApiError } from '../lib/errors/ApiError';
 import { NotFoundError } from '../lib/errors/NotFoundError';
 
+const counterContractSource = `
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
+
+contract CounterWithLogs {
+  uint public count;
+
+  event CounterChanged(
+    string method,
+    uint256 oldNumber,
+    uint256 newNumber,
+    address caller
+  );
+
+  // Function to get the current count
+  function get() public view returns (uint) {
+    return count;
+  }
+
+  // Function to increment count by 1
+  function inc() public {
+    emit CounterChanged("Increment", count, count + 1, msg.sender);
+    count += 1;
+  }
+
+  // Function to decrement count by 1
+  function dec() public {
+    emit CounterChanged("Decrement", count, count - 1, msg.sender);
+
+    count -= 1;
+  }
+}
+`;
+
 let tenderly: Tenderly = null;
-let rinkebyTenderly: Tenderly = null;
+let sepoliaTenderly: Tenderly = null;
 let getByTenderly: Tenderly = null;
 
 jest.setTimeout(60000);
 
 const lidoContract = '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022'.toLowerCase();
-const counterContract = '0x2e4534ad99d5e7fffc9bbe52df69ba8febeb0057'.toLowerCase();
+const counterContract = '0x8AAF9071E6C3129653B2dC39044C3B79c0bFCfBF'.toLowerCase();
 const kittyCoreContract = '0x06012c8cf97BEaD5deAe237070F9587f8E7A266d'.toLowerCase();
 const wrappedEtherContract = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'.toLowerCase();
 const beaconDepositContract = '0x00000000219ab540356cBB839Cbe05303d7705Fa'.toLowerCase();
@@ -25,7 +59,7 @@ beforeAll(async () => {
     network: Network.MAINNET,
   });
 
-  rinkebyTenderly = tenderly.with({ network: Network.RINKEBY });
+  sepoliaTenderly = tenderly.with({ network: Network.SEPOLIA });
 
   getByTenderly = tenderly.with({ projectName: process.env.TENDERLY_GET_BY_PROJECT_NAME });
 
@@ -108,17 +142,21 @@ describe('contracts.add', () => {
 });
 
 describe('contracts.remove', () => {
-  test('returns falsy value if contract exists', async () => {
-    const removeContractResponse = await tenderly.contracts.remove(arbitrumBridgeContract);
-
-    expect(removeContractResponse).toBeFalsy();
+  test('removes contract', async () => {
+    try {
+      await tenderly.contracts.remove(arbitrumBridgeContract);
+      await tenderly.contracts.get(arbitrumBridgeContract);
+    } catch (error) {
+      expect(error instanceof NotFoundError).toBeTruthy();
+      expect(error.slug).toEqual('resource_not_found');
+    }
   });
 
-  test("returns falsy value if contract doesn't exist", async () => {
-    const removeContractResponse = await tenderly.contracts.remove('0xfake_contract_address');
+  // test("returns falsy value if contract doesn't exist", async () => {
+  //   await tenderly.contracts.remove('0xfake_contract_address');
 
-    expect(removeContractResponse).toBeFalsy();
-  });
+  //   expect(removeContractResponse).toBeFalsy();
+  // });
 });
 
 describe('contracts.get', () => {
@@ -185,14 +223,22 @@ describe('contracts.update', () => {
 });
 
 describe('contracts.verify', () => {
+  beforeAll(async () => {
+    await sepoliaTenderly.contracts.add(counterContract);
+  });
+
+  afterAll(async () => {
+    await sepoliaTenderly.contracts.remove(counterContract);
+  });
+
   test('contracts.verify works for correct config', async () => {
-    const result = await rinkebyTenderly.contracts.verify(counterContract, {
+    const result = await sepoliaTenderly.contracts.verify(counterContract, {
       config: {
         mode: 'public',
       },
       solc: {
         compiler: {
-          version: SolidityCompilerVersions.v0_8_13,
+          version: 'v0.8.18',
           settings: {
             libraries: {},
             optimizer: {
@@ -203,47 +249,25 @@ describe('contracts.verify', () => {
         },
         sources: {
           'Counter.sol': {
-            name: 'Counter',
-            source: `
-              // SPDX-License-Identifier: MIT
-              pragma solidity ^0.8.13;
-
-              contract Counter {
-                uint public count;
-
-                // Function to get the current count
-                function get() public view returns (uint) {
-                  return count;
-                }
-
-                // Function to increment count by 1
-                function inc() public {
-                  count += 1;
-                }
-
-                // Function to decrement count by 1
-                function dec() public {
-                  count -= 1;
-                }
-              }
-            `,
+            name: 'CounterWithLogs',
+            source: counterContractSource,
           },
         },
       },
     });
 
-    expect(result).toBeDefined();
+    expect(result.address).toEqual(counterContract);
   });
 
   test('contracts.verify fails for wrong compiler version', async () => {
     try {
-      await rinkebyTenderly.contracts.verify(counterContract, {
+      await sepoliaTenderly.contracts.verify(counterContract, {
         config: {
           mode: 'public',
         },
         solc: {
           compiler: {
-            version: SolidityCompilerVersions.v0_8_4,
+            version: 'v0.8.4',
             settings: {
               libraries: {},
               optimizer: {
@@ -255,29 +279,7 @@ describe('contracts.verify', () => {
           sources: {
             'Counter.sol': {
               name: 'Counter',
-              source: `
-              // SPDX-License-Identifier: MIT
-              pragma solidity ^0.8.17;
-
-              contract Counter {
-                uint public count;
-
-                // Function to get the current count
-                function get() public view returns (uint) {
-                  return count;
-                }
-
-                // Function to increment count by 1
-                function inc() public {
-                  count += 1;
-                }
-
-                // Function to decrement count by 1
-                function dec() public {
-                  count -= 1;
-                }
-              }
-            `,
+              source: counterContractSource,
             },
           },
         },

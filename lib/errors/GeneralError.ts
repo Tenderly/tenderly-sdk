@@ -1,7 +1,7 @@
-import { TenderlyError } from "./Error.types";
+import { TenderlyError } from './Error.types';
 
 export abstract class GeneralError extends Error implements TenderlyError {
-  public readonly id: string;
+  public readonly id?: string;
   public readonly message: string;
   public readonly slug: string;
 

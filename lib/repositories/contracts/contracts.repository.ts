@@ -5,10 +5,10 @@ import {
   TenderlyContract,
   ContractRequest,
   GetByParams,
-  UpdateContractRequest,
   ContractResponse,
   VerificationRequest,
   Contract,
+  UpdateContractRequest,
 } from './contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
@@ -192,7 +192,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
       await Promise.all(promiseArray);
 
-      return this.get(address);
+      return await this.get(address);
     } catch (error) {
       handleError(error);
     }
@@ -221,7 +221,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
    * @returns The contract objects in a plain format
    * @example
    * const contracts = await tenderly.contracts.getBy();
-   * const contracts = awiat tenderly.contracts.getBy({
+   * const contracts = await tenderly.contracts.getBy({
    *   tags: ['my-tag'],
    *   displayName: ['MyContract']
    * });
@@ -266,7 +266,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
   async verify(address: string, verificationRequest: VerificationRequest) {
     try {
-      const result = await this.apiV1.post(
+      const { data } = await this.apiV1.post<unknown, { contracts: ContractResponse[] }>(
         `account/${this.configuration.accountName}/project/${this.configuration.projectName}/contracts`,
         {
           config: {
@@ -289,7 +289,13 @@ export class ContractRepository implements Repository<TenderlyContract> {
         },
       );
 
-      return result;
+      if (
+        (data as { bytecode_mismatch_errors: unknown; contracts: unknown }).bytecode_mismatch_errors
+      ) {
+        throw new Error('Bytecode mismatch');
+      }
+
+      return this.get(address);
     } catch (error) {
       handleError(error);
     }
