@@ -57,7 +57,6 @@
       "yarn prettier --write"
     ]
   },
-  "packageManager": "yarn@3.5.0",
   "bugs": {
     "url": "https://github.com/Tenderly/tenderly-sdk/issues"
   },
