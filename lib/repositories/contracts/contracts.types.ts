@@ -164,11 +164,11 @@ export type VerificationRequest = {
 };
 
 export type VerificationResponse = {
-  compilation_errors: CompilationError[];
+  compilation_errors: CompilationErrorResponse[];
   results: VerificationResult[];
 }
 
-interface CompilationError {
+export type CompilationErrorResponse= {
   source_location: SourceLocation;
   error_ype: string;
   component: string;
@@ -183,11 +183,11 @@ interface SourceLocation {
 }
 
 interface VerificationResult {
-  bytecode_mismatch_error: BytecodeMismatchError;
+  bytecode_mismatch_error: BytecodeMismatchErrorResponse;
   verified_contract: InternalContract;
 }
 
-interface BytecodeMismatchError {
+export type BytecodeMismatchErrorResponse= {
   contract_id: string;
   expected: string;
   got: string;

@@ -1,6 +1,7 @@
 import { Tenderly, Network } from '../lib';
-import { ApiError } from '../lib/errors/ApiError';
 import { NotFoundError } from '../lib/errors/NotFoundError';
+import { CompilationError } from "../lib/errors/CompilationError";
+import { BytecodeMismatchError } from "../lib/errors/BytecodeMismatchError";
 
 const counterContractSource = `
 // SPDX-License-Identifier: MIT
@@ -76,6 +77,55 @@ contract CounterWithLogs {
 }
 `;
 
+const libraryTokenContractSource = `
+//SPDX-License-Identifier: UNLICENSED
+
+// Solidity files have to start with this pragma.
+// It will be used by the Solidity compiler to validate its version.
+pragma solidity 0.8.17;
+
+import "./Library.sol";
+
+contract LibraryToken {
+    uint public dummyToken = 1;
+
+    constructor() {
+        dummyToken = 2;
+    }
+
+    function add(uint a, uint b) public pure returns (uint) {
+        return Library.add(a, b);
+    }
+}
+
+contract Tkn {
+    uint public dummyToken = 1;
+
+    constructor() {
+        dummyToken = 2;
+    }
+
+    function add(uint a, uint b) public pure returns (uint) {
+        return Library.add(a, b);
+    }
+}
+`;
+
+const libraryContractSource = `
+//SPDX-License-Identifier: UNLICENSED
+
+// Solidity files have to start with this pragma.
+// It will be used by the Solidity compiler to validate its version.
+pragma solidity 0.8.17;
+
+library Library {
+    function add(uint a, uint b) public pure returns (uint) {
+        return a + b;
+    }
+}
+`;
+
+
 let tenderly: Tenderly = null;
 let sepoliaTenderly: Tenderly = null;
 let getByTenderly: Tenderly = null;
@@ -84,6 +134,8 @@ jest.setTimeout(60000);
 
 const lidoContract = '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022'.toLowerCase();
 const counterContract = '0x8AAF9071E6C3129653B2dC39044C3B79c0bFCfBF'.toLowerCase();
+const libraryTokenContract = '0xbeba0016bd2fff7c81c5877cc0fcc509760785b5'.toLowerCase();
+const libraryContract = '0xcA00A6512792aa89e347c713F443b015A1006f1d'.toLowerCase();
 const kittyCoreContract = '0x06012c8cf97BEaD5deAe237070F9587f8E7A266d'.toLowerCase();
 const wrappedEtherContract = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'.toLowerCase();
 const beaconDepositContract = '0x00000000219ab540356cBB839Cbe05303d7705Fa'.toLowerCase();
@@ -296,6 +348,39 @@ describe('contracts.verify', () => {
     expect(result.address).toEqual(counterContract);
   });
 
+  test('contracts.verify works for contract with libraries', async () => {
+    const result = await sepoliaTenderly.contracts.verify(libraryTokenContract, {
+      config: {
+        mode: 'public', // 'private' is also possible
+      },
+      contractToVerify: 'LibraryToken.sol:LibraryToken',
+      solc: {
+        version: 'v0.8.17',
+        sources: {
+          'LibraryToken.sol': {
+            content: libraryTokenContractSource,
+          },
+          'Library.sol': {
+            content: libraryContractSource,
+          }
+        },
+        settings: {
+          libraries: {
+            "Library.sol": {
+              "Library": libraryContract,
+            }
+          },
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+    });
+
+    expect(result.address).toEqual(libraryTokenContract);
+  });
+
   test('contracts.verify fails for wrong compiler version', async () => {
     try {
       await sepoliaTenderly.contracts.verify(counterContract, {
@@ -313,16 +398,44 @@ describe('contracts.verify', () => {
           settings: {
             libraries: {},
             optimizer: {
-              enabled: true,
-              runs: 200,
+              enabled: false,
             },
           },
         },
       });
     } catch (error) {
-      expect(error instanceof ApiError).toBeTruthy();
-      expect(error.status).toBe(422);
-      expect(error.slug).toEqual('compile_error');
+      expect(error instanceof CompilationError).toBeTruthy();
+      expect(error.slug).toEqual('compilation_error');
+      throw error;
+    }
+  });
+
+  test('contracts.verify fails for bytecode mismatch error', async () => {
+    try {
+      await sepoliaTenderly.contracts.verify(counterContract, {
+        config: {
+          mode: 'public',
+        },
+        contractToVerify: 'Counter.sol:CounterWithLogs',
+        solc: {
+          version: 'v0.8.18',
+          sources: {
+            'Counter.sol': {
+              content: bytecodeMismatchCounterContractSource,
+            },
+          },
+          settings: {
+            libraries: {},
+            optimizer: {
+              enabled: false,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      expect(error instanceof BytecodeMismatchError).toBeTruthy();
+      expect(error.slug).toEqual('bytecode_mismatch_error');
     }
   });
 });

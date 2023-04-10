@@ -15,6 +15,8 @@ import {
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
 import { NotFoundError } from '../../errors/NotFoundError';
+import { CompilationError } from "../../errors/CompilationError";
+import { BytecodeMismatchError } from "../../errors/BytecodeMismatchError";
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
   const retVal: TenderlyContract = {
@@ -273,7 +275,6 @@ export class ContractRepository implements Repository<TenderlyContract> {
         `The contract name '${verificationRequest.contractToVerify}' is not a fully qualified name. Please use the fully qualified name (e.g. path/to/file.sol:ContractName)`,
       );
     }
-    let verificationResp: VerificationResponse;
     try {
       const payload = {
         contracts: [
@@ -296,24 +297,34 @@ export class ContractRepository implements Repository<TenderlyContract> {
         payload,
       );
 
-      verificationResp = response.data as VerificationResponse;
+      const verificationResp = response.data as VerificationResponse;
+
+      if (verificationResp.compilation_errors) {
+        throw new CompilationError(
+          "There has been a compilation error while trying to verify contracts.",
+          verificationResp.compilation_errors
+        );
+      }
+      if (!verificationResp.results) {
+        // TODO(dusan): Add new error here: UnexpectedVerificationError
+        throw new Error("Unexpected verification error.");
+      }
+
+      if (verificationResp.results[0].bytecode_mismatch_error) {
+        throw new BytecodeMismatchError(
+          "There has been a bytecode mismatch error while trying to verify contracts.",
+          verificationResp.results[0].bytecode_mismatch_error
+        );
+      } else {
+        // TODO(dusan): Currently, no tags will be returned
+        return {
+          address: verificationResp.results[0].verified_contract.address,
+          displayName: verificationResp.results[0].verified_contract.contract_name,
+          network: this.configuration.network,
+        };
+      }
     } catch (error) {
       handleError(error);
-    }
-
-    if (verificationResp.compilation_errors) {
-      throw new Error("There has been a compilation error");
-    }
-
-    if (verificationResp.results[0].bytecode_mismatch_error) {
-      throw new Error("There has been a bytecode mismatch error");
-    } else {
-      // TODO(dusan): Currently, no tags will be returned
-      return {
-        address: verificationResp.results[0].verified_contract.address,
-        displayName: verificationResp.results[0].verified_contract.contract_name,
-        network: this.configuration.network,
-      };
     }
   }
 
