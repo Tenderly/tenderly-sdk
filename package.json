@@ -10,8 +10,6 @@
     "start:example:addWallets": "ts-node examples/addWallets/index.ts",
     "start:example:allowAndTransfer": "ts-node examples/allowAndTransfer/index.ts",
     "start:example:contractVerification": "ts-node examples/contractVerification/index.ts",
-    "start:example:multiSigTransaction": "ts-node examples/multiSigTransaction/index.ts",
-
     "start:example:getContracts": "ts-node examples/getContracts/index.ts",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -25,8 +23,8 @@
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
-    "@swc/core": "^1.3.46",
     "@safe-global/safe-deployments": "^1.21.1",
+    "@swc/core": "^1.3.46",
     "@types/jest": "^29.4.0",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
     "@typescript-eslint/parser": "^5.53.0",
