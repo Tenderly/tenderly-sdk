@@ -2,6 +2,7 @@ import { Interface } from 'ethers';
 import dotenv from 'dotenv';
 import { myTokenAbi } from './myTokenAbi';
 import { Tenderly, Network, InvalidArgumentsError, Web3Address } from '../../lib';
+import { RawEvent } from '../../lib/executors/Simulator.types';
 
 dotenv.config();
 
@@ -16,9 +17,9 @@ const myTokenAbiInterface = new Interface(myTokenAbi);
 (async () => {
   try {
     const tenderly = new Tenderly({
-      accessKey: process.env.TENDERLY_ACCESS_KEY,
-      accountName: process.env.TENDERLY_ACCOUNT_NAME,
-      projectName: process.env.TENDERLY_PROJECT_NAME,
+      accessKey: process.env.TENDERLY_ACCESS_KEY || '',
+      accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
+      projectName: process.env.TENDERLY_PROJECT_NAME || '',
       network: Network.SEPOLIA,
     });
 
@@ -45,6 +46,7 @@ const myTokenAbiInterface = new Interface(myTokenAbi);
           ]),
         },
       ],
+      blockNumber: 3262454,
       overrides: {
         [myTokenAddress]: {
           state: {
@@ -60,11 +62,15 @@ const myTokenAbiInterface = new Interface(myTokenAbi);
 
     const allLogs = simulations
       .map(simulation => simulation.logs)
-      .reduce((acc, logs) => [...acc, ...logs], []);
+      .reduce((acc, logs) => (logs && acc ? [...acc, ...logs] : acc), []);
+
+    if (!allLogs || allLogs.length !== 3) {
+      throw new Error('Simulation bundle failed to return all logs');
+    }
 
     // parse raw logs
     const [firstApprovalLog, secondApprovalLog, transferLog] = allLogs.map(log =>
-      myTokenAbiInterface?.parseLog(log.raw),
+      myTokenAbiInterface?.parseLog(log.raw as RawEvent),
     );
 
     console.log('Approval logs:', [firstApprovalLog, secondApprovalLog]);

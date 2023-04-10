@@ -70,9 +70,7 @@ export class Simulator {
     };
   }
 
-  private mapToEncodedOverrides(
-    stateOverrides: Record<Web3Address, StateOverride>,
-  ): EncodedStateOverride {
+  private mapToEncodedOverrides(stateOverrides: StateOverride): EncodedStateOverride {
     return Object.keys(stateOverrides)
       .map(address => address.toLowerCase())
       .reduce((acc, curr) => {
@@ -82,9 +80,9 @@ export class Simulator {
   }
 
   private replaceJSONOverridesWithEncodedOverrides(
-    overrides: SimulationParameters['overrides'],
-    encodedStateOverrides: EncodedStateOverride,
-  ): SimulationRequest['overrides'] {
+    overrides: SimulationParameters['overrides'] | null,
+    encodedStateOverrides: EncodedStateOverride | null,
+  ): SimulationRequest['overrides'] | null {
     if (!overrides) {
       return null;
     }
@@ -93,7 +91,7 @@ export class Simulator {
       .map(address => address.toLowerCase())
       .reduce((acc, curr: Web3Address) => {
         acc[curr] = {};
-        if (encodedStateOverrides[curr]) {
+        if (encodedStateOverrides && encodedStateOverrides[curr]) {
           acc[curr].state_diff = encodedStateOverrides[curr];
         }
         if (overrides[curr].nonce) {
@@ -115,7 +113,7 @@ export class Simulator {
   private buildSimulationBundleRequest(
     transactions: TransactionParameters[],
     blockNumber: number,
-    encodedOverrides: SimulationRequestOverrides,
+    encodedOverrides?: SimulationRequestOverrides | null,
   ): SimulationBundleRequest {
     return {
       network_id: `${this.configuration.network}`,
@@ -140,7 +138,7 @@ export class Simulator {
   private buildSimpleSimulationRequest(
     transaction: TransactionParameters,
     blockNumber: number,
-    encodedOverrides: SimulationRequestOverrides,
+    encodedOverrides?: SimulationRequestOverrides | null,
   ): SimulationRequest {
     return {
       network_id: `${this.configuration.network}`,
@@ -162,12 +160,12 @@ export class Simulator {
     };
   }
 
-  private async encodeOverrideRequest(overrides: SimulationParametersOverrides) {
+  private async encodeOverrideRequest(overrides?: SimulationParametersOverrides | null) {
     const encodedStateOverrides = await this.encodeStateOverrides(overrides);
     return this.replaceJSONOverridesWithEncodedOverrides(overrides, encodedStateOverrides);
   }
 
-  private async encodeStateOverrides(overrides: SimulationParametersOverrides) {
+  private async encodeStateOverrides(overrides?: SimulationParametersOverrides | null) {
     if (!overrides) {
       return null;
     }

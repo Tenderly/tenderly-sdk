@@ -8,7 +8,7 @@ export type TransactionParameters = {
   gas_price: string;
   max_fee_per_gas?: number;
   max_priority_fee_per_gas?: number;
-  value?: number;
+  value: number;
   access_list?: AccessList;
 };
 
@@ -35,7 +35,7 @@ export type SimulationRequest = {
   block_number_or_hash: {
     blockNumber: number;
   };
-  overrides?: SimulationRequestOverrides;
+  overrides?: SimulationRequestOverrides | null;
 };
 
 export type SimulationBundleRequest = {
@@ -44,34 +44,25 @@ export type SimulationBundleRequest = {
   block_number_or_hash: {
     blockNumber: number;
   };
-  overrides?: SimulationRequestOverrides;
+  overrides?: SimulationRequestOverrides | null;
 };
 
 export type SimulationCallArguments = {
   from: string;
   to: string;
   gas: number;
-  gas_price: string;
-  max_fee_per_gas: number;
-  max_priority_fee_per_gas: number;
+  gas_price?: string;
+  max_fee_per_gas?: number;
+  max_priority_fee_per_gas?: number;
   value: number;
   data: string;
-  access_list: AccessList;
+  access_list?: AccessList;
 };
 
 export type SimulationBundleDetails = {
   transactions: TransactionParameters[];
-  blockNumber?: number;
-  overrides?: {
-    [contractAddress: Web3Address]: {
-      nonce?: number;
-      code?: string;
-      balance?: string;
-      state?: {
-        [property: string]: unknown;
-      };
-    };
-  };
+  blockNumber: number;
+  overrides?: SimulationParametersOverrides | null;
 };
 
 export type SimulationParametersOverrides = {
@@ -87,8 +78,8 @@ export type SimulationParametersOverrides = {
 
 export type SimulationParameters = {
   transaction: TransactionParameters;
-  blockNumber?: number;
-  overrides?: SimulationParametersOverrides;
+  blockNumber: number;
+  overrides?: SimulationParametersOverrides | null;
 };
 
 export type SimulationOutput = {

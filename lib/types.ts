@@ -1,10 +1,11 @@
 export type Path = string;
-export type Web3Address = `0x${string}`;
+export type Web3Address = string;
 
 export enum Network {
   MAINNET = 1,
   ROPSTEN = 3,
   RINKEBY = 4,
+  POLYGON = 137,
   SEPOLIA = 11155111,
 }
 

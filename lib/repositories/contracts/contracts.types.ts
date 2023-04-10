@@ -9,9 +9,10 @@ export interface Contract {
 
 export type TenderlyContract = Contract;
 
-export interface ContractRequest extends Record<string, string> {
+export interface ContractRequest {
   address: string;
   network_id: string;
+  display_name?: string;
 }
 
 export type GetByParams = {

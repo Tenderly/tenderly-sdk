@@ -5,10 +5,10 @@ import {
   TenderlyContract,
   ContractRequest,
   GetByParams,
-  UpdateContractRequest,
   ContractResponse,
   VerificationRequest,
   Contract,
+  UpdateContractRequest,
 } from './contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
