@@ -23,7 +23,8 @@ jobs:
           cache: "yarn"
       - run: yarn install -g yarn
       - run: yarn
-      - id: yarn build
+      - run: yarn build
+      - name: Publish package
         uses: changesets/action@v1
         with:
           publish: yarn run release
