@@ -4,7 +4,7 @@ import { source } from './myToken';
 
 dotenv.config();
 
-const myTokenAddres = '0x8aaf9071e6c3129653b2dc39044c3b79c0bfcfbf'.toLowerCase() as Web3Address;
+const myTokenAddress = '0x8aaf9071e6c3129653b2dc39044c3b79c0bfcfbf'.toLowerCase() as Web3Address;
 
 (async () => {
   try {
@@ -15,25 +15,23 @@ const myTokenAddres = '0x8aaf9071e6c3129653b2dc39044c3b79c0bfcfbf'.toLowerCase()
       network: Network.SEPOLIA,
     });
 
-    const result = await tenderly.contracts.verify(myTokenAddres, {
+    const result = await tenderly.contracts.verify(myTokenAddress, {
       config: {
         mode: 'public',
       },
+      contractToVerify: 'Counter.sol:CounterWithLogs',
       solc: {
-        compiler: {
-          version: 'v0.8.18',
-          settings: {
-            libraries: {},
-            optimizer: {
-              enabled: true,
-              runs: 200,
-            },
-          },
-        },
+        version: 'v0.8.18',
         sources: {
           'Counter.sol': {
-            name: 'CounterWithLogs',
-            source,
+            content: source,
+          },
+        },
+        settings: {
+          libraries: {},
+          optimizer: {
+            enabled: true,
+            runs: 200,
           },
         },
       },

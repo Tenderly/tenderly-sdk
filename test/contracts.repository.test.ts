@@ -238,18 +238,16 @@ describe('contracts.verify', () => {
       },
       contractToVerify: "Counter.sol:CounterWithLogs",
       solc: {
-        compiler: {
-          version: "v0.8.18",
-          sources: {
-            'Counter.sol': {
-              content: counterContractSource,
-            },
+        version: "v0.8.18",
+        sources: {
+          'Counter.sol': {
+            content: counterContractSource,
           },
-          settings: {
-            libraries: {},
-            optimizer: {
-              enabled: false,
-            },
+        },
+        settings: {
+          libraries: {},
+          optimizer: {
+            enabled: false,
           },
         },
       },
@@ -266,20 +264,17 @@ describe('contracts.verify', () => {
         },
         contractToVerify: "Counter.sol:CounterWithLogs",
         solc: {
-          compiler: {
-            version: "v0.8.4",
-            sources: {
-              'Counter.sol': {
-                name: 'Counter',
-                content: counterContractSource,
-              },
+          version: "v0.8.4",
+          sources: {
+            'Counter.sol': {
+              content: counterContractSource,
             },
-            settings: {
-              libraries: {},
-              optimizer: {
-                enabled: true,
-                runs: 200,
-              },
+          },
+          settings: {
+            libraries: {},
+            optimizer: {
+              enabled: true,
+              runs: 200,
             },
           },
         },

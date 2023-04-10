@@ -124,7 +124,7 @@ export type SolidityCompilerVersions = `v${number}.${number}.${number}`;
 
 export type SolcConfig = {
   version: SolidityCompilerVersions;
-  sources: Record<Path, { name?: string; content: string }>;
+  sources: Record<Path, { content: string }>;
   settings: {
     optimizer?: {
       enabled: boolean;
@@ -136,9 +136,7 @@ export type SolcConfig = {
 
 export type VerificationRequest = {
   contractToVerify: string;
-  solc: {
-    compiler: SolcConfig;
-  };
+  solc: SolcConfig;
   config: {
     mode: 'private' | 'public';
   };

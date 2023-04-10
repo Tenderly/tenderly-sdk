@@ -275,8 +275,8 @@ export class ContractRepository implements Repository<TenderlyContract> {
       const payload = {
         contracts: [
           {
-            compiler: _repackLibraries(verificationRequest.solc.compiler),
-            sources: _mapSolcSourcesToTenderlySources(verificationRequest.solc.compiler.sources),
+            compiler: _repackLibraries(verificationRequest.solc),
+            sources: _mapSolcSourcesToTenderlySources(verificationRequest.solc.sources),
             networks: {
               [this.configuration.network]: { address },
             },
