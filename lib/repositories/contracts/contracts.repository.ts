@@ -6,7 +6,7 @@ import {
   ContractRequest,
   ContractResponse,
   GetByParams, SolcConfig,
-  TenderlyContract,
+  TenderlyContract, TenderlySolcConfig,
   UpdateContractRequest,
   VerificationRequest,
 } from './contracts.types';
@@ -267,6 +267,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
   async verify(address: string, verificationRequest: VerificationRequest) {
     if (!this._isFullyQualifiedContractName(verificationRequest.contractToVerify)) {
       throw new Error(
+        // eslint-disable-next-line max-len
         `The contract name '${verificationRequest.contractToVerify}' is not a fully qualified name. Please use the fully qualified name (e.g. path/to/file.sol:ContractName)`,
       );
     }
@@ -314,22 +315,28 @@ export class ContractRepository implements Repository<TenderlyContract> {
     return tenderlySources;
   }
 
-  _repackLibraries(compiler: SolcConfig): SolcConfig {
-    if (!compiler?.settings?.libraries) {
-      return compiler;
+  _repackLibraries(solcConfig: SolcConfig): TenderlySolcConfig {
+    const tenderlySolcConfig = this._copySolcConfigToTenderlySolcConfig(solcConfig);
+
+    if (!solcConfig?.settings?.libraries) {
+      return tenderlySolcConfig;
     }
-    const libraries: any = {};
-    for (const [fileName, libVal] of Object.entries(compiler.settings.libraries)) {
+    const libraries: {
+      [fileName: string]: {
+        addresses: { [libName: string]: string };
+      }
+    } = {};
+    for (const [fileName, libVal] of Object.entries(solcConfig.settings.libraries)) {
       if (libraries[fileName] === undefined) {
         libraries[fileName] = { addresses: {} };
       }
-      for (const [libName, libAddress] of Object.entries(libVal as any)) {
+      for (const [libName, libAddress] of Object.entries(libVal)) {
         libraries[fileName].addresses[libName] = libAddress;
       }
     }
-    compiler.settings.libraries = libraries;
+    tenderlySolcConfig.settings.libraries = libraries;
 
-    return compiler;
+    return tenderlySolcConfig;
   }
 
   _isFullyQualifiedContractName(contractName: string): boolean {
@@ -339,5 +346,14 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
     // Test if the contractName string matches the pattern
     return pattern.test(contractName);
+  }
+
+  _copySolcConfigToTenderlySolcConfig(solcConfig: SolcConfig): TenderlySolcConfig {
+    return {
+      version: solcConfig.version,
+      settings: {
+        optimizer: solcConfig.settings.optimizer,
+      },
+    };
   }
 }

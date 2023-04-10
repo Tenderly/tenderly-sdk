@@ -134,6 +134,25 @@ export type SolcConfig = {
   };
 }
 
+// TenderlySolcConfig is the same as SolcConfig, but with a different library structure for internal reasons
+// also, sources shouldn't be included here as they are specified inside the verification request
+export type TenderlySolcConfig = {
+  version: SolidityCompilerVersions;
+  settings: {
+    optimizer?: {
+      enabled: boolean;
+      runs?: number;
+    };
+    libraries?:  {
+      [fileName: string]: {
+        addresses: {
+          [libName: string]: string;
+        };
+      };
+    }
+  };
+}
+
 export type VerificationRequest = {
   contractToVerify: string;
   solc: SolcConfig;
