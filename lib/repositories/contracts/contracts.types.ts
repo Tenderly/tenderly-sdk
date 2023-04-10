@@ -122,19 +122,22 @@ export type UpdateContractRequest = {
 
 export type SolidityCompilerVersions = `v${number}.${number}.${number}`;
 
-export type VerificationRequest = {
-  solc: {
-    compiler: {
-      version: SolidityCompilerVersions;
-      settings: {
-        optimizer: {
-          enabled: boolean;
-          runs: number;
-        };
-        libraries: Record<Path, Record<string, Web3Address>>;
-      };
+export type SolcConfig = {
+  version: SolidityCompilerVersions;
+  sources: Record<Path, { name?: string; content: string }>;
+  settings: {
+    optimizer?: {
+      enabled: boolean;
+      runs?: number;
     };
-    sources: Record<Path, { name: string; source: string }>;
+    libraries?: Record<Path, Record<string, Web3Address>>;
+  };
+}
+
+export type VerificationRequest = {
+  contractToVerify: string;
+  solc: {
+    compiler: SolcConfig;
   };
   config: {
     mode: 'private' | 'public';
