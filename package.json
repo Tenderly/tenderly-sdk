@@ -10,7 +10,8 @@
     "start:example:addWallets": "ts-node examples/addWallets/index.ts",
     "start:example:allowAndTransfer": "ts-node examples/allowAndTransfer/index.ts",
     "start:example:contractVerification": "ts-node examples/contractVerification/index.ts",
-    "start:example:getContracts": "ts-node examples/getContracts/index.ts",
+    "start:example:simulateBundle": "ts-node examples/simulateBundle/index.ts",
+
     "test": "jest",
     "test:watch": "jest --watch",
     "build": "tsup lib/index.ts --dts --format cjs,esm",
