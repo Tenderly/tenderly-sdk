@@ -10,7 +10,7 @@ import {
   TenderlyContract,
   TenderlySolcConfig,
   UpdateContractRequest,
-  VerificationRequest,
+  VerificationRequest, VerificationResponse,
 } from './contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
@@ -266,13 +266,14 @@ export class ContractRepository implements Repository<TenderlyContract> {
     return queryParams;
   }
 
-  async verify(address: string, verificationRequest: VerificationRequest) {
+  async verify(address: string, verificationRequest: VerificationRequest): Promise<TenderlyContract> {
     if (!this._isFullyQualifiedContractName(verificationRequest.contractToVerify)) {
       throw new Error(
         // eslint-disable-next-line max-len
         `The contract name '${verificationRequest.contractToVerify}' is not a fully qualified name. Please use the fully qualified name (e.g. path/to/file.sol:ContractName)`,
       );
     }
+    let verificationResp: VerificationResponse;
     try {
       const payload = {
         contracts: [
@@ -287,7 +288,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
         ],
       };
 
-      const result = await this.apiV1.post(
+      const response = await this.apiV1.post(
         verificationRequest.config.mode === 'private'
           ? // eslint-disable-next-line max-len
             `/accounts/${this.configuration.accountName}/projects/${this.configuration.projectName}/contracts/verify`
@@ -295,16 +296,24 @@ export class ContractRepository implements Repository<TenderlyContract> {
         payload,
       );
 
-      if (
-        (result.data as { bytecode_mismatch_errors: unknown; contracts: unknown })
-          .bytecode_mismatch_errors
-      ) {
-        throw new Error('Bytecode mismatch');
-      }
-
-      return this.get(address);
+      verificationResp = response.data as VerificationResponse;
     } catch (error) {
       handleError(error);
+    }
+
+    if (verificationResp.compilation_errors) {
+      throw new Error("There has been a compilation error");
+    }
+
+    if (verificationResp.results[0].bytecode_mismatch_error) {
+      throw new Error("There has been a bytecode mismatch error");
+    } else {
+      // TODO(dusan): Currently, no tags will be returned
+      return {
+        address: verificationResp.results[0].verified_contract.address,
+        displayName: verificationResp.results[0].verified_contract.contract_name,
+        network: this.configuration.network,
+      };
     }
   }
 

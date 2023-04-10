@@ -36,6 +36,46 @@ contract CounterWithLogs {
 }
 `;
 
+const bytecodeMismatchCounterContractSource = `
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.18;
+
+contract CounterWithLogs {
+  uint public count;
+
+  event CounterChanged(
+    string method,
+    uint256 oldNumber,
+    uint256 newNumber,
+    address caller
+  );
+
+  // Function to get the current count
+  function get() public view returns (uint) {
+    return count;
+  }
+
+  // Function to increment count by 1
+  function inc() public {
+    emit CounterChanged("Increment", count, count + 1, msg.sender);
+    count += 1;
+  }
+
+  // Function to decrement count by 1
+  function dec() public {
+    emit CounterChanged("Decrement", count, count - 1, msg.sender);
+
+    count -= 1;
+  }
+
+  // Has an additional 'inc2' function that is not in the original contract
+  function inc2() public {
+    emit CounterChanged("Increment", count, count + 2, msg.sender);
+    count += 2;
+  }
+}
+`;
+
 let tenderly: Tenderly = null;
 let sepoliaTenderly: Tenderly = null;
 let getByTenderly: Tenderly = null;
@@ -234,7 +274,7 @@ describe('contracts.verify', () => {
   test('contracts.verify works for correct config', async () => {
     const result = await sepoliaTenderly.contracts.verify(counterContract, {
       config: {
-        mode: 'public',
+        mode: 'public', // 'private' is also possible
       },
       contractToVerify: 'Counter.sol:CounterWithLogs',
       solc: {
