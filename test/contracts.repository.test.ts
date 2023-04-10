@@ -406,7 +406,6 @@ describe('contracts.verify', () => {
     } catch (error) {
       expect(error instanceof CompilationError).toBeTruthy();
       expect(error.slug).toEqual('compilation_error');
-      throw error;
     }
   });
 
@@ -433,7 +432,6 @@ describe('contracts.verify', () => {
         },
       });
     } catch (error) {
-      console.log(error);
       expect(error instanceof BytecodeMismatchError).toBeTruthy();
       expect(error.slug).toEqual('bytecode_mismatch_error');
     }
