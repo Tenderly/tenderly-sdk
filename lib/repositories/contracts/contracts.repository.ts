@@ -265,8 +265,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
   }
 
   async verify(address: string, verificationRequest: VerificationRequest) {
-    if (!isFullyQualifiedContractName(verificationRequest.contractToVerify)) {
-      // @maleksandar: Please check if this error should be thrown like this
+    if (!this._isFullyQualifiedContractName(verificationRequest.contractToVerify)) {
       throw new Error(
         `The contract name '${verificationRequest.contractToVerify}' is not a fully qualified name. Please use the fully qualified name (e.g. path/to/file.sol:ContractName)`,
       );
@@ -275,8 +274,8 @@ export class ContractRepository implements Repository<TenderlyContract> {
       const payload = {
         contracts: [
           {
-            compiler: _repackLibraries(verificationRequest.solc),
-            sources: _mapSolcSourcesToTenderlySources(verificationRequest.solc.sources),
+            compiler: this._repackLibraries(verificationRequest.solc),
+            sources: this._mapSolcSourcesToTenderlySources(verificationRequest.solc.sources),
             networks: {
               [this.configuration.network]: { address },
             },
@@ -303,42 +302,42 @@ export class ContractRepository implements Repository<TenderlyContract> {
     } catch (error) {
       handleError(error);
     }
+  };
 
-    function _mapSolcSourcesToTenderlySources(sources: Record<Path, { name?: string; content: string }>) {
-      const tenderlySources: Record<Path, { name?: string; code: string }> = {};
-      for (const path in sources) {
-        tenderlySources[path] = {
-          code: sources[path].content,
-        };
-      }
-      return tenderlySources;
+  _mapSolcSourcesToTenderlySources(sources: Record<Path, { name?: string; content: string }>) {
+    const tenderlySources: Record<Path, { name?: string; code: string }> = {};
+    for (const path in sources) {
+      tenderlySources[path] = {
+        code: sources[path].content,
+      };
     }
+    return tenderlySources;
+  }
 
-    function _repackLibraries(compiler: SolcConfig): SolcConfig {
-      if (!compiler?.settings?.libraries) {
-        return compiler;
-      }
-      const libraries: any = {};
-      for (const [fileName, libVal] of Object.entries(compiler.settings.libraries)) {
-        if (libraries[fileName] === undefined) {
-          libraries[fileName] = { addresses: {} };
-        }
-        for (const [libName, libAddress] of Object.entries(libVal as any)) {
-          libraries[fileName].addresses[libName] = libAddress;
-        }
-      }
-      compiler.settings.libraries = libraries;
-
+  _repackLibraries(compiler: SolcConfig): SolcConfig {
+    if (!compiler?.settings?.libraries) {
       return compiler;
     }
-
-    function isFullyQualifiedContractName(contractName: string): boolean {
-      // Regex pattern for fully qualified contract name
-      // matches `path/to/file.sol:ContractName`
-      const pattern = /^(.+)\.sol:([a-zA-Z_][a-zA-Z_0-9]*)$/;
-
-      // Test if the contractName string matches the pattern
-      return pattern.test(contractName);
+    const libraries: any = {};
+    for (const [fileName, libVal] of Object.entries(compiler.settings.libraries)) {
+      if (libraries[fileName] === undefined) {
+        libraries[fileName] = { addresses: {} };
+      }
+      for (const [libName, libAddress] of Object.entries(libVal as any)) {
+        libraries[fileName].addresses[libName] = libAddress;
+      }
     }
-  };
+    compiler.settings.libraries = libraries;
+
+    return compiler;
+  }
+
+  _isFullyQualifiedContractName(contractName: string): boolean {
+    // Regex pattern for fully qualified contract name
+    // matches `path/to/file.sol:ContractName`
+    const pattern = /^(.+)\.sol:([a-zA-Z_][a-zA-Z_0-9]*)$/;
+
+    // Test if the contractName string matches the pattern
+    return pattern.test(contractName);
+  }
 }
