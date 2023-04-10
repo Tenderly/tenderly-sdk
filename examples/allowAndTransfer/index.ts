@@ -2,7 +2,7 @@ import { Interface } from 'ethers';
 import dotenv from 'dotenv';
 import { myTokenAbi } from './myTokenAbi';
 import { Tenderly, Network, InvalidArgumentsError, Web3Address } from '../../lib';
-import { RawEvent } from '../../lib/executors/Simulator.types';
+import { RawEvent } from '../../lib/simulator';
 
 dotenv.config();
 
