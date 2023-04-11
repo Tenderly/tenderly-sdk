@@ -10,14 +10,15 @@ import {
   TenderlyContract,
   TenderlySolcConfig,
   UpdateContractRequest,
-  VerificationRequest, VerificationResponse,
+  VerificationRequest,
+  VerificationResponse,
 } from './contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
 import { NotFoundError } from '../../errors/NotFoundError';
-import { CompilationError } from "../../errors/CompilationError";
-import { BytecodeMismatchError } from "../../errors/BytecodeMismatchError";
-import { UnexpectedVerificationError } from "../../errors/UnexpectedVerificationError";
+import { CompilationError } from '../../errors/CompilationError';
+import { BytecodeMismatchError } from '../../errors/BytecodeMismatchError';
+import { UnexpectedVerificationError } from '../../errors/UnexpectedVerificationError';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
   const retVal: TenderlyContract = {
@@ -269,7 +270,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
     return queryParams;
   }
 
-  async verify(address: string, verificationRequest: VerificationRequest): Promise<TenderlyContract> {
+  async verify(
+    address: string,
+    verificationRequest: VerificationRequest,
+  ): Promise<TenderlyContract> {
     if (!this._isFullyQualifiedContractName(verificationRequest.contractToVerify)) {
       throw new Error(
         // eslint-disable-next-line max-len
@@ -302,25 +306,24 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
       if (verificationResp.compilation_errors) {
         throw new CompilationError(
-          "There has been a compilation error while trying to verify contracts.",
-          verificationResp.compilation_errors
+          'There has been a compilation error while trying to verify contracts.',
+          verificationResp.compilation_errors,
         );
       }
       if (!verificationResp.results || verificationResp.results.length === 0) {
         throw new UnexpectedVerificationError(
           // eslint-disable-next-line max-len
-          "There has been an unexpected verification error during the verification process. Please check your contract's source code and try again."
+          "There has been an unexpected verification error during the verification process. Please check your contract's source code and try again.",
+        );
+      }
+      if (verificationResp.results[0].bytecode_mismatch_error) {
+        throw new BytecodeMismatchError(
+          'There has been a bytecode mismatch error while trying to verify contracts.',
+          verificationResp.results[0].bytecode_mismatch_error,
         );
       }
 
-      if (verificationResp.results[0].bytecode_mismatch_error) {
-        throw new BytecodeMismatchError(
-          "There has been a bytecode mismatch error while trying to verify contracts.",
-          verificationResp.results[0].bytecode_mismatch_error
-        );
-      } else {
-        return this.add(address);
-      }
+      return this.add(address);
     } catch (error) {
       handleError(error);
     }
