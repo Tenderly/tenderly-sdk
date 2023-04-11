@@ -11,10 +11,14 @@ import {
   TenderlySolcConfig,
   UpdateContractRequest,
   VerificationRequest,
+  VerificationResponse,
 } from './contracts.types';
 import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
 import { NotFoundError } from '../../errors/NotFoundError';
+import { CompilationError } from '../../errors/CompilationError';
+import { BytecodeMismatchError } from '../../errors/BytecodeMismatchError';
+import { UnexpectedVerificationError } from '../../errors/UnexpectedVerificationError';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
   const retVal: TenderlyContract = {
@@ -266,7 +270,10 @@ export class ContractRepository implements Repository<TenderlyContract> {
     return queryParams;
   }
 
-  async verify(address: string, verificationRequest: VerificationRequest) {
+  async verify(
+    address: string,
+    verificationRequest: VerificationRequest,
+  ): Promise<TenderlyContract> {
     if (!this._isFullyQualifiedContractName(verificationRequest.contractToVerify)) {
       throw new Error(
         // eslint-disable-next-line max-len
@@ -287,7 +294,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
         ],
       };
 
-      const result = await this.apiV1.post(
+      const response = await this.apiV1.post(
         verificationRequest.config.mode === 'private'
           ? // eslint-disable-next-line max-len
             `/accounts/${this.configuration.accountName}/projects/${this.configuration.projectName}/contracts/verify`
@@ -295,14 +302,28 @@ export class ContractRepository implements Repository<TenderlyContract> {
         payload,
       );
 
-      if (
-        (result.data as { bytecode_mismatch_errors: unknown; contracts: unknown })
-          .bytecode_mismatch_errors
-      ) {
-        throw new Error('Bytecode mismatch');
+      const verificationResp = response.data as VerificationResponse;
+
+      if (verificationResp.compilation_errors) {
+        throw new CompilationError(
+          'There has been a compilation error while trying to verify contracts.',
+          verificationResp.compilation_errors,
+        );
+      }
+      if (!verificationResp.results || verificationResp.results.length === 0) {
+        throw new UnexpectedVerificationError(
+          // eslint-disable-next-line max-len
+          "There has been an unexpected verification error during the verification process. Please check your contract's source code and try again.",
+        );
+      }
+      if (verificationResp.results[0].bytecode_mismatch_error) {
+        throw new BytecodeMismatchError(
+          'There has been a bytecode mismatch error while trying to verify contracts.',
+          verificationResp.results[0].bytecode_mismatch_error,
+        );
       }
 
-      return this.get(address);
+      return this.add(address);
     } catch (error) {
       handleError(error);
     }
