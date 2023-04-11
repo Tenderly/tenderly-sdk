@@ -73,5 +73,6 @@
     "web3",
     "simulations",
     "ethereum"
-  ]
+  ],
+  "packageManager": "pnpm@8.2.0"
 }
