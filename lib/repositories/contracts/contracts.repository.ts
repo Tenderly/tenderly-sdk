@@ -17,6 +17,7 @@ import { ApiClientProvider } from '../../core/ApiClientProvider';
 import { NotFoundError } from '../../errors/NotFoundError';
 import { CompilationError } from "../../errors/CompilationError";
 import { BytecodeMismatchError } from "../../errors/BytecodeMismatchError";
+import { UnexpectedVerificationError } from "../../errors/UnexpectedVerificationError";
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
   const retVal: TenderlyContract = {
@@ -305,9 +306,11 @@ export class ContractRepository implements Repository<TenderlyContract> {
           verificationResp.compilation_errors
         );
       }
-      if (!verificationResp.results) {
-        // TODO(dusan): Add new error here: UnexpectedVerificationError
-        throw new Error("Unexpected verification error.");
+      if (!verificationResp.results || verificationResp.results.length === 0) {
+        throw new UnexpectedVerificationError(
+          // eslint-disable-next-line max-len
+          "There has been an unexpected verification error during the verification process. Please check your contract's source code and try again."
+        );
       }
 
       if (verificationResp.results[0].bytecode_mismatch_error) {
