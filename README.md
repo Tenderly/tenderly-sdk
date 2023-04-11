@@ -1,11 +1,24 @@
 # Tenderly SDK
 
-<p align='center'>
+<div align='center'>
 <a href="https://tenderly.co" >
 <img src="https://tenderly.co/tenderly.svg" alt="tenderly-logo" width="100%" height="auto" style="background-color: #ffffffb2;padding: 10px 20px;box-sizing: border-box;max-width:200px;" />
 </a>
-<p align='center'>SDK for working with your favorite Web3 development platform</p><p align='center'><a><img alt='MIT License' src='https://img.shields.io/github/license/Tenderly/tenderly-sdk'/></a> <a><img alt='npm version' src='https://img.shields.io/npm/v/@tenderly/sdk' /></a> <a><img alt='github stars' src='https://img.shields.io/github/stars/Tenderly/tenderly-sdk?style=social' /></a> <a><img alt='Tenderly twitter' src='https://img.shields.io/twitter/follow/TenderlyApp?style=social' /></a></p>
-</p>
+</div>
+<div align='center'>
+
+SDK for working with your favorite Web3 development platform
+
+</div>
+
+<div align='center'>
+
+[![License](https://img.shields.io/github/license/Tenderly/tenderly-sdk)](./LICENSE)
+[![NPM](https://badge.fury.io/js/@tenderly%2Fsdk.svg)](https://www.npmjs.com/package/@tenderly/sdk) 
+[![Twitter](https://img.shields.io/twitter/follow/TenderlyApp?style=social)](https://twitter.com/intent/follow?screen_name=TenderlyApp)
+[![Github](https://img.shields.io/github/stars/Tenderly/tenderly-sdk?style=social)](https://github.com/Tenderly/tenderly-sdk)
+
+</div>
 
 ## Table of contents
 
@@ -39,24 +52,24 @@ Available on npm as <a href='https://www.npmjs.com/package/tenderly-sdk'>tenderl
 npm
 
 ```sh
-npm i tenderly-sdk
+npm i @tenderly/sdk
 ```
 
 yarn
 
 ```sh
-yarn add tenderly-sdk
+yarn add @tenderly/sdk
 ```
 
 pnpm
 
 ```sh
-pnpm add tenderly-sdk
+pnpm add @tenderly/sdk
 ```
 
-### Basic usage
+### Quick start
 
-Instantiate a new tenderly instance
+Instantiate a new tenderly instance with your project details. _We highly recommend using environment variables for sensitive data such as access keys durring your local development!_
 
 ```ts
 import { Tenderly, Network } from '@tenderly/sdk';
@@ -80,7 +93,11 @@ console.log(contracts.map(contract => contract.address).join(', '));
 
 ## Examples
 
-<a>Link to contracts namespace example</a>
+- <a href="./examples/addContracts">Add contracts</a>
+- <a href="./examples/addWallets">Add wallets</a>
+- <a href="./examples/allowAndTransfer">Allow and Transfer</a>
+- <a href="./examples/contractVerification">Contract verification</a>
+- <a href="./examples/contractVerification">Simulate bundle</a>
 
 ## Contributors
 
