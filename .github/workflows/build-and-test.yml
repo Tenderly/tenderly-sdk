@@ -1,15 +1,15 @@
 # This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
 # For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
 
-name: Publish NPM Package
+name: Node.js Package
 
 on:
-  push:
+  pull_request:
     branches:
       - master
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     environment: CI
     env:
@@ -31,28 +31,3 @@ jobs:
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm test
-
-  publish-npm:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: CI
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2.2.4
-        with:
-          version: 8.2.0
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: pnpm run publish
-          commit: "chore(release): npm release"
-          title: "Release"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

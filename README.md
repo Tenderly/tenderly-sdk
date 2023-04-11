@@ -4,7 +4,7 @@
 <a href="https://tenderly.co" >
 <img src="https://tenderly.co/tenderly.svg" alt="tenderly-logo" width="100%" height="auto" style="background-color: #ffffffb2;padding: 10px 20px;box-sizing: border-box;max-width:200px;" />
 </a>
-<p align='center'>A SDK for working with your favorite Web3 development platform</p><p align='center'><a><img alt='MIT License' src='https://img.shields.io/github/license/Tenderly/tenderly-sdk'/></a> <a><img alt='npm version' src='https://img.shields.io/npm/v/tenderly-sdk' /></a> <a><img alt='github stars' src='https://img.shields.io/github/stars/Tenderly/tenderly-sdk?style=social' /></a> <a><img alt='Tenderly twitter' src='https://img.shields.io/twitter/follow/TenderlyApp?style=social' /></a></p>
+<p align='center'>SDK for working with your favorite Web3 development platform</p><p align='center'><a><img alt='MIT License' src='https://img.shields.io/github/license/Tenderly/tenderly-sdk'/></a> <a><img alt='npm version' src='https://img.shields.io/npm/v/@tenderly/sdk' /></a> <a><img alt='github stars' src='https://img.shields.io/github/stars/Tenderly/tenderly-sdk?style=social' /></a> <a><img alt='Tenderly twitter' src='https://img.shields.io/twitter/follow/TenderlyApp?style=social' /></a></p>
 </p>
 
 ## Table of contents
