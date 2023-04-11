@@ -9,6 +9,5 @@
     "noEmit": true,
     "target": "ES2016",
     "module": "commonjs",
-    "moduleResolution": "node16",
   }
 }
