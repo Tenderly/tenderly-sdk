@@ -14,9 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - uses: pnpm/action-setup@v2.2.4
         with:
           node-version: 16
+      - uses: pnpm/action-setup@v2.2.4
+        with:
+          run_install: true
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm test
