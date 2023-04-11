@@ -21,7 +21,7 @@
     "lint": "tsc && eslint . --ext .ts,.js",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "prepare": "husky install",
-    "publish": "pnpm run build && changeset publish",
+    "publish": "changeset publish",
     "version": "pnpm changeset version"
   },
   "author": "Tenderly Dev Team",
