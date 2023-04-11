@@ -4,7 +4,7 @@
 <a href="https://tenderly.co" >
 <img src="https://tenderly.co/tenderly.svg" alt="tenderly-logo" width="100%" height="auto" style="background-color: #ffffffb2;padding: 10px 20px;box-sizing: border-box;max-width:200px;" />
 </a>
-<p align='center'>A SDK for working with your favorite Web3 development platform</p><p align='center'><a><img alt='MIT License' src='https://img.shields.io/github/license/Tenderly/tenderly-sdk-js'/></a> <a><img alt='npm version' src='https://img.shields.io/npm/v/tenderly-sdk-js' /></a> <a><img alt='github stars' src='https://img.shields.io/github/stars/Tenderly/tenderly-sdk-js?style=social' /></a> <a><img alt='Tenderly twitter' src='https://img.shields.io/twitter/follow/TenderlyApp?style=social' /></a></p>
+<p align='center'>A SDK for working with your favorite Web3 development platform</p><p align='center'><a><img alt='MIT License' src='https://img.shields.io/github/license/Tenderly/tenderly-sdk'/></a> <a><img alt='npm version' src='https://img.shields.io/npm/v/tenderly-sdk' /></a> <a><img alt='github stars' src='https://img.shields.io/github/stars/Tenderly/tenderly-sdk?style=social' /></a> <a><img alt='Tenderly twitter' src='https://img.shields.io/twitter/follow/TenderlyApp?style=social' /></a></p>
 </p>
 
 ## Table of contents
@@ -35,7 +35,7 @@ Full documentation with example snippets here:<br /><a href='https://docs.tender
 
 ### Installation
 
-Available on npm as <a href='https://www.npmjs.com/package/tenderly-sdk-js'>tenderly-sdk</a>
+Available on npm as <a href='https://www.npmjs.com/package/tenderly-sdk'>tenderly-sdk</a>
 npm
 
 ```sh
@@ -84,6 +84,6 @@ console.log(contracts.map(contract => contract.address).join(', '));
 
 ## Contributors
 
-<a href="https://github.com/Tenderly/tenderly-sdk-js/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Tenderly/tenderly-sdk-js&max=900&columns=20" />
+<a href="https://github.com/Tenderly/tenderly-sdk/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Tenderly/tenderly-sdk&max=900&columns=20" />
 </a>
