@@ -13,7 +13,7 @@ export type TenderlyConfiguration = {
   accountName: string;
   projectName: string;
   accessKey: string;
-  network: Network;
+  network: Network | number;
 };
 
 // helper types
