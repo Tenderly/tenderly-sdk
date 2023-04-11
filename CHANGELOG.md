@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.0.6
+
+### Patch Changes
+
+- 827ab8f: Accepting plain numbers as input for tenderly network configuration
+
 ## 0.0.5
 
 ### Patch Changes
