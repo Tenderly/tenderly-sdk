@@ -1,7 +1,7 @@
 import { Tenderly, Network } from '../lib';
 import { NotFoundError } from '../lib/errors/NotFoundError';
-import { CompilationError } from "../lib/errors/CompilationError";
-import { BytecodeMismatchError } from "../lib/errors/BytecodeMismatchError";
+import { CompilationError } from '../lib/errors/CompilationError';
+import { BytecodeMismatchError } from '../lib/errors/BytecodeMismatchError';
 
 const counterContractSource = `
 // SPDX-License-Identifier: MIT
@@ -349,13 +349,13 @@ describe('contracts.verify', () => {
           },
           'Library.sol': {
             content: libraryContractSource,
-          }
+          },
         },
         settings: {
           libraries: {
-            "Library.sol": {
-              "Library": libraryContract,
-            }
+            'Library.sol': {
+              Library: libraryContract,
+            },
           },
           optimizer: {
             enabled: true,
@@ -393,6 +393,33 @@ describe('contracts.verify', () => {
     } catch (error) {
       expect(error instanceof CompilationError).toBeTruthy();
       expect(error.slug).toEqual('compilation_error');
+    }
+  });
+  test('contracts.verify fails for bytecode mismatch error', async () => {
+    try {
+      await sepoliaTenderly.contracts.verify(counterContract, {
+        config: {
+          mode: 'public',
+        },
+        contractToVerify: 'Counter.sol:CounterWithLogs',
+        solc: {
+          version: 'v0.8.18',
+          sources: {
+            'Counter.sol': {
+              content: bytecodeMismatchCounterContractSource,
+            },
+          },
+          settings: {
+            libraries: {},
+            optimizer: {
+              enabled: false,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      expect(error instanceof BytecodeMismatchError).toBeTruthy();
+      expect(error.slug).toEqual('bytecode_mismatch_error');
     }
   });
 });
