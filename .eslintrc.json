@@ -30,5 +30,5 @@
     "semi": ["warn", "always"],
     "@typescript-eslint/no-unused-vars": "error"
   },
-  "ignorePatterns": ["dist", "node_modules", "commitlint.config.js", "coverage"]
+  "ignorePatterns": ["dist", "node_modules", "commitlint.config.js", "coverage", "prebuild.js"]
 }
