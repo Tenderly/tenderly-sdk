@@ -336,7 +336,7 @@ describe('contracts.verify', () => {
   });
 
   test('contracts.verify works for contract with libraries', async () => {
-    const result = await sepoliaTenderly.contracts.verify(libraryTokenContract, {
+    const verifiedContract = await sepoliaTenderly.contracts.verify(libraryTokenContract, {
       config: {
         mode: 'public', // 'private' is also possible
       },
@@ -365,7 +365,7 @@ describe('contracts.verify', () => {
       },
     });
 
-    expect(result.address).toEqual(libraryTokenContract);
+    expect(verifiedContract.address).toEqual(libraryTokenContract);
   });
 
   test('contracts.verify fails for wrong compiler version', async () => {
