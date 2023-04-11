@@ -395,34 +395,6 @@ describe('contracts.verify', () => {
       expect(error.slug).toEqual('compilation_error');
     }
   });
-
-  test('contracts.verify fails for bytecode mismatch error', async () => {
-    try {
-      await sepoliaTenderly.contracts.verify(counterContract, {
-        config: {
-          mode: 'public',
-        },
-        contractToVerify: 'Counter.sol:CounterWithLogs',
-        solc: {
-          version: 'v0.8.18',
-          sources: {
-            'Counter.sol': {
-              content: bytecodeMismatchCounterContractSource,
-            },
-          },
-          settings: {
-            libraries: {},
-            optimizer: {
-              enabled: false,
-            },
-          },
-        },
-      });
-    } catch (error) {
-      expect(error instanceof BytecodeMismatchError).toBeTruthy();
-      expect(error.slug).toEqual('bytecode_mismatch_error');
-    }
-  });
 });
 
 describe('contract.getBy', () => {

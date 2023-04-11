@@ -319,12 +319,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
           verificationResp.results[0].bytecode_mismatch_error
         );
       } else {
-        // TODO(dusan): Currently, no tags will be returned
-        return {
-          address: verificationResp.results[0].verified_contract.address,
-          displayName: verificationResp.results[0].verified_contract.contract_name,
-          network: this.configuration.network,
-        };
+        return this.add(address);
       }
     } catch (error) {
       handleError(error);
