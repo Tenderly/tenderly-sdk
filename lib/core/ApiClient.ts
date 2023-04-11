@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TENDERLY_API_BASE_URL, TENDERLY_SDK_VERSION } from '../constants';
+import { TENDERLY_API_BASE_URL } from '../constants';
+import { TENDERLY_SDK_VERSION } from '../sdkVersion';
 
 export type ApiVersion = 'v1' | 'v2';
 
