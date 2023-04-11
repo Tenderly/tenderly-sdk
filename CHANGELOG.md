@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.0
+
+### Minor Changes
+
+- e1c5595: Fixed bumping version automatically
+
 ## 0.0.7
 
 ### Patch Changes
