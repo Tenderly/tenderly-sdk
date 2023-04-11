@@ -1,5 +1,13 @@
 # @tenderly/sdk
 
+## 0.0.5
+
+### Patch Changes
+
+- 4481283: Adding env variables correctly
+- 66a8e1a: adding changeset file to release
+- 7fef38e: Restoring .env variables
+
 ## 0.0.2
 
 ### Patch Changes
