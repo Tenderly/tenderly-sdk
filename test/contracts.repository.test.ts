@@ -113,7 +113,6 @@ library Library {
 }
 `;
 
-
 let tenderly: Tenderly = null;
 let sepoliaTenderly: Tenderly = null;
 let getByTenderly: Tenderly = null;
