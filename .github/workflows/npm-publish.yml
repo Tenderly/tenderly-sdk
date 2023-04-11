@@ -8,15 +8,16 @@ on:
     branches:
       - master
 
-env:
-  TENDERLY_ACCESS_KEY: ${{secrets.TENDERLY_ACCESS_KEY}}
-  TENDERLY_ACCOUNT_NAME: ${{secrets.TENDERLY_ACCOUNT_NAME}}
-  TENDERLY_PROJECT_NAME: ${{secrets.TENDERLY_PROJECT_NAME}}
-  TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: CI
+    env:
+      TENDERLY_ACCESS_KEY: ${{secrets.TENDERLY_ACCESS_KEY}}
+      TENDERLY_ACCOUNT_NAME: ${{secrets.TENDERLY_ACCOUNT_NAME}}
+      TENDERLY_PROJECT_NAME: ${{secrets.TENDERLY_PROJECT_NAME}}
+      TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -32,6 +33,7 @@ jobs:
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
+    environment: CI
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
