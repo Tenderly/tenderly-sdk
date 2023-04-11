@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.0.7
+
+### Patch Changes
+
+- b795d39: Implemented verification and added tests.
+
 ## 0.0.6
 
 ### Patch Changes
