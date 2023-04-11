@@ -2,7 +2,7 @@
 
 <div align='center'>
 <a href="https://tenderly.co" >
-<img src="https://tenderly.co/tenderly.svg" alt="tenderly-logo" width="100%" height="auto" style="background-color: #ffffffb2;padding: 10px 20px;box-sizing: border-box;max-width:200px;" />
+<img src="./assets/Tenderly Logo-Purple.png" alt="tenderly-logo" width="100%" height="auto" style="background-color: #ffffffb2;padding: 10px 20px;box-sizing: border-box;max-width:200px;" />
 </a>
 </div>
 <div align='center'>
