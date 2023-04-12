@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.2
+
+### Patch Changes
+
+- 5b54588: Shrinkng npm bundle by whitelisting lib and dist folders
+
 ## 0.1.1
 
 ### Patch Changes
