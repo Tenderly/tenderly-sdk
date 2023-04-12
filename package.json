@@ -15,6 +15,7 @@
     "start:example:allowAndTransfer": "ts-node examples/allowAndTransfer/index.ts",
     "start:example:contractVerification": "ts-node examples/contractVerification/index.ts",
     "start:example:simulateBundle": "ts-node examples/simulateBundle/index.ts",
+    "start:example:simulateTransaction": "ts-node examples/simulateTransaction/index.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "build": "node prebuild.js && tsup lib/index.ts --dts --format cjs,esm",
