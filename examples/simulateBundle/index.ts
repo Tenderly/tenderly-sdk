@@ -2,7 +2,7 @@
 import { ethers } from 'ethers';
 import { writeFileSync } from 'fs';
 import { Network, Tenderly } from '../../lib';
-import { TransactionParameters } from '../../lib/executors/Simulator.types';
+import { TransactionParameters } from '../../lib/simulator';
 
 const fakeWardAddress = '0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2';
 const daiOwnerEOA = '0xe58b9ee93700a616b50509c8292977fa7a0f8ce1';
