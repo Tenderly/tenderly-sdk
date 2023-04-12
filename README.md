@@ -13,8 +13,9 @@ SDK for working with your favorite Web3 development platform
 
 <div align='center'>
 
+
 [![License](https://img.shields.io/github/license/Tenderly/tenderly-sdk)](./LICENSE)
-[![NPM](https://badge.fury.io/js/@tenderly%2Fsdk.svg)](https://www.npmjs.com/package/@tenderly/sdk)
+[![npm](https://img.shields.io/npm/v/@tenderly%2Fsdk.svg)](https://www.npmjs.org/package/@tenderly/sdk)
 [![Twitter](https://img.shields.io/twitter/follow/TenderlyApp?style=social)](https://twitter.com/intent/follow?screen_name=TenderlyApp)
 [![Github](https://img.shields.io/github/stars/Tenderly/tenderly-sdk?style=social)](https://github.com/Tenderly/tenderly-sdk)
 
@@ -102,3 +103,7 @@ console.log(contracts.map(contract => contract.address).join(', '));
 <a href="https://github.com/Tenderly/tenderly-sdk/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Tenderly/tenderly-sdk&max=900&columns=20" />
 </a>
+
+## License
+
+[MIT](LICENSE)
