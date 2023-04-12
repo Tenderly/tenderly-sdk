@@ -47,7 +47,7 @@ Full documentation with example snippets here:<br /><a href='https://docs.tender
 
 ### Installation
 
-Available on npm as <a href='https://www.npmjs.com/package/tenderly-sdk'>tenderly-sdk</a>
+Available on npm as <a href='https://www.npmjs.com/package/@tenderly/sdk'>tenderly-sdk</a>
 npm
 
 ```sh
@@ -73,7 +73,7 @@ Instantiate a new tenderly instance with your project details. _We highly recomm
 ```ts
 import { Tenderly, Network } from '@tenderly/sdk';
 
-const tenderlyInstance = new TenderlyInstance({
+const tenderlyInstance = new Tenderly({
   accessKey: process.env.TENDERLY_ACCESS_KEY,
   accountName: process.env.TENDERLY_ACCOUNT_NAME,
   projectName: process.env.TENDERLY_PROJECT_NAME,
@@ -84,7 +84,7 @@ const tenderlyInstance = new TenderlyInstance({
 Fetch project contracts
 
 ```ts
-const contracts = await tenderlyInstance.contracts.getBy();
+const contracts = await tenderlyInstance.contracts.getAll();
 
 console.log(contracts.map(contract => contract.address).join(', '));
 // 0x63456...5689, 0x54j2...23890, 0x211e...289n
