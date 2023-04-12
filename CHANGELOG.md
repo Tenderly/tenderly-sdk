@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.1
+
+### Patch Changes
+
+- 3cee5aa: Adding examples for simulating transactions
+
 ## 0.1.0
 
 ### Minor Changes
