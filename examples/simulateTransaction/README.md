@@ -1,4 +1,4 @@
-### **Adding a contract**
+### **Simulate Transaction**
 
 To simulate a transaction, you can use **`simulateTransaction`** method of the **`simulator`** namespace:
 
