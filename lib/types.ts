@@ -3,8 +3,6 @@ export type Web3Address = string;
 
 export enum Network {
   MAINNET = 1,
-  ROPSTEN = 3,
-  RINKEBY = 4,
   GOERLI = 5,
   OPTIMISTIC = 10,
   CRONOS = 25,
