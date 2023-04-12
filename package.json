@@ -11,8 +11,7 @@
     "url": "git+https://github.com/Tenderly/tenderly-sdk.git"
   },
   "files": [
-    "dist",
-    "lib"
+    "dist"
   ],
   "scripts": {
     "start:example:addContracts": "ts-node examples/addContracts/index.ts",
