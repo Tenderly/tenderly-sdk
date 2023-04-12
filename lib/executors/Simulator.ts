@@ -220,6 +220,16 @@ export class Simulator {
     return data;
   }
 
+  /**
+   * Simulates a transaction by encoding overrides, building a request body, and executing a simulation request.
+   * @async
+   * @function
+   * @param {SimulationParameters} simulationParams - Parameters for the transaction simulation.
+   * @param {object} simulationParams.transaction - The transaction object to be simulated.
+   * @param {number} simulationParams.blockNumber - The block number for the simulation.
+   * @param {object} simulationParams.overrides - Overrides for the transaction simulation.
+   * @returns {Promise<SimulationResult>} - A Promise that resolves to a simulation result object.
+   */
   async simulateTransaction({ transaction, blockNumber, overrides }: SimulationParameters) {
     try {
       // Encode overrides if present
@@ -241,6 +251,17 @@ export class Simulator {
       handleError(error);
     }
   }
+  /**
+   * Simulates a bundle of transactions by encoding overrides, building a request body,
+   * and executing a simulation bundle request.
+   * @async
+   * @function
+   * @param {SimulationBundleDetails} params - Details of the transaction bundle simulation.
+   * @param {object[]} params.transactions - An array of transaction objects to be simulated.
+   * @param {object} params.overrides - Overrides for the transaction bundle simulation.
+   * @param {number} params.blockNumber - The block number for the simulation bundle.
+   * @returns {Promise<SimulationResult[]>} - A Promise that resolves to an array of simulation result objects.
+   */
 
   async simulateBundle({ transactions, overrides, blockNumber }: SimulationBundleDetails) {
     try {
