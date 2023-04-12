@@ -10,6 +10,10 @@
     "type": "git",
     "url": "git+https://github.com/Tenderly/tenderly-sdk.git"
   },
+  "files": [
+    "dist",
+    "lib"
+  ],
   "scripts": {
     "start:example:addContracts": "ts-node examples/addContracts/index.ts",
     "start:example:addWallets": "ts-node examples/addWallets/index.ts",
