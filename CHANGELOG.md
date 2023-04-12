@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.5
+
+### Patch Changes
+
+- 56c21fb: [fix] remove deprecated network enums
+
 ## 0.1.4
 
 ### Patch Changes
