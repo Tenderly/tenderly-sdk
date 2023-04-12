@@ -14,5 +14,4 @@ try {
 } catch(error) {
   console.error("Error adding contract:", error);
 }
-
 ```
