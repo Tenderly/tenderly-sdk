@@ -1,5 +1,12 @@
 # @tenderly/sdk
 
+## 0.1.6
+
+### Patch Changes
+
+- 7f5602f: Changed npm shield for readme.md
+- 67b0785: Adding JSDOC for verify and simulate methods
+
 ## 0.1.5
 
 ### Patch Changes
