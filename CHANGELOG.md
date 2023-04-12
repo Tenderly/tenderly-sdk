@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.7
+
+### Patch Changes
+
+- 6b11f1b: Fixed readme example
+
 ## 0.1.6
 
 ### Patch Changes
