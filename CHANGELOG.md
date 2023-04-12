@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.3
+
+### Patch Changes
+
+- 8a56132: Adding all supported networks
+
 ## 0.1.2
 
 ### Patch Changes
