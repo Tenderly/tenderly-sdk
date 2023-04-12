@@ -270,6 +270,13 @@ export class ContractRepository implements Repository<TenderlyContract> {
     return queryParams;
   }
 
+  /**Verifies a contract on Tenderly by submitting a verification request with
+   * the provided address and verification details.
+   * @param {string} address - The address of the contract to be verified.
+   * @param {VerificationRequest} verificationRequest - Details of the verification request.
+   * @returns {Promise<TenderlyContract>} - A Promise that resolves to a TenderlyContract
+   * object representing the verified contract.
+   */
   async verify(
     address: string,
     verificationRequest: VerificationRequest,
