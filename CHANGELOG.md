@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.4
+
+### Patch Changes
+
+- c09fc9a: Making helper types available from root import
+
 ## 0.1.3
 
 ### Patch Changes
