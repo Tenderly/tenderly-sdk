@@ -1,16 +1,15 @@
 /* eslint-disable max-len */
-import { ethers } from 'ethers';
-import { writeFileSync } from 'fs';
+import { Interface, parseEther } from 'ethers';
+import * as dotenv from 'dotenv';
 import { Network, Tenderly } from '../../lib';
 import { TransactionParameters } from '../../lib/simulator';
 
-const fakeWardAddress = '0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2';
+const fakeWardAddressEOA = '0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2';
 const daiOwnerEOA = '0xe58b9ee93700a616b50509c8292977fa7a0f8ce1';
 const daiAddressMainnet = '0x6b175474e89094c44da98b954eedeac495271d0f';
 const uniswapV3SwapRouterAddressMainnet = '0xe592427a0aece92de3edee1f18e0157c05861564';
 const wethAddressMainnet = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 
-import * as dotenv from 'dotenv';
 dotenv.config();
 
 (async () => {
@@ -21,7 +20,7 @@ dotenv.config();
     network: Network.MAINNET,
   });
 
-  const simulation = await tenderly.simulator.simulateBundle({
+  const simulatedBundle = await tenderly.simulator.simulateBundle({
     blockNumber: 0x103a957,
     transactions: [
       // TX1: Mint 2 DAI for daiOwnerEOA.
@@ -36,26 +35,35 @@ dotenv.config();
       [daiAddressMainnet]: {
         state: {
           // make DAI think that fakeWardAddress is a ward for minting
-          [`wards[${fakeWardAddress}]`]:
+          [`wards[${fakeWardAddressEOA}]`]:
             '0x0000000000000000000000000000000000000000000000000000000000000001',
         },
       },
     },
   });
+  const totalGasUsed = simulatedBundle
+    .map(simulation => simulation.gasUsed)
+    .reduce((total, gasUsed) => total + gasUsed);
 
-  writeFileSync(`${__dirname}/simulateBundle.output.txt`, JSON.stringify(simulation, null, 2));
-  // TODO: Extract some data and print it out!
+  console.log('Total gas used:', totalGasUsed);
+
+  simulatedBundle.forEach((simulation, idx) => {
+    console.log(
+      `Transaction ${idx} at block ${simulation.blockNumber}`,
+      simulation.status ? 'success' : 'failed',
+    );
+  });
 })();
 
 function mint2DaiTx(): TransactionParameters {
   return {
-    from: fakeWardAddress,
+    from: fakeWardAddressEOA,
     to: daiAddressMainnet,
     gas: 0,
     gas_price: '0',
     value: 0,
     //'0x40c10f19000000000000000000000000e58b9ee93700a616b50509c8292977fa7a0f8ce10000000000000000000000000000000000000000000000001bc16d674ec80000',
-    input: daiEthersInterface().encodeFunctionData('mint', [daiOwnerEOA, ethers.parseEther('2')]),
+    input: daiEthersInterface().encodeFunctionData('mint', [daiOwnerEOA, parseEther('2')]),
   };
 }
 
@@ -68,7 +76,7 @@ function approveUniswapV2RouterTx(): TransactionParameters {
     value: 0,
     input: daiEthersInterface().encodeFunctionData('approve', [
       uniswapV3SwapRouterAddressMainnet,
-      ethers.parseEther('1'),
+      parseEther('1'),
     ]),
   };
 }
@@ -103,7 +111,7 @@ function daiEthersInterface() {
     {constant:false,inputs:[{internalType:'address',name:'usr',type:'address',},{internalType:'uint256',name:'wad',type:'uint256',},],name:'mint',outputs:[],payable:false,stateMutability:'nonpayable',type:'function',}
   ];
 
-  return new ethers.Interface(daiAbi);
+  return new Interface(daiAbi);
 }
 
 function uniswapRouterV2EthersInterface() {
@@ -127,5 +135,5 @@ function uniswapRouterV2EthersInterface() {
     { inputs: [ { internalType: 'int256', name: 'amount0Delta', type: 'int256', }, { internalType: 'int256', name: 'amount1Delta', type: 'int256', }, { internalType: 'bytes', name: '_data', type: 'bytes', }, ], name: 'uniswapV3SwapCallback', outputs: [], stateMutability: 'nonpayable', type: 'function', }, { inputs: [ { internalType: 'uint256', name: 'amountMinimum', type: 'uint256', }, { internalType: 'address', name: 'recipient', type: 'address', }, ], name: 'unwrapWETH9', outputs: [], stateMutability: 'payable', type: 'function', }, { inputs: [ { internalType: 'uint256', name: 'amountMinimum', type: 'uint256', }, { internalType: 'address', name: 'recipient', type: 'address', }, { internalType: 'uint256', name: 'feeBips', type: 'uint256', }, { internalType: 'address', name: 'feeRecipient', type: 'address', }, ], name: 'unwrapWETH9WithFee', outputs: [], stateMutability: 'payable', type: 'function', }, { stateMutability: 'payable', type: 'receive', }
   ];
 
-  return new ethers.Interface(swapRouterAbi);
+  return new Interface(swapRouterAbi);
 }
