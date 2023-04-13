@@ -96,7 +96,8 @@ console.log(contracts.map(contract => contract.address).join(', '));
 - <a href="./examples/addWallets">Add wallets</a>
 - <a href="./examples/allowAndTransfer">Allow and Transfer</a>
 - <a href="./examples/contractVerification">Contract verification</a>
-- <a href="./examples/contractVerification">Simulate bundle</a>
+- <a href="./examples/simulateTransaction">Simulate transaction</a>
+- <a href="./examples/simulateBundle">Simulate bundle</a>
 
 ## Contributors
 
