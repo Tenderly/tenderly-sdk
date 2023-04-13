@@ -5,10 +5,10 @@ coverage
 
 .vscode
 .env
+.DS_Store
 
 *.output.json
 *.output.txt
-
 
 .pnp.*
 .yarn/*
