@@ -37,6 +37,10 @@ SDK for working with your favorite Web3 development platform
 
 ## Introduction
 
+The Tenderly SDK provides an easy-to-use interface for interacting with the Tenderly platform.
+
+It allows you to simulate transactions, simulate transaction bundles, manage contracts and wallets, and verify smart contracts from your code. The SDK is particularly useful for blockchain developers who want to integrate Tenderly's powerful tools into their dapp or development workflow.
+
 List of supported networks can be found <a href='https://docs.tenderly.co/supported-networks-and-languages'>here</a>
 
 ## Documentation
@@ -68,7 +72,7 @@ pnpm add @tenderly/sdk
 
 ### Quick start
 
-Instantiate a new tenderly instance with your project details. _We highly recommend using environment variables for sensitive data such as access keys durring your local development!_
+Instantiate a new tenderly instance with your project details. _We highly recommend using environment variables for sensitive data such as access keys during your local development!_
 
 ```ts
 import { Tenderly, Network } from '@tenderly/sdk';
