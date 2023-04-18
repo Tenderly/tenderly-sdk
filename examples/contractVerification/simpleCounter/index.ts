@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-import { Tenderly, Network, Web3Address } from '../../lib';
-import { source } from './myToken';
+import { Tenderly, Network, Web3Address } from '../../../lib';
+import { readFileSync } from 'fs';
 
 dotenv.config();
 
@@ -24,13 +24,16 @@ const myTokenAddress = '0x8aaf9071e6c3129653b2dc39044c3b79c0bfcfbf'.toLowerCase(
         version: 'v0.8.18',
         sources: {
           'Counter.sol': {
-            content: source,
+            content: readFileSync(
+              'examples/contractVerification/simpleCounter/contracts/Counter.sol',
+              'utf8',
+            ),
           },
         },
         settings: {
           libraries: {},
           optimizer: {
-            enabled: true,
+            enabled: false,
             runs: 200,
           },
         },
