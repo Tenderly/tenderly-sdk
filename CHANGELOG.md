@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.9
+
+### Patch Changes
+
+- a54bcec: Added more examples that elaborate contract verification.
+
 ## 0.1.8
 
 ### Patch Changes
