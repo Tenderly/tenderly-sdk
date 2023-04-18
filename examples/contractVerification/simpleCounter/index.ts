@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { Tenderly, Network, Web3Address } from '../../lib';
+import { Tenderly, Network, Web3Address } from '../../../lib';
 import { source } from './myToken';
 
 dotenv.config();
@@ -30,7 +30,7 @@ const myTokenAddress = '0x8aaf9071e6c3129653b2dc39044c3b79c0bfcfbf'.toLowerCase(
         settings: {
           libraries: {},
           optimizer: {
-            enabled: true,
+            enabled: false,
             runs: 200,
           },
         },
