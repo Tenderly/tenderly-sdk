@@ -4,54 +4,40 @@ import { readFileSync } from 'fs';
 
 dotenv.config();
 
-const myTokenAddress = '0x1a273A64C89CC45aBa798B1bC31B416A199Be3b3'.toLowerCase() as Web3Address;
+const myTokenAddress = `0x1a273A64C89CC45aBa798B1bC31B416A199Be3b3`.toLowerCase() as Web3Address;
+const ROOT_FOLDER = `examples/contractVerification/withDependencies/contracts`;
 
 (async () => {
   try {
     const tenderly = new Tenderly({
-      accessKey: process.env.TENDERLY_ACCESS_KEY || '',
-      accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
-      projectName: process.env.TENDERLY_PROJECT_NAME || '',
+      accessKey: process.env.TENDERLY_ACCESS_KEY || ``,
+      accountName: process.env.TENDERLY_ACCOUNT_NAME || ``,
+      projectName: process.env.TENDERLY_PROJECT_NAME || ``,
       network: Network.SEPOLIA,
     });
 
     const result = await tenderly.contracts.verify(myTokenAddress, {
       config: {
-        mode: 'public',
+        mode: `public`,
       },
-      contractToVerify: `examples/contractVerification/withDependencies/contracts/MyToken.sol:MyToken`,
+      contractToVerify: `${ROOT_FOLDER}/MyToken.sol:MyToken`,
       solc: {
-        version: 'v0.8.19',
+        version: `v0.8.19`,
         sources: {
-          'examples/contractVerification/withDependencies/contracts/MyToken.sol': {
-            content: readFileSync(
-              'examples/contractVerification/withDependencies/contracts/MyToken.sol',
-              'utf8',
-            ),
+          [`${ROOT_FOLDER}/MyToken.sol`]: {
+            content: readFileSync(`${ROOT_FOLDER}/MyToken.sol`, `utf8`),
           },
-          '@openzeppelin/contracts/token/ERC20/ERC20.sol': {
-            content: readFileSync(
-              'examples/contractVerification/withDependencies/contracts/ERC20.sol',
-              'utf8',
-            ),
+          [`@openzeppelin/contracts/token/ERC20/ERC20.sol`]: {
+            content: readFileSync(`${ROOT_FOLDER}/ERC20.sol`, `utf8`),
           },
-          '@openzeppelin/contracts/token/ERC20/IERC20.sol': {
-            content: readFileSync(
-              'examples/contractVerification/withDependencies/contracts/IERC20.sol',
-              'utf8',
-            ),
+          [`@openzeppelin/contracts/token/ERC20/IERC20.sol`]: {
+            content: readFileSync(`${ROOT_FOLDER}/IERC20.sol`, `utf8`),
           },
-          '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol': {
-            content: readFileSync(
-              'examples/contractVerification/withDependencies/contracts/IERC20Metadata.sol',
-              'utf8',
-            ),
+          [`@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol`]: {
+            content: readFileSync(`${ROOT_FOLDER}/IERC20Metadata.sol`, `utf8`),
           },
-          '@openzeppelin/contracts/utils/Context.sol': {
-            content: readFileSync(
-              'examples/contractVerification/withDependencies/contracts/Context.sol',
-              'utf8',
-            ),
+          [`@openzeppelin/contracts/utils/Context.sol`]: {
+            content: readFileSync(`${ROOT_FOLDER}/Context.sol`, `utf8`),
           },
         },
         settings: {
@@ -63,7 +49,7 @@ const myTokenAddress = '0x1a273A64C89CC45aBa798B1bC31B416A199Be3b3'.toLowerCase(
       },
     });
 
-    console.log('Result:', result);
+    console.log(`Result:`, result);
   } catch (error) {
     console.error(error);
   }
