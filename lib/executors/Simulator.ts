@@ -56,9 +56,12 @@ export class Simulator {
     return {
       networkID: `${this.configuration.network}`,
       stateOverrides: Object.keys(overrides)
-        .map(contractAddress => ({
-          [contractAddress]: overrides[contractAddress as Web3Address].state,
-        }))
+        .map(contractAddress => {
+          const cAddress = contractAddress.toLowerCase();
+          return {
+            [cAddress]: overrides[contractAddress as Web3Address].state,
+          };
+        })
         .map(x => {
           const y = {};
           Object.keys(x).forEach(key => {
@@ -94,16 +97,16 @@ export class Simulator {
         if (encodedStateOverrides && encodedStateOverrides[curr]) {
           acc[curr].state_diff = encodedStateOverrides[curr];
         }
-        if (overrides[curr].nonce) {
+        if (overrides[curr]?.nonce) {
           acc[curr].nonce = overrides[curr].nonce;
         }
 
-        if (overrides[curr].code) {
+        if (overrides[curr]?.code) {
           acc[curr].code = overrides[curr].code;
         }
 
-        if (overrides[curr].nonce) {
-          acc[curr].balance = overrides[curr].nonce;
+        if (overrides[curr]?.balance) {
+          acc[curr].balance = overrides[curr].balance;
         }
 
         return acc;
