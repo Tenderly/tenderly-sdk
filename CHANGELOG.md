@@ -1,5 +1,12 @@
 # @tenderly/sdk
 
+## 0.1.10
+
+### Patch Changes
+
+- 595093b: Fixed error while performing simulated transaction with state overrides
+- 64e9578: Enabling external contributors to run tests in target repository context
+
 ## 0.1.9
 
 ### Patch Changes
