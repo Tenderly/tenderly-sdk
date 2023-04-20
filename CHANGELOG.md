@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.10
+
+### Patch Changes
+
+- 64e9578: Enabling external contributors to run tests in target repository context
+
 ## 0.1.9
 
 ### Patch Changes
