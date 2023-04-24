@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.11
+
+### Patch Changes
+
+- b1ad7e8: TIC-498 `getAll` method should target v2 API
+
 ## 0.1.10
 
 ### Patch Changes
