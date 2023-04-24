@@ -206,7 +206,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
   async getAll(): Promise<Contract[]> {
     try {
-      const wallets = await this.apiV1.get<{ accounts: ContractResponse[] }>(
+      const wallets = await this.apiV2.get<{ accounts: ContractResponse[] }>(
         `
       /accounts/${this.configuration.accountName}
       /projects/${this.configuration.projectName}
