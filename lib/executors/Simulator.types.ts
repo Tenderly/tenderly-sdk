@@ -147,7 +147,11 @@ export interface SimulateSimpleResponse_TraceResponse {
   refund_address?: string | null;
   value?: number | null;
   error?: string | null;
+  /**
+   * @deprecated Use {@link error_reason} instead
+   */
   error_messages?: string | null;
+  error_reason?: string | null;
   input?: string | null;
   decoded_input?: SimulateSimpleResponse_DecodedArgument[];
   method?: string | null;
