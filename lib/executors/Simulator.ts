@@ -29,7 +29,10 @@ function mapToSimulationResult(simpleSimulationResponse: SimulateSimpleResponse)
     type: simpleSimulationResponse.type,
     logsBloom: simpleSimulationResponse.logs_bloom,
     logs: simpleSimulationResponse.logs,
-    trace: simpleSimulationResponse.trace,
+    trace: simpleSimulationResponse.trace.map(trace => ({
+      ...trace,
+      error_messages: trace.error_reason,
+    })),
   };
 }
 
