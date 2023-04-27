@@ -1,6 +1,6 @@
 {
   "name": "@tenderly/sdk",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Tenderly SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
