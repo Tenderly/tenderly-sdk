@@ -1,5 +1,12 @@
 # @tenderly/sdk
 
+## 0.1.12
+
+### Patch Changes
+
+- 9f24eb7: Added @deprecated to error_messages
+  Populate error_reason
+
 ## 0.1.11
 
 ### Patch Changes
