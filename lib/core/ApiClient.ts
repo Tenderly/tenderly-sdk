@@ -18,7 +18,7 @@ export class ApiClient {
       headers: {
         'Content-Type': 'application/json',
         'X-Access-Key': apiKey,
-        'User-Agent': `@tenderly/sdk-js/${TENDERLY_SDK_VERSION}`,
+        'X-User-Agent': `@tenderly/sdk-js/${TENDERLY_SDK_VERSION}`,
       },
     });
   }
