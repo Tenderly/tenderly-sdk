@@ -19,9 +19,15 @@ jobs:
       TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
 
     steps:
+      - name: ENV vars GITHUB_BASE_REF
+        run: echo $GITHUB_BASE_REF
+      - name: ENV vars GITHUB_HEAD_REF
+        run: echo GITHUB_HEAD_REF
+      - name: event
+        run: echo ${{github.event.pull_request.base.ref}}
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{GITHUB_HEAD_REF}}
       - uses: pnpm/action-setup@v2.2.4
         with:
           version: 8.2.0
