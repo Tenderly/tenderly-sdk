@@ -19,12 +19,6 @@ jobs:
       TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
 
     steps:
-      - name: ENV vars GITHUB_BASE_REF
-        run: echo "$GITHUB_BASE_REF"
-      - name: ENV vars GITHUB_HEAD_REF
-        run: echo "$GITHUB_HEAD_REF"
-      - name: event
-        run: echo "${{ github.head_ref }}"
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
@@ -35,6 +29,9 @@ jobs:
         with:
           node-version: 16
           cache: "pnpm"
+      - run: echo "$GITHUB_BASE_REF"
+      - run: echo "$GITHUB_HEAD_REF"
+      - run: echo "${{ github.head_ref }}"
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm build
