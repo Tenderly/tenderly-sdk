@@ -20,14 +20,14 @@ jobs:
 
     steps:
       - name: ENV vars GITHUB_BASE_REF
-        run: echo $GITHUB_BASE_REF
+        run: echo "$GITHUB_BASE_REF"
       - name: ENV vars GITHUB_HEAD_REF
-        run: echo GITHUB_HEAD_REF
+        run: echo "$GITHUB_HEAD_REF"
       - name: event
-        run: echo ${{github.event.pull_request.base.ref}}
+        run: echo "${{ github.head_ref }}"
       - uses: actions/checkout@v3
         with:
-          ref: ${{GITHUB_HEAD_REF}}
+          ref: ${{ github.head_ref }}
       - uses: pnpm/action-setup@v2.2.4
         with:
           version: 8.2.0
