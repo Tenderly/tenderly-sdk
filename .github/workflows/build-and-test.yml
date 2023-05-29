@@ -20,8 +20,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
       - uses: pnpm/action-setup@v2.2.4
         with:
           version: 8.2.0
@@ -29,9 +27,6 @@ jobs:
         with:
           node-version: 16
           cache: "pnpm"
-      - run: echo "$GITHUB_BASE_REF"
-      - run: echo "$GITHUB_HEAD_REF"
-      - run: echo "${{ github.head_ref }}"
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm build
