@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.13
+
+### Patch Changes
+
+- 23d79f0: Renamed user-agent to x-user-agent
+
 ## 0.1.12
 
 ### Patch Changes
