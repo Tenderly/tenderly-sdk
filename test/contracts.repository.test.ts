@@ -1,7 +1,7 @@
 import { Tenderly, Network } from '../lib';
 import { NotFoundError } from '../lib/errors/NotFoundError';
 import { CompilationError } from '../lib/errors/CompilationError';
-import { BytecodeMismatchError } from '../lib/errors/BytecodeMismatchError';
+import { UnexpectedVerificationError } from '../lib/errors/UnexpectedVerificationError';
 
 const counterContractSource = `
 // SPDX-License-Identifier: MIT
@@ -418,7 +418,7 @@ describe('contracts.verify', () => {
         },
       });
     } catch (error) {
-      expect(error instanceof BytecodeMismatchError).toBeTruthy();
+      expect(error instanceof UnexpectedVerificationError).toBeTruthy();
       expect(error.slug).toEqual('bytecode_mismatch_error');
     }
   });
