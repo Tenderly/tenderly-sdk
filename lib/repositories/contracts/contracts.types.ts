@@ -140,18 +140,8 @@ export type SolcConfig = {
 // also, sources shouldn't be included here as they are specified inside the verification request
 export type TenderlySolcConfig = {
   version: SolidityCompilerVersions;
-  settings: {
-    optimizer?: {
-      enabled: boolean;
-      runs?: number;
-    };
-    libraries?: {
-      [fileName: string]: {
-        addresses: {
-          [libName: string]: string;
-        };
-      };
-    };
+  settings: Omit<SolcConfig['settings'], 'libraries'> & {
+    libraries?: Record<string, { addresses: Record<string, string> }>;
   };
 };
 
@@ -166,15 +156,15 @@ export type VerificationRequest = {
 export type VerificationResponse = {
   compilation_errors: CompilationErrorResponse[];
   results: VerificationResult[];
-}
+};
 
-export type CompilationErrorResponse= {
+export type CompilationErrorResponse = {
   source_location: SourceLocation;
   error_ype: string;
   component: string;
   message: string;
   formatted_message: string;
-}
+};
 
 interface SourceLocation {
   file: string;
@@ -187,10 +177,10 @@ interface VerificationResult {
   verified_contract: InternalContract;
 }
 
-export type BytecodeMismatchErrorResponse= {
+export type BytecodeMismatchErrorResponse = {
   contract_id: string;
   expected: string;
   got: string;
   similarity: number;
   assumed_reason: string;
-}
+};
