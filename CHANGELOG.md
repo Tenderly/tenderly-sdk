@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.14
+
+### Patch Changes
+
+- 7ce6a2b: Make TenderlySolcConfig dependent on SolcConfig
+
 ## 0.1.13
 
 ### Patch Changes
