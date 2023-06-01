@@ -28,7 +28,7 @@
       }
     ],
     "semi": ["warn", "always"],
-    "@typescript-eslint/no-unused-vars": "error"
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
   },
   "ignorePatterns": ["dist", "node_modules", "commitlint.config.js", "coverage", "prebuild.js"]
 }

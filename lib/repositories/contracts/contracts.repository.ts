@@ -352,11 +352,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
     if (!solcConfig?.settings?.libraries) {
       return tenderlySolcConfig;
     }
-    const libraries: {
-      [fileName: string]: {
-        addresses: { [libName: string]: string };
-      };
-    } = {};
+    const libraries: TenderlySolcConfig['settings']['libraries'] = {};
     for (const [fileName, libVal] of Object.entries(solcConfig.settings.libraries)) {
       if (libraries[fileName] === undefined) {
         libraries[fileName] = { addresses: {} };
@@ -380,11 +376,11 @@ export class ContractRepository implements Repository<TenderlyContract> {
   }
 
   _copySolcConfigToTenderlySolcConfig(solcConfig: SolcConfig): TenderlySolcConfig {
+    const { libraries: _, ...settings } = solcConfig.settings;
+
     return {
       version: solcConfig.version,
-      settings: {
-        optimizer: solcConfig.settings.optimizer,
-      },
+      settings: settings,
     };
   }
 }
