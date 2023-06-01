@@ -128,9 +128,35 @@ export type SolcConfig = {
   version: SolidityCompilerVersions;
   sources: Record<Path, { content: string }>;
   settings: {
+    remappings?: string[];
     optimizer?: {
       enabled: boolean;
       runs?: number;
+      details?: {
+        peephole?: boolean;
+        inliner?: boolean;
+        jumpdestRemover?: boolean;
+        orderLiterals?: boolean;
+        deduplicate?: boolean;
+        cse?: boolean;
+        constantOptimizer?: boolean;
+        yul?: boolean;
+        yulDetails?: {
+          stackAllocation?: boolean;
+          optimizerSteps?: string;
+        };
+      };
+    };
+    evmVersion?: string;
+    viaIR?: boolean;
+    debug?: {
+      revertStrings?: string;
+      debugInfo?: string[];
+    };
+    metadata?: {
+      useLiteralContent?: boolean;
+      bytecodeHash?: string;
+      appendCBOR?: boolean;
     };
     libraries?: Record<Path, Record<string, Web3Address>>;
   };
