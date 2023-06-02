@@ -1,4 +1,4 @@
-import { Network, Path, TenderlyConfiguration } from '../../types';
+import { Network, Path, TenderlyConfiguration, Web3Address } from '../../types';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
 import {
@@ -8,7 +8,7 @@ import {
   GetByParams,
   SolcConfig,
   TenderlyContract,
-  TenderlySolcConfig,
+  TenderlySolcConfigLibraries,
   UpdateContractRequest,
   VerificationRequest,
   VerificationResponse,
@@ -346,14 +346,17 @@ export class ContractRepository implements Repository<TenderlyContract> {
     return tenderlySources;
   }
 
-  _repackLibraries(solcConfig: SolcConfig): TenderlySolcConfig {
+  _repackLibraries(solcConfig: SolcConfig): SolcConfig {
     const tenderlySolcConfig = this._copySolcConfigToTenderlySolcConfig(solcConfig);
 
-    if (!solcConfig?.settings?.libraries) {
+    const solcConfigSettings = solcConfig.settings as {
+      libraries?: Record<Path, Record<string, Web3Address>>;
+    };
+    if (!solcConfigSettings.libraries) {
       return tenderlySolcConfig;
     }
-    const libraries: TenderlySolcConfig['settings']['libraries'] = {};
-    for (const [fileName, libVal] of Object.entries(solcConfig.settings.libraries)) {
+    const libraries: TenderlySolcConfigLibraries = {};
+    for (const [fileName, libVal] of Object.entries(solcConfigSettings.libraries)) {
       if (libraries[fileName] === undefined) {
         libraries[fileName] = { addresses: {} };
       }
@@ -361,7 +364,8 @@ export class ContractRepository implements Repository<TenderlyContract> {
         libraries[fileName].addresses[libName] = libAddress;
       }
     }
-    tenderlySolcConfig.settings.libraries = libraries;
+    (tenderlySolcConfig.settings as { libraries: TenderlySolcConfigLibraries }).libraries =
+      libraries;
 
     return tenderlySolcConfig;
   }
@@ -375,10 +379,14 @@ export class ContractRepository implements Repository<TenderlyContract> {
     return pattern.test(contractName);
   }
 
-  _copySolcConfigToTenderlySolcConfig(solcConfig: SolcConfig): TenderlySolcConfig {
-    const { libraries: _, ...settings } = solcConfig.settings;
+  _copySolcConfigToTenderlySolcConfig(solcConfig: SolcConfig): SolcConfig {
+    // remove libraries from settings since the backend accepts a different format of libraries
+    const { libraries: _, ...settings } = solcConfig.settings as {
+      libraries?: unknown;
+    };
 
     return {
+      sources: undefined, // sources are repacked in a different way
       version: solcConfig.version,
       settings: settings,
     };
