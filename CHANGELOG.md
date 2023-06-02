@@ -1,5 +1,12 @@
 # @tenderly/sdk
 
+## 0.1.14
+
+### Patch Changes
+
+- a6f4fb5: Repack libraries without `TenderlySolcConfig`
+- 7ce6a2b: Make TenderlySolcConfig dependent on SolcConfig
+
 ## 0.1.13
 
 ### Patch Changes
