@@ -1,4 +1,4 @@
-import { Network, Path, Web3Address } from '../../types';
+import { Network, Path } from '../../types';
 
 export interface Contract {
   address: string;
@@ -127,23 +127,10 @@ export type SolidityCompilerVersions = `v${number}.${number}.${number}`;
 export type SolcConfig = {
   version: SolidityCompilerVersions;
   sources: Record<Path, { content: string }>;
-  settings: {
-    optimizer?: {
-      enabled: boolean;
-      runs?: number;
-    };
-    libraries?: Record<Path, Record<string, Web3Address>>;
-  };
+  settings: unknown;
 };
 
-// TenderlySolcConfig is the same as SolcConfig, but with a different library structure for internal reasons
-// also, sources shouldn't be included here as they are specified inside the verification request
-export type TenderlySolcConfig = {
-  version: SolidityCompilerVersions;
-  settings: Omit<SolcConfig['settings'], 'libraries'> & {
-    libraries?: Record<string, { addresses: Record<string, string> }>;
-  };
-};
+export type TenderlySolcConfigLibraries = Record<string, { addresses: Record<string, string> }>;
 
 export type VerificationRequest = {
   contractToVerify: string;
