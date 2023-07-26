@@ -25,7 +25,7 @@ const counterContractAbiInterface = new Interface(counterContractAbi);
         to: counterContract,
         gas: 20000000,
         gas_price: '19419609232',
-        value: 0,
+        value: '0',
         input: counterContractAbiInterface.encodeFunctionData('inc', []),
       },
       blockNumber: 3237677,

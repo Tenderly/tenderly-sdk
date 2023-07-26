@@ -30,7 +30,7 @@ const myTokenAbiInterface = new Interface(myTokenAbi);
           to: myTokenAddress,
           gas: 0,
           gas_price: '0',
-          value: 0,
+          value: '0',
           input: myTokenAbiInterface.encodeFunctionData('approve', [toWalletAddress, 1234567890]),
         },
         {
@@ -38,7 +38,7 @@ const myTokenAbiInterface = new Interface(myTokenAbi);
           to: myTokenAddress,
           gas: 0,
           gas_price: '0',
-          value: 0,
+          value: '0',
           input: myTokenAbiInterface.encodeFunctionData('transferFrom', [
             fromWalletAddress,
             toWalletAddress,
