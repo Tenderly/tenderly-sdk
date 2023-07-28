@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.1.15
+
+### Patch Changes
+
+- 4ca0753: Update value type in Simulator types to be string or number
+
 ## 0.1.14
 
 ### Patch Changes
