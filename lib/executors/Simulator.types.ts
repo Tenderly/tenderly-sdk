@@ -8,7 +8,7 @@ export type TransactionParameters = {
   gas_price: string;
   max_fee_per_gas?: number;
   max_priority_fee_per_gas?: number;
-  value: number;
+  value: string | number;
   access_list?: AccessList;
 };
 
@@ -54,7 +54,7 @@ export type SimulationCallArguments = {
   gas_price?: string;
   max_fee_per_gas?: number;
   max_priority_fee_per_gas?: number;
-  value: number;
+  value: string | number;
   data: string;
   access_list?: AccessList;
 };

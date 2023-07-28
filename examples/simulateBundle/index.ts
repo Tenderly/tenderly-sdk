@@ -61,7 +61,7 @@ function mint2DaiTx(): TransactionParameters {
     to: daiAddressMainnet,
     gas: 0,
     gas_price: '0',
-    value: 0,
+    value: '0',
     //'0x40c10f19000000000000000000000000e58b9ee93700a616b50509c8292977fa7a0f8ce10000000000000000000000000000000000000000000000001bc16d674ec80000',
     input: daiEthersInterface().encodeFunctionData('mint', [daiOwnerEOA, parseEther('2')]),
   };
@@ -73,7 +73,7 @@ function approveUniswapV2RouterTx(): TransactionParameters {
     to: daiAddressMainnet,
     gas: 0,
     gas_price: '0',
-    value: 0,
+    value: '0',
     input: daiEthersInterface().encodeFunctionData('approve', [
       uniswapV3SwapRouterAddressMainnet,
       parseEther('1'),
@@ -87,7 +87,7 @@ function swapSomeDaiForWethTx(): TransactionParameters {
     to: uniswapV3SwapRouterAddressMainnet,
     gas: 0,
     gas_price: '0',
-    value: 0,
+    value: '0',
     input: uniswapRouterV2EthersInterface().encodeFunctionData('exactInputSingle', [
       {
         tokenIn: daiAddressMainnet,
