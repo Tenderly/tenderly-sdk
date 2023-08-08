@@ -1,8 +1,7 @@
 /* eslint-disable max-len */
+import dotenv from 'dotenv';
 import { Interface, parseEther } from 'ethers';
-import * as dotenv from 'dotenv';
-import { Network, Tenderly } from '../../lib';
-import { TransactionParameters } from '../../lib/simulator';
+import { Network, Tenderly, TransactionParameters, getEnvironmentVariables } from '../../lib';
 
 const fakeWardAddressEOA = '0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2';
 const daiOwnerEOA = '0xe58b9ee93700a616b50509c8292977fa7a0f8ce1';
@@ -14,9 +13,9 @@ dotenv.config();
 
 (async () => {
   const tenderly = new Tenderly({
-    accessKey: process.env.TENDERLY_ACCESS_KEY || '',
-    accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
-    projectName: process.env.TENDERLY_PROJECT_NAME || '',
+    accessKey: getEnvironmentVariables().TENDERLY_ACCESS_KEY,
+    accountName: getEnvironmentVariables().TENDERLY_ACCOUNT_NAME,
+    projectName: getEnvironmentVariables().TENDERLY_PROJECT_NAME,
     network: Network.MAINNET,
   });
 
@@ -41,8 +40,13 @@ dotenv.config();
       },
     },
   });
+
+  if (simulatedBundle === undefined) {
+    throw new Error('Simulation returned no data');
+  }
+
   const totalGasUsed = simulatedBundle
-    .map(simulation => simulation.gasUsed)
+    .map(simulation => simulation.gasUsed || 0)
     .reduce((total, gasUsed) => total + gasUsed);
 
   console.log('Total gas used:', totalGasUsed);

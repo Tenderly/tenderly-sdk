@@ -3,11 +3,11 @@ import { WalletRepository, ContractRepository } from '../repositories';
 import { Simulator } from '../executors';
 import { VerificationRequest } from '../repositories/contracts/contracts.types';
 import { ApiClientProvider } from './ApiClientProvider';
-import { InvalidArgumentsError } from '../errors/InvalidArgumentsError';
+import { InvalidArgumentsError } from '../errors';
 
 /**
  * The main class of the Tenderly SDK
- * Instantiate this class with your config and you're ready to go
+ * Instantiate this class with your config, and you're ready to go
  * @example
  * const tenderly = new Tenderly({
  *   accountName: 'my-account',
@@ -41,7 +41,7 @@ export class Tenderly {
 
   /**
    * The main class of the Tenderly SDK
-   * Instantiate this class with your config and you're ready to go
+   * Instantiate this class with your config, and you're ready to go
    * @example
    * const tenderly = new Tenderly({
    *   accountName: 'my-account',
@@ -54,11 +54,11 @@ export class Tenderly {
     this.checkConfiguration(configuration);
 
     this.configuration = configuration;
-    const apiProvider = new ApiClientProvider({ apiKey: configuration.accessKey });
+    this.apiClientProvider = new ApiClientProvider({ apiKey: configuration.accessKey });
 
-    this.simulator = new Simulator({ apiProvider, configuration });
-    this.contracts = new ContractRepository({ apiProvider, configuration });
-    this.wallets = new WalletRepository({ apiProvider, configuration });
+    this.simulator = new Simulator({ apiProvider: this.apiClientProvider, configuration });
+    this.contracts = new ContractRepository({ apiProvider: this.apiClientProvider, configuration });
+    this.wallets = new WalletRepository({ apiProvider: this.apiClientProvider, configuration });
   }
 
   /**

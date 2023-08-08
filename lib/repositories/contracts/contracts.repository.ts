@@ -13,12 +13,14 @@ import {
   VerificationRequest,
   VerificationResponse,
 } from './contracts.types';
-import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
-import { NotFoundError } from '../../errors/NotFoundError';
-import { CompilationError } from '../../errors/CompilationError';
-import { BytecodeMismatchError } from '../../errors/BytecodeMismatchError';
-import { UnexpectedVerificationError } from '../../errors/UnexpectedVerificationError';
+import {
+  handleError,
+  NotFoundError,
+  CompilationError,
+  BytecodeMismatchError,
+  UnexpectedVerificationError,
+} from '../../errors';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
   const retVal: TenderlyContract = {
@@ -85,7 +87,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
         },
       );
 
-      if (!result.data?.accounts || result.data?.accounts?.length === 0) {
+      if (!result.data?.accounts || !result.data.accounts[0]) {
         throw new NotFoundError(`Contract with address ${address} not found`);
       }
 
@@ -150,7 +152,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
   /**
    * Update a contract in the Tenderly's instances' project
    * @param address - The address of the contract
-   * @param contractData - The data of the contract
+   * @param payload - The data of the contract
    * @returns The contract object in a plain format
    * @example
    * const contract = await tenderly.contracts.update('0x1234567890', { displayName: 'MyContract' });
@@ -204,7 +206,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
     }
   }
 
-  async getAll(): Promise<Contract[]> {
+  async getAll(): Promise<Contract[] | undefined> {
     try {
       const wallets = await this.apiV2.get<{ accounts: ContractResponse[] }>(
         `
@@ -232,7 +234,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
    *   displayName: ['MyContract']
    * });
    */
-  async getBy(queryObject: GetByParams = {}): Promise<TenderlyContract[]> {
+  async getBy(queryObject: GetByParams = {}): Promise<TenderlyContract[] | undefined> {
     try {
       const queryParams = this.buildQueryParams(queryObject);
       const contracts = await this.apiV2.get<{ accounts: ContractResponse[] }>(
@@ -280,7 +282,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
   async verify(
     address: string,
     verificationRequest: VerificationRequest,
-  ): Promise<TenderlyContract> {
+  ): Promise<TenderlyContract | undefined> {
     if (!this._isFullyQualifiedContractName(verificationRequest.contractToVerify)) {
       throw new Error(
         // eslint-disable-next-line max-len
@@ -317,7 +319,7 @@ export class ContractRepository implements Repository<TenderlyContract> {
           verificationResp.compilation_errors,
         );
       }
-      if (!verificationResp.results || verificationResp.results.length === 0) {
+      if (!verificationResp.results || !verificationResp.results[0]) {
         throw new UnexpectedVerificationError(
           // eslint-disable-next-line max-len
           "There has been an unexpected verification error during the verification process. Please check your contract's source code and try again.",
@@ -338,15 +340,15 @@ export class ContractRepository implements Repository<TenderlyContract> {
 
   _mapSolcSourcesToTenderlySources(sources: Record<Path, { name?: string; content: string }>) {
     const tenderlySources: Record<Path, { name?: string; code: string }> = {};
-    for (const path in sources) {
-      tenderlySources[path] = {
-        code: sources[path].content,
-      };
-    }
+
+    Object.entries(sources).forEach(([path, source]) => {
+      tenderlySources[path] = { code: source.content };
+    });
+
     return tenderlySources;
   }
 
-  _repackLibraries(solcConfig: SolcConfig): SolcConfig {
+  _repackLibraries(solcConfig: SolcConfig) {
     const tenderlySolcConfig = this._copySolcConfigToTenderlySolcConfig(solcConfig);
 
     const solcConfigSettings = solcConfig.settings as {
@@ -357,11 +359,13 @@ export class ContractRepository implements Repository<TenderlyContract> {
     }
     const libraries: TenderlySolcConfigLibraries = {};
     for (const [fileName, libVal] of Object.entries(solcConfigSettings.libraries)) {
-      if (libraries[fileName] === undefined) {
-        libraries[fileName] = { addresses: {} };
-      }
       for (const [libName, libAddress] of Object.entries(libVal)) {
-        libraries[fileName].addresses[libName] = libAddress;
+        libraries[fileName] = {
+          addresses: {
+            ...libraries?.[fileName]?.addresses,
+            [libName]: libAddress,
+          },
+        };
       }
     }
     (tenderlySolcConfig.settings as { libraries: TenderlySolcConfigLibraries }).libraries =
@@ -379,14 +383,13 @@ export class ContractRepository implements Repository<TenderlyContract> {
     return pattern.test(contractName);
   }
 
-  _copySolcConfigToTenderlySolcConfig(solcConfig: SolcConfig): SolcConfig {
+  _copySolcConfigToTenderlySolcConfig(solcConfig: SolcConfig): Omit<SolcConfig, 'sources'> {
     // remove libraries from settings since the backend accepts a different format of libraries
     const { libraries: _, ...settings } = solcConfig.settings as {
       libraries?: unknown;
     };
 
     return {
-      sources: undefined, // sources are repacked in a different way
       version: solcConfig.version,
       settings: settings,
     };

@@ -1,13 +1,13 @@
-import { Tenderly, Network } from '../../lib';
+import dotenv from 'dotenv';
+import { Tenderly, Network, InvalidArgumentsError, getEnvironmentVariables } from '../../lib';
 
-import * as dotenv from 'dotenv';
 dotenv.config();
 
 try {
   const tenderly = new Tenderly({
-    accessKey: process.env.TENDERLY_ACCESS_KEY || '',
-    accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
-    projectName: process.env.TENDERLY_PROJECT_NAME || '',
+    accessKey: getEnvironmentVariables().TENDERLY_ACCESS_KEY,
+    accountName: getEnvironmentVariables().TENDERLY_ACCOUNT_NAME,
+    projectName: getEnvironmentVariables().TENDERLY_PROJECT_NAME,
     network: Network.MAINNET,
   });
 
@@ -26,7 +26,7 @@ try {
 } catch (error) {
   console.error(error);
 
-  if (error.name === 'InvalidArgumentsError') {
+  if (error instanceof InvalidArgumentsError) {
     console.error(error.message);
     console.log(
       'Please provide a valid access key, account name and project name, by populating .env file.',

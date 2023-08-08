@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-import { Tenderly, Network, Web3Address } from '../../../lib';
 import { readFileSync } from 'fs';
+import { Tenderly, Network, Web3Address, getEnvironmentVariables } from '../../../lib';
 
 dotenv.config();
 
@@ -9,9 +9,9 @@ const myTokenAddress = '0x8aaf9071e6c3129653b2dc39044c3b79c0bfcfbf'.toLowerCase(
 (async () => {
   try {
     const tenderly = new Tenderly({
-      accessKey: process.env.TENDERLY_ACCESS_KEY || '',
-      accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
-      projectName: process.env.TENDERLY_PROJECT_NAME || '',
+      accessKey: getEnvironmentVariables().TENDERLY_ACCESS_KEY,
+      accountName: getEnvironmentVariables().TENDERLY_ACCOUNT_NAME,
+      projectName: getEnvironmentVariables().TENDERLY_PROJECT_NAME,
       network: Network.SEPOLIA,
     });
 

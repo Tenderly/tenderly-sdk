@@ -14,11 +14,12 @@ import {
   TransactionParameters,
   SimulationRequestOverrides,
   SimulateBundleResponse,
+  SimulationRequestOverride,
 } from './Simulator.types';
 import { TenderlyConfiguration } from '../types';
-import { handleError } from '../errors';
+import { handleError, EncodingError } from '../errors';
 import { ApiClientProvider } from '../core/ApiClientProvider';
-import { EncodingError } from '../errors/EncodingError';
+import { isTenderlyAxiosError } from '../errors/Error.types';
 
 function mapToSimulationResult(simpleSimulationResponse: SimulateSimpleResponse): SimulationOutput {
   return {
@@ -29,7 +30,7 @@ function mapToSimulationResult(simpleSimulationResponse: SimulateSimpleResponse)
     type: simpleSimulationResponse.type,
     logsBloom: simpleSimulationResponse.logs_bloom,
     logs: simpleSimulationResponse.logs,
-    trace: simpleSimulationResponse.trace.map(trace => ({
+    trace: simpleSimulationResponse.trace?.map(trace => ({
       ...trace,
       error_messages: trace.error_reason,
     })),
@@ -62,15 +63,15 @@ export class Simulator {
         .map(contractAddress => {
           const cAddress = contractAddress.toLowerCase();
           return {
-            [cAddress]: overrides[contractAddress as Web3Address].state,
+            [cAddress]: overrides[contractAddress as Web3Address]?.state,
           };
         })
-        .map(x => {
-          const y = {};
-          Object.keys(x).forEach(key => {
-            y[key] = { value: x[key] };
+        .map(addresses => {
+          const mappedOverrides: StateOverride = {};
+          Object.keys(addresses).forEach(address => {
+            mappedOverrides[address] = { value: addresses[address] as Record<string, unknown> };
           });
-          return y;
+          return mappedOverrides;
         })
         .reduce((acc, curr) => ({ ...acc, ...curr })),
     };
@@ -80,9 +81,9 @@ export class Simulator {
     return Object.keys(stateOverrides)
       .map(address => address.toLowerCase())
       .reduce((acc, curr) => {
-        acc[curr] = stateOverrides[curr].value;
+        acc[curr] = stateOverrides[curr]?.value as Record<string, unknown>;
         return acc;
-      }, {});
+      }, {} as EncodedStateOverride);
   }
 
   private replaceJSONOverridesWithEncodedOverrides(
@@ -96,24 +97,25 @@ export class Simulator {
     return Object.keys(overrides)
       .map(address => address.toLowerCase())
       .reduce((acc, curr: Web3Address) => {
-        acc[curr] = {};
+        const currentOverride: SimulationRequestOverride = {};
+
         if (encodedStateOverrides && encodedStateOverrides[curr]) {
-          acc[curr].state_diff = encodedStateOverrides[curr];
+          currentOverride.state_diff = encodedStateOverrides[curr];
         }
         if (overrides[curr]?.nonce) {
-          acc[curr].nonce = overrides[curr].nonce;
+          currentOverride.nonce = overrides[curr]?.nonce;
         }
 
         if (overrides[curr]?.code) {
-          acc[curr].code = overrides[curr].code;
+          currentOverride.code = overrides[curr]?.code;
         }
 
         if (overrides[curr]?.balance) {
-          acc[curr].balance = overrides[curr].balance;
+          currentOverride.balance = overrides[curr]?.balance;
         }
 
-        return acc;
-      }, {});
+        return { ...acc, [curr]: currentOverride };
+      }, {} as SimulationRequestOverrides);
   }
 
   private buildSimulationBundleRequest(
@@ -189,9 +191,10 @@ export class Simulator {
       );
       return this.mapToEncodedOverrides(encodedStates.stateOverrides);
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.error) {
+      if (isTenderlyAxiosError(error)) {
         throw new EncodingError(error.response.data.error);
       }
+
       throw error;
     }
   }
@@ -234,9 +237,13 @@ export class Simulator {
    * @param {object} simulationParams.transaction - The transaction object to be simulated.
    * @param {number} simulationParams.blockNumber - The block number for the simulation.
    * @param {object} simulationParams.overrides - Overrides for the transaction simulation.
-   * @returns {Promise<SimulationResult>} - A Promise that resolves to a simulation result object.
+   * @returns {Promise<SimulationOutput>} - A Promise that resolves to a simulation output.
    */
-  async simulateTransaction({ transaction, blockNumber, overrides }: SimulationParameters) {
+  async simulateTransaction({
+    transaction,
+    blockNumber,
+    overrides,
+  }: SimulationParameters): Promise<SimulationOutput | undefined> {
     try {
       // Encode overrides if present
       const encodedOverrides = await this.encodeOverrideRequest(overrides);
@@ -257,6 +264,7 @@ export class Simulator {
       handleError(error);
     }
   }
+
   /**
    * Simulates a bundle of transactions by encoding overrides, building a request body,
    * and executing a simulation bundle request.
@@ -266,7 +274,7 @@ export class Simulator {
    * @param {object[]} params.transactions - An array of transaction objects to be simulated.
    * @param {object} params.overrides - Overrides for the transaction bundle simulation.
    * @param {number} params.blockNumber - The block number for the simulation bundle.
-   * @returns {Promise<SimulationResult[]>} - A Promise that resolves to an array of simulation result objects.
+   * @returns {Promise<SimulationOutput[]>} - A Promise that resolves to an array of simulation result objects.
    */
 
   async simulateBundle({ transactions, overrides, blockNumber }: SimulationBundleDetails) {

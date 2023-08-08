@@ -1,11 +1,15 @@
-import { errorHandlers } from './Error.handlerRegistry';
-export { GeneralError } from './GeneralError';
 export { ApiError } from './ApiError';
+export { BytecodeMismatchError } from './BytecodeMismatchError';
+export { CompilationError } from './CompilationError';
+export { EncodingError } from './EncodingError';
+import { errorHandlers } from './Error.handlerRegistry';
 export type { TenderlyError } from './Error.types';
-export { NotFoundError } from './NotFoundError';
+export { GeneralError } from './GeneralError';
 export { InvalidArgumentsError } from './InvalidArgumentsError';
+export { NotFoundError } from './NotFoundError';
+export { UnexpectedVerificationError } from './UnexpectedVerificationError';
 
-export function handleError(error: Error) {
+export function handleError(error: Error | unknown) {
   errorHandlers.forEach(handler => handler.handle(error));
   throw error;
 }

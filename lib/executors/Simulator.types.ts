@@ -18,13 +18,15 @@ type AccessList = {
 }[];
 
 export type SimulationRequestOverrides = {
-  [contractAddress: Web3Address]: {
-    nonce: number;
-    code: string;
-    balance: string;
-    state_diff: {
-      [storageKey: string]: string;
-    };
+  [contractAddress: Web3Address]: SimulationRequestOverride;
+};
+
+export type SimulationRequestOverride = {
+  nonce?: number;
+  code?: string;
+  balance?: string;
+  state_diff?: {
+    [storageKey: string]: string | unknown;
   };
 };
 
@@ -66,13 +68,15 @@ export type SimulationBundleDetails = {
 };
 
 export type SimulationParametersOverrides = {
-  [contractAddress: Web3Address]: {
-    nonce?: number;
-    code?: string;
-    balance?: string;
-    state?: {
-      [property: string]: unknown;
-    };
+  [contractAddress: Web3Address]: SimulationParametersOverride;
+};
+
+export type SimulationParametersOverride = {
+  nonce?: number;
+  code?: string;
+  balance?: string;
+  state?: {
+    [property: string]: unknown;
   };
 };
 
@@ -112,7 +116,7 @@ export type StateOverride = Record<Web3Address, { value: Record<string, unknown>
 
 export type EncodeStateRequest = {
   networkID: string;
-  stateOverrides: Record<Web3Address, StateOverride>;
+  stateOverrides: StateOverride;
 };
 
 export type EncodedStateOverride = Record<Web3Address, Record<string, unknown>>;

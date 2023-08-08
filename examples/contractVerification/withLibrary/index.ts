@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-import { Tenderly, Network, Web3Address } from '../../../lib';
 import { readFileSync } from 'fs';
+import { Tenderly, Network, Web3Address, getEnvironmentVariables } from '../../../lib';
 
 dotenv.config();
 
@@ -11,9 +11,9 @@ const libraryContract = '0xcA00A6512792aa89e347c713F443b015A1006f1d'.toLowerCase
 (async () => {
   try {
     const tenderly = new Tenderly({
-      accessKey: process.env.TENDERLY_ACCESS_KEY || '',
-      accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
-      projectName: process.env.TENDERLY_PROJECT_NAME || '',
+      accessKey: getEnvironmentVariables().TENDERLY_ACCESS_KEY,
+      accountName: getEnvironmentVariables().TENDERLY_ACCOUNT_NAME,
+      projectName: getEnvironmentVariables().TENDERLY_PROJECT_NAME,
       network: Network.SEPOLIA,
     });
 

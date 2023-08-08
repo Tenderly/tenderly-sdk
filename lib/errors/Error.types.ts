@@ -8,7 +8,7 @@ export interface TenderlyError {
 }
 
 export interface ErrorHandler {
-  handle: (error: Error) => void;
+  handle: (error: Error | unknown) => void;
 }
 
 type TenderlyAxiosError = WithRequired<AxiosError<{ error: TenderlyError }>, 'response'>;

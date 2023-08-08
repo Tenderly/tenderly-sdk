@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 import { GeneralError } from './GeneralError';
 import { isTenderlyAxiosError, TenderlyError } from './Error.types';
 
@@ -11,7 +10,7 @@ export class ApiError extends GeneralError {
     this.name = 'ApiError';
   }
 
-  static handle(error: AxiosError<{ error: TenderlyError }>) {
+  static handle(error: Error | unknown): void {
     if (isTenderlyAxiosError(error)) {
       throw new ApiError({ status: error.response.status, ...error.response.data.error });
     }
