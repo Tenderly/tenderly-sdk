@@ -8,21 +8,16 @@ import {
   WalletRequest,
   Wallet,
 } from './wallets.types';
-import { handleError, NotFoundError } from '../../errors';
+import { handleError, InvalidResponseError, NotFoundError } from '../../errors';
 import { GetByParams } from '../contracts/contracts.types';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
 
 function getContractFromResponse(contractResponse: WalletResponse): Wallet {
-  // TODO (strict-types): Check the API and confirm correct Wallet response object, mainly focusing on account,
-  //  contract and wallet properties. Goal is to determine the case when API returns account or wallet props
-  //  in order to add correct types in the model and avoid defaulting address and network to empty strings
-  const getterProperty: 'account' | 'contract' = contractResponse.account ? 'account' : 'contract';
+  const walletDetails = contractResponse.account || contractResponse.contract;
 
   return {
-    address: contractResponse[getterProperty]?.address || '',
-    network: Number.parseInt(
-      contractResponse[getterProperty]?.network_id || '',
-    ) as unknown as Network,
+    address: walletDetails.address,
+    network: Number.parseInt(walletDetails.network_id) as unknown as Network,
   };
 }
 
@@ -109,7 +104,7 @@ export class WalletRepository implements Repository<TenderlyWallet> {
     try {
       const { data } = await this.apiV1.post<
         WalletRequest & { return_existing: boolean },
-        WalletResponse
+        WalletResponse[]
       >(
         `
         /account/${this.configuration.accountName}
@@ -126,7 +121,13 @@ export class WalletRepository implements Repository<TenderlyWallet> {
         },
       );
 
-      return mapWalletResponseToWalletModel(data);
+      if (!data[0]) {
+        throw new InvalidResponseError(
+          `Invalid response received while trying to create a wallet ${address}`,
+        );
+      }
+
+      return mapWalletResponseToWalletModel(data[0]);
     } catch (error) {
       handleError(error);
     }
