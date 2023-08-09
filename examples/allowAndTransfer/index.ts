@@ -88,6 +88,6 @@ const myTokenAbiInterface = new Interface(myTokenAbi);
       process.exit(1);
     }
 
-    console.log((e as { response: unknown }).response);
+    console.log(e);
   }
 })();
