@@ -1,49 +1,14 @@
-import { Network } from '../../types';
+import { z } from 'zod';
+import {
+  updateWalletRequestSchema,
+  walletRequestSchema,
+  walletResponseSchema,
+  walletSchema,
+} from './wallets.schema';
 
-export interface Wallet {
-  address: string;
-  displayName?: string;
-  tags?: string[];
-  network: Network;
-}
-
+export type Wallet = z.infer<typeof walletSchema>;
 export type TenderlyWallet = Wallet;
 
-export type WalletRequest = {
-  address: string;
-  display_name: string;
-  network_ids: string[];
-};
-
-export type WalletResponse = {
-  id: string;
-  account_type: 'wallet';
-  display_name: string;
-  account: {
-    id: string;
-    contract_id: string;
-    balance: string;
-    network_id: string;
-    address: string;
-  };
-  contract?: {
-    id: string;
-    contract_id: string;
-    balance: string;
-    network_id: string;
-    address: string;
-  };
-  wallet?: {
-    id: string;
-    contract_id: string;
-    balance: string;
-    network_id: string;
-    address: string;
-  };
-  tags?: { tag: string }[];
-};
-
-export type UpdateWalletRequest = {
-  displayName?: string;
-  appendTags?: string[];
-};
+export type WalletRequest = z.infer<typeof walletRequestSchema>;
+export type WalletResponse = z.infer<typeof walletResponseSchema>;
+export type UpdateWalletRequest = z.infer<typeof updateWalletRequestSchema>;

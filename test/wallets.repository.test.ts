@@ -1,4 +1,6 @@
 import { Tenderly, Network, NotFoundError, getEnvironmentVariables } from '../lib';
+import { walletSchema } from '../lib/repositories/wallets/wallets.schema';
+import { ZodError } from 'zod';
 
 jest.setTimeout(60000);
 
@@ -62,6 +64,7 @@ describe('wallets.add', () => {
   test('successfully adds wallet', async () => {
     const wallet = await tenderly.wallets.add(walletAddress);
 
+    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
     expect(wallet?.address).toEqual(walletAddress);
   });
 
@@ -70,6 +73,7 @@ describe('wallets.add', () => {
       displayName: 'VB3',
     });
 
+    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
     expect(wallet?.address).toEqual(walletAddress);
     expect(wallet?.displayName).toEqual('VB3');
     // tags don't work yet
@@ -80,6 +84,8 @@ describe('wallets.add', () => {
   test(`doesn't throw when adding existing wallet, and returns wallet model`, async () => {
     await tenderly.wallets.add(walletAddress);
     const existingWallet = await tenderly.wallets.add(walletAddress);
+
+    expect(() => walletSchema.parse(existingWallet)).not.toThrow(ZodError);
     expect(existingWallet?.address).toEqual(walletAddress);
   });
 });
@@ -91,7 +97,7 @@ describe('wallets.remove', () => {
 
   // FIXME: This should not throw, but currently that is what the API does
   test(`doesn't throw when removing non existing wallet`, async () => {
-    tenderly.wallets.remove('0xfake_wallet_address');
+    await tenderly.wallets.remove('0xfake_wallet_address');
   });
 });
 
@@ -99,6 +105,7 @@ describe('wallets.get', () => {
   test('returns wallet if it exists', async () => {
     const walletResponse = await tenderly.wallets.get(someOtherWalletAddress);
 
+    expect(() => walletSchema.parse(walletResponse)).not.toThrow(ZodError);
     expect(walletResponse?.address).toEqual(someOtherWalletAddress);
   });
 
@@ -132,6 +139,7 @@ describe('wallets.update', () => {
       appendTags: [tag1, tag2],
     });
 
+    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
     expect(wallet?.address).toEqual(someThirdWallet);
     expect(wallet?.displayName).toEqual(displayName);
     expect(wallet?.tags?.sort()).toEqual([tag1, tag2]);
@@ -142,6 +150,7 @@ describe('wallets.update', () => {
       displayName,
     });
 
+    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
     expect(wallet?.address).toEqual(someThirdWallet);
     expect(wallet?.displayName).toEqual(displayName);
     expect(wallet?.tags).toBeUndefined();
@@ -152,6 +161,7 @@ describe('wallets.update', () => {
       appendTags: [tag1, tag2],
     });
 
+    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
     expect(wallet?.address).toEqual(someThirdWallet);
     expect(wallet?.displayName).toBeUndefined();
     expect(wallet?.tags?.sort()).toEqual(expect.arrayContaining([tag1, tag2]));
@@ -188,6 +198,7 @@ describe('wallets.getBy', () => {
         throw new Error('Wallets are not defined');
       }
 
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(1);
       expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -207,6 +218,7 @@ describe('wallets.getBy', () => {
         throw new Error('Wallets are not defined');
       }
 
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(1);
       expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -222,6 +234,7 @@ describe('wallets.getBy', () => {
         throw new Error('Wallets are not defined');
       }
 
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(2);
       expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -236,6 +249,8 @@ describe('wallets.getBy', () => {
       if (!wallets) {
         throw new Error('Wallets are not defined');
       }
+
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(1);
       expect(wallets[0]?.address).toEqual(binance8WalletAddress);
       expect(wallets[0]?.displayName).toEqual(binance8WalletDisplayName);
@@ -251,6 +266,7 @@ describe('wallets.getBy', () => {
         throw new Error('Wallets are not defined');
       }
 
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(2);
       expect(wallets[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -269,6 +285,7 @@ describe('wallets.getBy', () => {
         throw new Error('Wallets are not defined');
       }
 
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(2);
       expect(wallets[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -287,6 +304,7 @@ describe('wallets.getBy', () => {
         throw new Error('Wallets are not defined');
       }
 
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(2);
       expect(wallets[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -305,6 +323,7 @@ describe('wallets.getBy', () => {
         throw new Error('Wallets are not defined');
       }
 
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(2);
       expect(wallets[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -324,6 +343,8 @@ describe('wallets.getBy', () => {
       if (!wallets) {
         throw new Error('Wallets are not defined');
       }
+
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(1);
       expect(wallets[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -347,6 +368,7 @@ describe('wallets.getBy', () => {
         throw new Error('Wallets are not defined');
       }
 
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(2);
       expect(wallets[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -367,6 +389,7 @@ describe('wallets.getBy', () => {
         throw new Error('Wallets are not defined');
       }
 
+      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
       expect(wallets).toHaveLength(2);
       expect(wallets[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
