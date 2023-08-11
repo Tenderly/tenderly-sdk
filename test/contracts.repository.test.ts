@@ -5,7 +5,10 @@ import {
   CompilationError,
   BytecodeMismatchError,
   getEnvironmentVariables,
+  Contract,
 } from '../lib';
+import { ZodError } from 'zod';
+import { contractSchema } from '../lib/repositories/contracts/contracts.schema';
 
 const counterContractSource = `
 // SPDX-License-Identifier: MIT
@@ -181,12 +184,15 @@ describe('contracts.add', () => {
   test('successfully adds contract', async () => {
     const contract = await tenderly.contracts.add(lidoContract);
 
+    validateContracts([contract]);
     expect(contract?.address).toEqual(lidoContract);
   });
 
   test(`adding contract twice doesn't throw an error`, async () => {
     await tenderly.contracts.add(lidoContract);
     const contract = await tenderly.contracts.add(lidoContract);
+
+    validateContracts([contract]);
     expect(contract?.address).toEqual(lidoContract);
   });
 
@@ -195,6 +201,7 @@ describe('contracts.add', () => {
       displayName: 'Lido',
     });
 
+    validateContracts([lidoContractResponse]);
     expect(lidoContractResponse?.address).toEqual(lidoContract);
     expect(lidoContractResponse?.displayName).toEqual('Lido');
     // tags don't work yet
@@ -205,6 +212,7 @@ describe('contracts.add', () => {
     await tenderly.contracts.add(lidoContract);
     const contract = await tenderly.contracts.add(lidoContract);
 
+    validateContracts([contract]);
     expect(contract?.address).toEqual(lidoContract);
   });
 
@@ -248,11 +256,14 @@ describe('contracts.get', () => {
   test('returns contract if it exists', async () => {
     const contract = await tenderly.contracts.get(kittyCoreContract);
 
+    validateContracts([contract]);
     expect(contract?.address).toEqual(kittyCoreContract);
   });
 
   test('returns unverified contract if it exists', async () => {
     const contract = await tenderly.contracts.get(unverifiedContract);
+
+    validateContracts([contract]);
     expect(contract?.address).toEqual(unverifiedContract);
   });
 
@@ -282,6 +293,7 @@ describe('contracts.update', () => {
       appendTags: ['NewTag', 'NewTag2'],
     });
 
+    validateContracts([contract]);
     expect(contract?.address).toEqual(wrappedEtherContract);
     expect(contract?.displayName).toEqual('NewDisplayName');
     expect(contract?.tags?.sort()).toEqual(['NewTag', 'NewTag2']);
@@ -292,6 +304,7 @@ describe('contracts.update', () => {
       displayName: 'NewDisplayName',
     });
 
+    validateContracts([contractResponse]);
     expect(contractResponse?.address).toEqual(wrappedEtherContract);
     expect(contractResponse?.displayName).toEqual('NewDisplayName');
   });
@@ -301,6 +314,7 @@ describe('contracts.update', () => {
       appendTags: ['NewTag', 'NewTag2'],
     });
 
+    validateContracts([contract]);
     expect(contract?.address).toEqual(wrappedEtherContract);
     expect(contract?.tags?.sort()).toEqual(['NewTag', 'NewTag2']);
     expect(contract?.displayName).toBeUndefined();
@@ -338,6 +352,7 @@ describe('contracts.verify', () => {
       },
     });
 
+    validateContracts([result]);
     expect(result?.address).toEqual(counterContract);
   });
 
@@ -371,6 +386,7 @@ describe('contracts.verify', () => {
       },
     });
 
+    validateContracts([verifiedContract]);
     expect(verifiedContract?.address).toEqual(libraryTokenContract);
   });
 
@@ -456,6 +472,7 @@ describe('contract.getBy', () => {
     test('returns 1 contract, when 1 tag matches (passed as 1 string, not an array)', async () => {
       const contracts = await getByTenderly.contracts.getBy({ tags: [tag1] });
 
+      validateContracts(contracts);
       expect(contracts).toHaveLength(1);
       expect(contracts?.[0]?.address).toEqual(beaconDepositContract);
       expect(contracts?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -473,6 +490,7 @@ describe('contract.getBy', () => {
         tags: [tag1],
       });
 
+      validateContracts(contracts);
       expect(contracts).toHaveLength(1);
       expect(contracts?.[0]?.address).toEqual(beaconDepositContract);
       expect(contracts?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -486,6 +504,7 @@ describe('contract.getBy', () => {
         a.address > b.address ? 1 : -1,
       );
 
+      validateContracts(contracts);
       expect(contracts).toHaveLength(2);
       expect(contracts?.[0]?.address).toEqual(beaconDepositContract);
       expect(contracts?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -502,6 +521,7 @@ describe('contract.getBy', () => {
     test('returns 1 contract, when `tag3` matches', async () => {
       const contracts = await getByTenderly.contracts.getBy({ tags: [tag3] });
 
+      validateContracts(contracts);
       expect(contracts).toHaveLength(1);
       expect(contracts?.[0]?.address).toEqual(bitDAOTreasuryContract);
       expect(contracts?.[0]?.displayName).toEqual(bitDAOTreasuryContractDisplayName);
@@ -515,6 +535,7 @@ describe('contract.getBy', () => {
         (a, b) => (a.address > b.address ? 1 : -1),
       );
 
+      validateContracts(contracts);
       expect(contracts).toHaveLength(2);
       expect(contracts?.[0]?.address).toEqual(beaconDepositContract);
       expect(contracts?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -533,6 +554,7 @@ describe('contract.getBy', () => {
         (a, b) => (a.address > b.address ? 1 : -1),
       );
 
+      validateContracts(contracts);
       expect(contracts).toHaveLength(2);
       expect(contracts?.[0]?.address).toEqual(beaconDepositContract);
       expect(contracts?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -551,6 +573,7 @@ describe('contract.getBy', () => {
         a.address > b.address ? 1 : -1,
       );
 
+      validateContracts(contracts);
       expect(contracts).toHaveLength(2);
       expect(contracts?.[0]?.address).toEqual(beaconDepositContract);
       expect(contracts?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -569,6 +592,7 @@ describe('contract.getBy', () => {
         a.address > b.address ? 1 : -1,
       );
 
+      validateContracts(contracts);
       expect(contracts).toHaveLength(2);
       expect(contracts?.[0]?.address).toEqual(beaconDepositContract);
       expect(contracts?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -589,6 +613,7 @@ describe('contract.getBy', () => {
         displayNames: [beaconDepositContractDisplayName],
       });
 
+      validateContracts(contractsResponse);
       expect(contractsResponse).toHaveLength(1);
       expect(contractsResponse?.[0]?.address).toEqual(beaconDepositContract);
       expect(contractsResponse?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -608,6 +633,7 @@ describe('contract.getBy', () => {
         a.address > b.address ? 1 : -1,
       );
 
+      validateContracts(contractsResponse);
       expect(contractsResponse).toHaveLength(2);
       expect(contractsResponse?.[0]?.address).toEqual(beaconDepositContract);
       expect(contractsResponse?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -624,6 +650,7 @@ describe('contract.getBy', () => {
         })
       )?.sort((a, b) => (a.address > b.address ? 1 : -1));
 
+      validateContracts(contractsResponse);
       expect(contractsResponse).toHaveLength(2);
       expect(contractsResponse?.[0]?.address).toEqual(beaconDepositContract);
       expect(contractsResponse?.[0]?.displayName).toEqual(beaconDepositContractDisplayName);
@@ -639,3 +666,13 @@ test('Tenderly.with() overide works', () => {
   const newHandle = tenderly.with({ accountName: 'newAccountName' });
   expect(newHandle.configuration.accountName).toEqual('newAccountName');
 });
+
+function validateContracts(contracts: (Contract | undefined)[] | undefined) {
+  if (!contracts) throw new Error('Contracts are not defined');
+
+  expect(() =>
+    contracts.forEach(contract => {
+      return contractSchema.parse(contract);
+    }),
+  ).not.toThrow(ZodError);
+}

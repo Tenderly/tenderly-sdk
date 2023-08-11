@@ -1,4 +1,4 @@
-import { Network, TenderlyConfiguration } from '../../types';
+import { Network, TenderlyConfiguration } from '../../common.types';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
 import {

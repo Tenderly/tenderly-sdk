@@ -1,5 +1,5 @@
 import { AxiosError, isAxiosError } from 'axios';
-import { WithRequired } from '../types';
+import { WithRequired } from '../common.types';
 
 export interface TenderlyError {
   readonly id?: string;

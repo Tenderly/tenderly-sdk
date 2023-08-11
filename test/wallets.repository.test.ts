@@ -1,4 +1,4 @@
-import { Tenderly, Network, NotFoundError, getEnvironmentVariables } from '../lib';
+import { Tenderly, Network, NotFoundError, getEnvironmentVariables, Wallet } from '../lib';
 import { walletSchema } from '../lib/repositories/wallets/wallets.schema';
 import { ZodError } from 'zod';
 
@@ -64,7 +64,7 @@ describe('wallets.add', () => {
   test('successfully adds wallet', async () => {
     const wallet = await tenderly.wallets.add(walletAddress);
 
-    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
+    validateWallets([wallet]);
     expect(wallet?.address).toEqual(walletAddress);
   });
 
@@ -73,7 +73,7 @@ describe('wallets.add', () => {
       displayName: 'VB3',
     });
 
-    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
+    validateWallets([wallet]);
     expect(wallet?.address).toEqual(walletAddress);
     expect(wallet?.displayName).toEqual('VB3');
     // tags don't work yet
@@ -85,7 +85,7 @@ describe('wallets.add', () => {
     await tenderly.wallets.add(walletAddress);
     const existingWallet = await tenderly.wallets.add(walletAddress);
 
-    expect(() => walletSchema.parse(existingWallet)).not.toThrow(ZodError);
+    validateWallets([existingWallet]);
     expect(existingWallet?.address).toEqual(walletAddress);
   });
 });
@@ -105,7 +105,7 @@ describe('wallets.get', () => {
   test('returns wallet if it exists', async () => {
     const walletResponse = await tenderly.wallets.get(someOtherWalletAddress);
 
-    expect(() => walletSchema.parse(walletResponse)).not.toThrow(ZodError);
+    validateWallets([walletResponse]);
     expect(walletResponse?.address).toEqual(someOtherWalletAddress);
   });
 
@@ -139,7 +139,7 @@ describe('wallets.update', () => {
       appendTags: [tag1, tag2],
     });
 
-    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
+    validateWallets([wallet]);
     expect(wallet?.address).toEqual(someThirdWallet);
     expect(wallet?.displayName).toEqual(displayName);
     expect(wallet?.tags?.sort()).toEqual([tag1, tag2]);
@@ -150,7 +150,7 @@ describe('wallets.update', () => {
       displayName,
     });
 
-    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
+    validateWallets([wallet]);
     expect(wallet?.address).toEqual(someThirdWallet);
     expect(wallet?.displayName).toEqual(displayName);
     expect(wallet?.tags).toBeUndefined();
@@ -161,7 +161,7 @@ describe('wallets.update', () => {
       appendTags: [tag1, tag2],
     });
 
-    expect(() => walletSchema.parse(wallet)).not.toThrow(ZodError);
+    validateWallets([wallet]);
     expect(wallet?.address).toEqual(someThirdWallet);
     expect(wallet?.displayName).toBeUndefined();
     expect(wallet?.tags?.sort()).toEqual(expect.arrayContaining([tag1, tag2]));
@@ -194,11 +194,7 @@ describe('wallets.getBy', () => {
     test('returns 1 wallet, when 1 tag matches (passed as 1 string, not an array)', async () => {
       const wallets = await getByTenderly.wallets.getBy({ tags: [tag1] });
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(1);
       expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -214,11 +210,7 @@ describe('wallets.getBy', () => {
     test('returns 1 wallet, when `tag1` matches', async () => {
       const wallets = await getByTenderly.wallets.getBy({ tags: [tag1] });
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(1);
       expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -230,11 +222,7 @@ describe('wallets.getBy', () => {
         a.address > b.address ? 1 : -1,
       );
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(2);
       expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
       expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
@@ -246,15 +234,12 @@ describe('wallets.getBy', () => {
 
     test('returns 1 wallet, when `tag3` matches', async () => {
       const wallets = await getByTenderly.wallets.getBy({ tags: [tag3] });
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
 
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(1);
-      expect(wallets[0]?.address).toEqual(binance8WalletAddress);
-      expect(wallets[0]?.displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance8WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 2 wallets, when any of 3 tags match', async () => {
@@ -262,18 +247,14 @@ describe('wallets.getBy', () => {
         (a, b) => (a.address > b.address ? 1 : -1),
       );
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(2);
-      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
-      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
-      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets?.[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets?.[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test("returns 2 wallets, when both tags that don't overlap are passed", async () => {
@@ -281,18 +262,14 @@ describe('wallets.getBy', () => {
         a.address > b.address ? 1 : -1,
       );
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(2);
-      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
-      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
-      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets?.[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets?.[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 2 wallets, when no tags are passed', async () => {
@@ -300,18 +277,14 @@ describe('wallets.getBy', () => {
         a.address > b.address ? 1 : -1,
       );
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(2);
-      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
-      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
-      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets?.[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets?.[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 2 wallets, when empty array is passed', async () => {
@@ -319,18 +292,14 @@ describe('wallets.getBy', () => {
         a.address > b.address ? 1 : -1,
       );
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(2);
-      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
-      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
-      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets?.[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets?.[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
   });
 
@@ -340,15 +309,11 @@ describe('wallets.getBy', () => {
         displayNames: [binance7WalletDisplayName],
       });
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(1);
-      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
-      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
     });
 
     test('returns 0 wallets, when displayName does not match', async () => {
@@ -364,18 +329,14 @@ describe('wallets.getBy', () => {
         a.address > b.address ? 1 : -1,
       );
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(2);
-      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
-      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
-      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets?.[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets?.[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 2 contracts, when both displayNames match', async () => {
@@ -385,18 +346,24 @@ describe('wallets.getBy', () => {
         })
       )?.sort((a, b) => (a.address > b.address ? 1 : -1));
 
-      if (!wallets) {
-        throw new Error('Wallets are not defined');
-      }
-
-      expect(() => wallets.forEach(wallet => walletSchema.parse(wallet))).not.toThrow(ZodError);
+      validateWallets(wallets);
       expect(wallets).toHaveLength(2);
-      expect(wallets[0]?.address).toEqual(binance7WalletAddress);
-      expect(wallets[0]?.displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1]?.address).toEqual(binance8WalletAddress);
-      expect(wallets[1]?.displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets?.[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets?.[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
   });
 });
+
+function validateWallets(wallets: (Wallet | undefined)[] | undefined) {
+  if (!wallets) throw new Error('Wallets are not defined');
+
+  expect(() =>
+    wallets.forEach(wallet => {
+      return walletSchema.parse(wallet);
+    }),
+  ).not.toThrow(ZodError);
+}

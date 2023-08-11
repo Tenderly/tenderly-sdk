@@ -1,19 +1,16 @@
 import { z } from 'zod';
-import { Network } from '../../types';
-
-const ethAddress = z.string().length(42).startsWith('0x');
-
-export const networkSchema = z.nativeEnum(Network);
+import { Network } from '../../common.types';
+import { web3AddressSchema } from '../../common.schema';
 
 export const walletSchema = z.object({
-  address: ethAddress,
+  address: web3AddressSchema,
   displayName: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  network: networkSchema,
+  network: z.nativeEnum(Network),
 });
 
 export const walletRequestSchema = z.object({
-  address: ethAddress,
+  address: web3AddressSchema,
   display_name: z.string(),
   network_ids: z.array(z.string()),
 });
@@ -27,7 +24,7 @@ export const walletResponseSchema = z.object({
     contract_id: z.string(),
     balance: z.string(),
     network_id: z.string(),
-    address: ethAddress,
+    address: web3AddressSchema,
   }),
   contract: z
     .object({
@@ -35,7 +32,7 @@ export const walletResponseSchema = z.object({
       contract_id: z.string(),
       balance: z.string(),
       network_id: z.string(),
-      address: ethAddress,
+      address: web3AddressSchema,
     })
     .optional(),
   wallet: z
@@ -44,7 +41,7 @@ export const walletResponseSchema = z.object({
       contract_id: z.string(),
       balance: z.string(),
       network_id: z.string(),
-      address: ethAddress,
+      address: web3AddressSchema,
     })
     .optional(),
   tags: z

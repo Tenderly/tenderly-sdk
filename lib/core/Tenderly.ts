@@ -1,4 +1,4 @@
-import { TenderlyConfiguration } from '../types';
+import { TenderlyConfiguration } from '../common.types';
 import { WalletRepository, ContractRepository } from '../repositories';
 import { Simulator } from '../executors';
 import { VerificationRequest } from '../repositories/contracts/contracts.types';

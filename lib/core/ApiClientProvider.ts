@@ -1,5 +1,5 @@
 import { ApiClient, ApiVersion } from './ApiClient';
-import { EmptyObject } from '../types';
+import { EmptyObject } from '../common.types';
 
 export class ApiClientProvider {
   static instance: ApiClientProvider;
