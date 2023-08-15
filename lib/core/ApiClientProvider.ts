@@ -1,9 +1,10 @@
 import { ApiClient, ApiVersion } from './ApiClient';
+import { EmptyObject } from '../types';
 
 export class ApiClientProvider {
-  static instance: ApiClientProvider = null;
+  static instance: ApiClientProvider;
   private readonly apiKey: string;
-  private readonly apiClients: Record<ApiVersion, ApiClient> | unknown = {};
+  private readonly apiClients: Record<ApiVersion, ApiClient> | EmptyObject = {};
 
   constructor({ apiKey }: { apiKey: string }) {
     this.apiKey = apiKey;

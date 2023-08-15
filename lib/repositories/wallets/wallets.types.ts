@@ -25,7 +25,6 @@ export type WalletResponse = {
     balance: string;
     network_id: string;
     address: string;
-    // ...
   };
   contract?: {
     id: string;

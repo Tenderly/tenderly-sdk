@@ -1,8 +1,8 @@
+import dotenv from 'dotenv';
 import { Interface } from 'ethers';
-import { Tenderly, Network } from '../../lib';
-
-import * as dotenv from 'dotenv';
 import { counterContractAbi } from './counterContract';
+import { Tenderly, Network, getEnvironmentVariables } from '../../lib';
+
 dotenv.config();
 
 const callerAddress = '0xDBcB6Db1FFEaA10cd157F985a8543261250eFA46';
@@ -13,9 +13,9 @@ const counterContractAbiInterface = new Interface(counterContractAbi);
 (async () => {
   try {
     const tenderly = new Tenderly({
-      accessKey: process.env.TENDERLY_ACCESS_KEY || '',
-      accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
-      projectName: process.env.TENDERLY_PROJECT_NAME || '',
+      accessKey: getEnvironmentVariables().TENDERLY_ACCESS_KEY,
+      accountName: getEnvironmentVariables().TENDERLY_ACCOUNT_NAME,
+      projectName: getEnvironmentVariables().TENDERLY_PROJECT_NAME,
       network: Network.SEPOLIA,
     });
 

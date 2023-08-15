@@ -1,5 +1,4 @@
-import { Tenderly, Network } from '../lib';
-import { NotFoundError } from '../lib/errors/NotFoundError';
+import { Tenderly, Network, NotFoundError, getEnvironmentVariables } from '../lib';
 
 jest.setTimeout(60000);
 
@@ -16,13 +15,13 @@ const binance7WalletAddress = '0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8'.toLow
 const binance8WalletAddress = '0xF977814e90dA44bFA03b6295A0616a897441aceC'.toLowerCase();
 
 const tenderly = new Tenderly({
-  accessKey: process.env.TENDERLY_ACCESS_KEY || '',
-  accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
-  projectName: process.env.TENDERLY_PROJECT_NAME || '',
+  accessKey: getEnvironmentVariables().TENDERLY_ACCESS_KEY,
+  accountName: getEnvironmentVariables().TENDERLY_ACCOUNT_NAME,
+  projectName: getEnvironmentVariables().TENDERLY_PROJECT_NAME,
   network: Network.MAINNET,
 });
 const getByTenderly = tenderly.with({
-  projectName: process.env.TENDERLY_GET_BY_PROJECT_NAME,
+  projectName: getEnvironmentVariables().TENDERLY_GET_BY_PROJECT_NAME,
 });
 
 beforeAll(async () => {
@@ -81,7 +80,7 @@ describe('wallets.add', () => {
   test(`doesn't throw when adding existing wallet, and returns wallet model`, async () => {
     await tenderly.wallets.add(walletAddress);
     const existingWallet = await tenderly.wallets.add(walletAddress);
-    expect(existingWallet.address).toEqual(walletAddress);
+    expect(existingWallet?.address).toEqual(walletAddress);
   });
 });
 
@@ -109,7 +108,7 @@ describe('wallets.get', () => {
       throw new Error('Should not be here');
     } catch (error) {
       expect(error instanceof NotFoundError).toBeTruthy();
-      expect(error.slug).toEqual('resource_not_found');
+      expect((error as NotFoundError).slug).toEqual('resource_not_found');
     }
   });
 });
@@ -190,9 +189,9 @@ describe('wallets.getBy', () => {
       }
 
       expect(wallets).toHaveLength(1);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
     });
 
     test('returns 0 wallets, when no tags match', async () => {
@@ -209,9 +208,9 @@ describe('wallets.getBy', () => {
       }
 
       expect(wallets).toHaveLength(1);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
     });
 
     test('returns 2 wallets, when `tag2` matches', async () => {
@@ -224,12 +223,12 @@ describe('wallets.getBy', () => {
       }
 
       expect(wallets).toHaveLength(2);
-      expect(wallets[0].address).toEqual(binance7WalletAddress);
-      expect(wallets[0].displayName).toEqual(binance7WalletDisplayName);
-      expect(wallets[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
-      expect(wallets[1].address).toEqual(binance8WalletAddress);
-      expect(wallets[1].displayName).toEqual(binance8WalletDisplayName);
-      expect(wallets[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
+      expect(wallets?.[0]?.address).toEqual(binance7WalletAddress);
+      expect(wallets?.[0]?.displayName).toEqual(binance7WalletDisplayName);
+      expect(wallets?.[0]?.tags?.sort()).toEqual(binance7WalletTags.sort());
+      expect(wallets?.[1]?.address).toEqual(binance8WalletAddress);
+      expect(wallets?.[1]?.displayName).toEqual(binance8WalletDisplayName);
+      expect(wallets?.[1]?.tags?.sort()).toEqual(binance8WalletTags.sort());
     });
 
     test('returns 1 wallet, when `tag3` matches', async () => {

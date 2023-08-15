@@ -1,14 +1,20 @@
-import { Network, Tenderly, Web3Address } from '../lib';
 import { Interface } from 'ethers';
-import { ApiError } from '../lib/errors/ApiError';
-import { RawEvent, SimulationOutput } from '../lib/executors/Simulator.types';
+import {
+  ApiError,
+  RawEvent,
+  SimulationOutput,
+  Network,
+  Tenderly,
+  Web3Address,
+  getEnvironmentVariables,
+} from '../lib';
 
 jest.setTimeout(60000);
 
 const tenderly = new Tenderly({
-  accessKey: process.env.TENDERLY_ACCESS_KEY || '',
-  accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
-  projectName: process.env.TENDERLY_PROJECT_NAME || '',
+  accessKey: getEnvironmentVariables().TENDERLY_ACCESS_KEY,
+  accountName: getEnvironmentVariables().TENDERLY_ACCOUNT_NAME,
+  projectName: getEnvironmentVariables().TENDERLY_PROJECT_NAME,
   network: Network.SEPOLIA,
 });
 
@@ -108,7 +114,7 @@ test('simulateTransaction works', async () => {
     blockNumber: 3237677,
   });
 
-  if (!transaction?.logs || transaction.logs.length === 0) {
+  if (!transaction?.logs || !transaction.logs[0]) {
     throw new Error('No logs found in transaction');
   }
 
@@ -142,7 +148,7 @@ test('simulateTransaction works with overrides', async () => {
     },
   });
 
-  if (!transaction?.logs || transaction.logs.length === 0) {
+  if (!transaction?.logs || !transaction.logs[0]) {
     throw new Error('No logs found in transaction');
   }
 
@@ -206,6 +212,10 @@ test('simulateBundle works', async () => {
 
   const firstSimulation = simulationBundle[0] as SimulationOutput;
 
+  if (!firstSimulation?.logs || !firstSimulation.logs[0]) {
+    throw new Error('No logs found in first simulation');
+  }
+
   const firstLog =
     counterContractAbiInterface
       ?.parseLog(firstSimulation?.logs[0].raw as RawEvent)
@@ -216,9 +226,16 @@ test('simulateBundle works', async () => {
   expect(firstLog[2]).toBe(BigInt(1)); // newNumber
   expect(firstLog[3].toLowerCase()).toBe(callerAddress);
 
-  const secondLog = counterContractAbiInterface
-    .parseLog(simulationBundle[1].logs[0].raw)
-    .args.toArray();
+  const secondSimulation = simulationBundle[1] as SimulationOutput;
+
+  if (!secondSimulation?.logs || !secondSimulation.logs[0]) {
+    throw new Error('No logs found in second simulation');
+  }
+
+  const secondLog =
+    counterContractAbiInterface
+      ?.parseLog(secondSimulation.logs[0].raw as RawEvent)
+      ?.args.toArray() || [];
 
   expect(secondLog[0]).toBe('Increment'); // method
   expect(secondLog[1]).toBe(BigInt(1)); // oldNumber

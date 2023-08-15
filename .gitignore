@@ -6,6 +6,7 @@ coverage
 .vscode
 .env
 .DS_Store
+.idea
 
 *.output.json
 *.output.txt

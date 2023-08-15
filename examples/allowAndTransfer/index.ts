@@ -1,8 +1,14 @@
-import { Interface } from 'ethers';
 import dotenv from 'dotenv';
+import { Interface } from 'ethers';
 import { myTokenAbi } from './myTokenAbi';
-import { Tenderly, Network, InvalidArgumentsError, Web3Address } from '../../lib';
-import { RawEvent } from '../../lib/simulator';
+import {
+  Tenderly,
+  Network,
+  InvalidArgumentsError,
+  Web3Address,
+  RawEvent,
+  getEnvironmentVariables,
+} from '../../lib';
 
 dotenv.config();
 
@@ -17,9 +23,9 @@ const myTokenAbiInterface = new Interface(myTokenAbi);
 (async () => {
   try {
     const tenderly = new Tenderly({
-      accessKey: process.env.TENDERLY_ACCESS_KEY || '',
-      accountName: process.env.TENDERLY_ACCOUNT_NAME || '',
-      projectName: process.env.TENDERLY_PROJECT_NAME || '',
+      accessKey: getEnvironmentVariables().TENDERLY_ACCESS_KEY,
+      accountName: getEnvironmentVariables().TENDERLY_ACCOUNT_NAME,
+      projectName: getEnvironmentVariables().TENDERLY_PROJECT_NAME,
       network: Network.SEPOLIA,
     });
 
@@ -82,6 +88,6 @@ const myTokenAbiInterface = new Interface(myTokenAbi);
       process.exit(1);
     }
 
-    console.log(e.response);
+    console.log(e);
   }
 })();

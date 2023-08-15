@@ -8,17 +8,16 @@ import {
   WalletRequest,
   Wallet,
 } from './wallets.types';
+import { handleError, InvalidResponseError, NotFoundError } from '../../errors';
 import { GetByParams } from '../contracts/contracts.types';
-import { handleError } from '../../errors';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
-import { NotFoundError } from '../../errors/NotFoundError';
 
 function getContractFromResponse(contractResponse: WalletResponse): Wallet {
-  const getterProperty: 'account' | 'contract' = contractResponse.account ? 'account' : 'contract';
+  const walletDetails = contractResponse.account || contractResponse.contract;
 
   return {
-    address: contractResponse[getterProperty].address,
-    network: Number.parseInt(contractResponse[getterProperty].network_id) as unknown as Network,
+    address: walletDetails.address,
+    network: Number.parseInt(walletDetails.network_id) as unknown as Network,
   };
 }
 
@@ -36,10 +35,10 @@ function mapWalletResponseToWalletModel(walletResponse: WalletResponse) {
   return retVal;
 }
 
-function mapWalletModelToWalletRequest(wallet: Partial<TenderlyWallet>): WalletRequest {
+function mapWalletModelToWalletRequest(wallet: TenderlyWallet): WalletRequest {
   return {
     address: wallet.address,
-    display_name: wallet.displayName,
+    display_name: wallet.displayName || '',
     network_ids: [`${wallet.network}`],
   };
 }
@@ -83,7 +82,7 @@ export class WalletRepository implements Repository<TenderlyWallet> {
         },
       );
 
-      if (!data?.accounts || data?.accounts?.length === 0) {
+      if (!data?.accounts || !data.accounts[0]) {
         throw new NotFoundError(`Wallet with address ${address} not found`);
       }
 
@@ -105,7 +104,7 @@ export class WalletRepository implements Repository<TenderlyWallet> {
     try {
       const { data } = await this.apiV1.post<
         WalletRequest & { return_existing: boolean },
-        WalletResponse
+        WalletResponse[]
       >(
         `
         /account/${this.configuration.accountName}
@@ -121,6 +120,12 @@ export class WalletRepository implements Repository<TenderlyWallet> {
           }),
         },
       );
+
+      if (!data[0]) {
+        throw new InvalidResponseError(
+          `Invalid response received while trying to create a wallet ${address}`,
+        );
+      }
 
       return mapWalletResponseToWalletModel(data[0]);
     } catch (error) {
@@ -207,7 +212,7 @@ export class WalletRepository implements Repository<TenderlyWallet> {
    * Get all wallets in the Tenderly instances' project.
    *
    */
-  async getAll(): Promise<Wallet[]> {
+  async getAll(): Promise<Wallet[] | undefined> {
     try {
       const wallets = await this.apiV2.get<{ accounts: WalletResponse[] }>(
         `
