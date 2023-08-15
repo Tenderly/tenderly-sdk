@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.2.0
+
+### Minor Changes
+
+- 6e93f3b: enabled typescript strict mode
+
 ## 0.1.15
 
 ### Patch Changes
