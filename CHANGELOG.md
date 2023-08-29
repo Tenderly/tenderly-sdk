@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.2.1
+
+### Patch Changes
+
+- 7cdf08f: Added Base and Base Goerli networks to `Network` enum
+
 ## 0.2.0
 
 ### Minor Changes
