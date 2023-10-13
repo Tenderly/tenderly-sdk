@@ -1,5 +1,9 @@
-export type Path = string;
-export type Web3Address = string;
+import { z } from 'zod';
+import { pathSchema, tenderlyConfigurationSchema, web3AddressSchema } from './common.schema';
+
+export type Path = z.infer<typeof pathSchema>;
+export type Web3Address = z.infer<typeof web3AddressSchema>;
+export type TenderlyConfiguration = z.infer<typeof tenderlyConfigurationSchema>;
 
 export enum Network {
   MAINNET = 1,
@@ -38,13 +42,6 @@ export enum Network {
   ARBITRUM_GOERLI = 421613,
   SEPOLIA = 11155111,
 }
-
-export type TenderlyConfiguration = {
-  accountName: string;
-  projectName: string;
-  accessKey: string;
-  network: Network | number;
-};
 
 // helper types
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };

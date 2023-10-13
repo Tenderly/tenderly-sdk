@@ -1,5 +1,5 @@
 export * from './core';
-export * from './types';
+export * from './common.types';
 export * from './errors';
 export * from './helpers';
 

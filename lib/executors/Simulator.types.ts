@@ -1,4 +1,4 @@
-import { Web3Address } from '../types';
+import { Web3Address } from '../common.types';
 
 export type TransactionParameters = {
   from: Web3Address;

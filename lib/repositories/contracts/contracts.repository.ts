@@ -1,4 +1,4 @@
-import { Network, Path, TenderlyConfiguration, Web3Address } from '../../types';
+import { Network, Path, TenderlyConfiguration, Web3Address } from '../../common.types';
 import { Repository } from '../Repository';
 import { ApiClient } from '../../core/ApiClient';
 import {

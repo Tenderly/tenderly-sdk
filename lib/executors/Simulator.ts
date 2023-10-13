@@ -1,5 +1,5 @@
 import { ApiClient } from '../core/ApiClient';
-import { Web3Address } from '../types';
+import { Web3Address } from '../common.types';
 import {
   SimulationParameters,
   SimulationRequest,
@@ -16,7 +16,7 @@ import {
   SimulateBundleResponse,
   SimulationRequestOverride,
 } from './Simulator.types';
-import { TenderlyConfiguration } from '../types';
+import { TenderlyConfiguration } from '../common.types';
 import { handleError, EncodingError } from '../errors';
 import { ApiClientProvider } from '../core/ApiClientProvider';
 import { isTenderlyAxiosError } from '../errors/Error.types';
