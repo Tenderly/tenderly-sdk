@@ -13,7 +13,7 @@ import { InvalidArgumentsError } from '../errors';
  *   accountName: 'my-account',
  *   projectName: 'my-project',
  *   accessKey: 'my-access-key',
- *   network: Network.Mainnet,
+ *   network: Network.MAINNET,
  * })
  */
 export class Tenderly {
@@ -47,7 +47,7 @@ export class Tenderly {
    *   accountName: 'my-account',
    *   projectName: 'my-project',
    *   accessKey: 'my-access-key',
-   *   network: Network.Mainnet,
+   *   network: Network.MAINNET,
    * })
    */
   constructor(configuration: TenderlyConfiguration) {
