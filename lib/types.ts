@@ -23,6 +23,7 @@ export enum Network {
   MOONRIVER = 1285,
   BOBA_MOONBEAM = 1294,
   BOBA_MOONBASE = 1297,
+  BOBA_SEPOLIA = 28882,
   BOBA_GOERLI = 2888,
   FANTOM_TESTNET = 4002,
   BOBA_AVALANCHE_FUJI = 4328,
@@ -37,6 +38,7 @@ export enum Network {
   BASE_GOERLI = 84531,
   ARBITRUM_GOERLI = 421613,
   SEPOLIA = 11155111,
+  MANTLE_SEPOLIA = 5003,
 }
 
 export type TenderlyConfiguration = {
