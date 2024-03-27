@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.2.2
+
+### Patch Changes
+
+- b6829cc: mantle sepolia and boba sepolia networks
+
 ## 0.2.1
 
 ### Patch Changes
