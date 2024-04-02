@@ -25,7 +25,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "build": "node prebuild.js && tsup lib/index.ts --dts --format cjs,esm",
-    "lint": "tsc && eslint . --ext .ts,.js",
+    "lint": "tsc && eslint . --ext .ts,.js && echo 'DUMP'",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "prepare": "husky install",
     "publish": "changeset publish",
