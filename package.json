@@ -29,7 +29,8 @@
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "prepare": "husky install",
     "publish": "changeset publish",
-    "version": "pnpm changeset version"
+    "version": "pnpm changeset version",
+    "dump": "echo 'DUMP'"
   },
   "author": "Tenderly Dev Team",
   "license": "MIT",
