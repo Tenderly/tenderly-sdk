@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.2.3
+
+### Patch Changes
+
+- 3ad9f00: add missing networks support
+
 ## 0.2.2
 
 ### Patch Changes
