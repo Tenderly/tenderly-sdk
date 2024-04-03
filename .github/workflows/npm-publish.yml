@@ -16,13 +16,13 @@ jobs:
       TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3.0.0
         with:
-          version: 8.2.0
-      - uses: actions/setup-node@v3
+          version: latest
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: lts/*
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
@@ -34,13 +34,13 @@ jobs:
     runs-on: ubuntu-latest
     environment: CI
     steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3.0.0
         with:
-          version: 8.2.0
-      - uses: actions/setup-node@v3
+          version: latest
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: lts/*
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
