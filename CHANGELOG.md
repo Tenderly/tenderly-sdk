@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.2.4
+
+### Patch Changes
+
+- a80ca93: add linea sepolia support
+
 ## 0.2.3
 
 ### Patch Changes
