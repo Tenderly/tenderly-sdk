@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.2.5
+
+### Patch Changes
+
+- f212198: deprecate Goerli
+
 ## 0.2.4
 
 ### Patch Changes
