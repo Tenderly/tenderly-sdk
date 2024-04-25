@@ -40,6 +40,9 @@ export enum Network {
   UNREAL = 18233,
   ZORA = 7777777,
   ZORA_SEPOLIA = 999999999,
+  MODE= 34443,
+  MODE_SEPOLIA = 919,
+  MOONBASE_ALPHA = 1287,
 }
 
 export type TenderlyConfiguration = {
