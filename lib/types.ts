@@ -43,6 +43,10 @@ export enum Network {
   MODE= 34443,
   MODE_SEPOLIA = 919,
   MOONBASE_ALPHA = 1287,
+  LISK = 1135,
+  LISK_SEPOLIA = 4202,
+  IMMUTABLE = 13371,
+  IMMUTABLE_TESTNET = 13473
 }
 
 export type TenderlyConfiguration = {
