@@ -1,5 +1,12 @@
 # @tenderly/sdk
 
+## 0.2.6
+
+### Patch Changes
+
+- 064ed94: add mode and moonbase alpha networks support
+- 10d3cf6: lisk and immutable networks
+
 ## 0.2.5
 
 ### Patch Changes
