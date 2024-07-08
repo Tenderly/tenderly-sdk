@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.2.7
+
+### Patch Changes
+
+- e358968: Deprecate Mumbai network
+
 ## 0.2.6
 
 ### Patch Changes
