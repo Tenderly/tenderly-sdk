@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.2.8
+
+### Patch Changes
+
+- 6076dbc: Add Polygon Amoy
+
 ## 0.2.7
 
 ### Patch Changes
