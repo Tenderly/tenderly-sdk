@@ -5,7 +5,7 @@ module.exports = () => {
   try {
     dotenv.config();
 
-    console.log('Jest setup successfull!');
+    console.log('Jest setup successful!');
   } catch (error) {
     console.error('Jest setup failed!', error);
   }
