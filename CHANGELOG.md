@@ -1,5 +1,11 @@
 # @tenderly/sdk
 
+## 0.3.0
+
+### Minor Changes
+
+- d9951fa: Add missing networks
+
 ## 0.2.8
 
 ### Patch Changes
