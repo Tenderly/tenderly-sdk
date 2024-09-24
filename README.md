@@ -16,7 +16,7 @@ SDK for working with your favorite Web3 development platform
 
 [![License](https://img.shields.io/github/license/Tenderly/tenderly-sdk)](./LICENSE)
 [![npm](https://img.shields.io/npm/v/@tenderly%2Fsdk.svg)](https://www.npmjs.org/package/@tenderly/sdk)
-[![Twitter](https://img.shields.io/twitter/follow/TenderlyApp?style=social)](https://twitter.com/intent/follow?screen_name=TenderlyApp)
+[![Twitter](https://img.shields.io/twitter/follow/TenderlyApp?style=social)](https://x.com/intent/follow?screen_name=TenderlyApp)
 [![Github](https://img.shields.io/github/stars/Tenderly/tenderly-sdk?style=social)](https://github.com/Tenderly/tenderly-sdk)
 
 </div>
@@ -32,6 +32,7 @@ SDK for working with your favorite Web3 development platform
             <li><a href='#basic-usage'>Basic usage</a></li>
         </ul>
     </li>
+    <li><a href='#examples'>Examples</a></li>
     <li><a href='#contributors'>Contributors</a></li>
 </ul>
 
@@ -70,7 +71,7 @@ pnpm
 pnpm add @tenderly/sdk
 ```
 
-### Quick start
+### Basic usage
 
 Instantiate a new tenderly instance with your project details. _We highly recommend using environment variables for sensitive data such as access keys during your local development!_
 
