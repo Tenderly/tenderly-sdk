@@ -51,7 +51,7 @@ In this example we simulate a common transaction sequence in which a user first 
 
 ```
 
-Notice the overrides argument in for this transaction bundle:
+Notice the overrides argument in this transaction bundle:
 ```js
 overrides: {
         [myTokenAddress]: {
