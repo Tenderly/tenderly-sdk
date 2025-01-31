@@ -9,7 +9,8 @@
     "noEmit": true,
     "target": "ES2016",
     "module": "commonjs",
-    "moduleResolution": "node16",
-    "strict": true
+    "moduleResolution": "node",
+    "strict": true,
+    "types": ["node", "axios"]
   }
 }
