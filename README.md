@@ -14,10 +14,10 @@ SDK for working with your favorite Web3 development platform
 <div align='center'>
 
 
-[![License](https://img.shields.io/github/license/Tenderly/tenderly-sdk)](./LICENSE)
+[![License](https://img.shields.io/github/license/Tenderly/tenderly-sdk)](./LICENSE.md)
 [![npm](https://img.shields.io/npm/v/@tenderly%2Fsdk.svg)](https://www.npmjs.org/package/@tenderly/sdk)
 [![Twitter](https://img.shields.io/twitter/follow/TenderlyApp?style=social)](https://twitter.com/intent/follow?screen_name=TenderlyApp)
-[![Github](https://img.shields.io/github/stars/Tenderly/tenderly-sdk?style=social)](https://github.com/Tenderly/tenderly-sdk)
+[![Github](https://img.shields.io/github/stars/Tenderly/tenderly-sdk?style=social)](https://github.com/Tenderly/tenderly-sdk/stargazers)
 
 </div>
 
@@ -111,4 +111,4 @@ console.log(contracts.map(contract => contract.address).join(', '));
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE.md)
