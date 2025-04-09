@@ -1,8 +1,8 @@
 # @tenderly/sdk
 
-## 0.4.0
+## 0.3.1
 
-### Minor Changes
+### Patch Changes
 
 - 79f564f: Deprecate fantom
 
