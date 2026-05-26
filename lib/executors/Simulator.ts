@@ -135,6 +135,8 @@ export class Simulator {
         value: transaction.value,
         data: transaction.input,
         access_list: transaction.access_list,
+        save: transaction.save,
+        save_if_fails: transaction.save_if_fails,
       })),
       block_number_or_hash: {
         blockNumber: blockNumber,
@@ -160,6 +162,8 @@ export class Simulator {
         value: transaction.value,
         data: transaction.input,
         access_list: transaction.access_list,
+        save: transaction.save,
+        save_if_fails: transaction.save_if_fails,
       },
       block_number_or_hash: {
         blockNumber: blockNumber,
