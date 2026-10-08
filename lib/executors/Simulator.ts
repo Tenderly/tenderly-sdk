@@ -229,6 +229,16 @@ export class Simulator {
     return data;
   }
 
+  private async executeSimulationShareRequest(simulationId: string): Promise<void> {
+    await this.apiV2.post<SimulationBundleRequest, SimulateBundleResponse>(
+      `
+        /account/${this.configuration.accountName}
+        /project/${this.configuration.projectName}
+        /simulations/${simulationId}/share
+        `,
+    );
+  }
+
   /**
    * Simulates a transaction by encoding overrides, building a request body, and executing a simulation request.
    * @async
@@ -298,6 +308,21 @@ export class Simulator {
       return simulationBundleResponse.simulations.map(simulation =>
         mapToSimulationResult(simulation),
       );
+    } catch (error) {
+      handleError(error);
+    }
+  }
+
+  /**
+   * Makes the dashboard page for a simulation that was created with `save` or `save_if_fails`
+   * publicly viewable
+   * @async
+   * @function
+   * @param {string} simulationId - The ID of the simulation to be shared.
+   */
+  async shareSimulation(simulationId: string) {
+    try {
+      await this.executeSimulationShareRequest(simulationId);
     } catch (error) {
       handleError(error);
     }
