@@ -11,13 +11,14 @@ import {
 import { handleError, InvalidResponseError, NotFoundError } from '../../errors';
 import { GetByParams } from '../contracts/contracts.types';
 import { ApiClientProvider } from '../../core/ApiClientProvider';
+import { getNetworkFromResponse } from '../response';
 
 function getContractFromResponse(contractResponse: WalletResponse): Wallet {
   const walletDetails = contractResponse.account || contractResponse.contract;
 
   return {
     address: walletDetails.address,
-    network: Number.parseInt(walletDetails.network_id) as unknown as Network,
+    network: getNetworkFromResponse(walletDetails.network_id),
   };
 }
 
