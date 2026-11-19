@@ -1,25 +1,18 @@
 name: Build and test
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - master
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    environment: CI
-    env:
-      TENDERLY_ACCESS_KEY: ${{secrets.TENDERLY_ACCESS_KEY}}
-      TENDERLY_ACCOUNT_NAME: ${{secrets.TENDERLY_ACCOUNT_NAME}}
-      TENDERLY_PROJECT_NAME: ${{secrets.TENDERLY_PROJECT_NAME}}
-      TENDERLY_GET_BY_PROJECT_NAME: ${{secrets.TENDERLY_GET_BY_PROJECT_NAME}}
+permissions:
+  contents: read
 
+jobs:
+  build:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - uses: pnpm/action-setup@v3.0.0
         with:
           version: 8.15.7
@@ -30,4 +23,28 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm build
+
+  # The suite is entirely integration tests, so it needs real Tenderly
+  # credentials. Pull requests from forks must never receive them, so they run
+  # build only and skip this job.
+  test:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    needs: build
+    runs-on: ubuntu-latest
+    environment: CI
+    env:
+      TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
+      TENDERLY_ACCOUNT_NAME: ${{ secrets.TENDERLY_ACCOUNT_NAME }}
+      TENDERLY_PROJECT_NAME: ${{ secrets.TENDERLY_PROJECT_NAME }}
+      TENDERLY_GET_BY_PROJECT_NAME: ${{ secrets.TENDERLY_GET_BY_PROJECT_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3.0.0
+        with:
+          version: 8.15.7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
       - run: pnpm test
