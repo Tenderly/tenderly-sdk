@@ -5,6 +5,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -33,6 +36,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: CI
+    # changesets commits the version bump and tag, and opens the Release PR
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v3.0.0
