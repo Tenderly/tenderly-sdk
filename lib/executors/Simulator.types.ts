@@ -10,6 +10,8 @@ export type TransactionParameters = {
   max_priority_fee_per_gas?: number;
   value: string | number;
   access_list?: AccessList;
+  save?: boolean;
+  save_if_fails?: boolean;
 };
 
 type AccessList = {
@@ -59,6 +61,8 @@ export type SimulationCallArguments = {
   value: string | number;
   data: string;
   access_list?: AccessList;
+  save?: boolean;
+  save_if_fails?: boolean;
 };
 
 export type SimulationBundleDetails = {
