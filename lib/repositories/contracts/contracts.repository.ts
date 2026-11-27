@@ -21,11 +21,12 @@ import {
   BytecodeMismatchError,
   UnexpectedVerificationError,
 } from '../../errors';
+import { getNetworkFromResponse } from '../response';
 
 function mapContractResponseToContractModel(contractResponse: ContractResponse): TenderlyContract {
   const retVal: TenderlyContract = {
     address: contractResponse.contract.address,
-    network: Number.parseInt(contractResponse.contract.network_id) as unknown as Network,
+    network: getNetworkFromResponse(contractResponse.contract.network_id),
   };
 
   if (contractResponse.display_name) {
